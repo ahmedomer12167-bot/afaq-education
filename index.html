@@ -403,21 +403,7 @@ container.innerHTML += "<p>لا توجد دروس لهذه المادة</p>";
 }
 
 };
-window.deleteLesson = async function(id){
 
-if(!confirm("هل تريد حذف هذا الدرس؟")){
-return;
-}
-
-await deleteDoc(
-doc(db,"lessons",id)
-);
-
-alert("تم حذف الدرس");
-
-loadLessons();
-
-};
 loadLessons();
 </script>
 </body>

@@ -287,8 +287,7 @@ import {
 getFirestore,
 collection,
 addDoc,
-getDocs,
-
+getDocs
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 const firebaseConfig = {
 apiKey: "AIzaSyChA_4GaKjLRg79BrTcx3yuXf3UYFQldrY",
@@ -348,13 +347,7 @@ const data = doc.data();
 
 container.innerHTML += `
 <div class="card">
-container.innerHTML += `
-<div class="card">
 <h3>${data.title}</h3>
-<a href="${data.link}" target="_blank">فتح الدرس</a>
-<button onclick="deleteLesson('${doc.id}')">حذف الدرس</button>
-</div>
-`;
 <a href="${data.link}" target="_blank">فتح الدرس</a>
 </div>
 `;

@@ -3,14 +3,96 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>أفق التعليمية</title>
+<title>آفاق التعليمية</title>
+<style>
+body{margin:0;font-family:Tahoma;background:#eef4ff;color:#102033}
+.hero{background:linear-gradient(135deg,#062b66,#0b77c5,#00c2c7);color:white;padding:35px 20px;border-radius:0 0 35px 35px;text-align:center}
+.logo{width:80px;height:80px;border-radius:25px;background:white;color:#0b4f9c;margin:auto;display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:bold}
+h1{font-size:38px;margin:15px 0 5px}
+.box{background:white;margin:18px;padding:22px;border-radius:24px;box-shadow:0 10px 30px #0002}
+input,select{width:100%;padding:15px;margin:8px 0;border:1px solid #d0d7e2;border-radius:15px;font-size:16px}
+button{background:#0b4f9c;color:white;border:0;border-radius:15px;padding:14px 20px;margin:7px 0;font-size:16px;width:100%}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.card{background:linear-gradient(135deg,#eaf5ff,#ffffff);border:1px solid #d8e9ff;padding:20px;border-radius:22px;text-align:center;font-weight:bold;box-shadow:0 6px 16px #0001}
+.icon{font-size:30px;margin-bottom:8px}
+.hidden{display:none}
+.teacher{border:2px dashed #0b77c5}
+.footer{text-align:center;color:#667;margin:20px}
+</style>
 </head>
 <body>
 
-<h1>أفق التعليمية</h1>
-<h2>الأستاذ أحمد عمر</h2>
+<div class="hero">
+<div class="logo">آ</div>
+<h1>آفاق التعليمية</h1>
+<p>منصة تعليمية شاملة لجميع المواد</p>
+<p>بإشراف الأستاذ أحمد عمر</p>
+</div>
 
-<p>منصة تعليمية قيد التطوير</p>
+<section class="box" id="login">
+<h2>تسجيل دخول الطالب</h2>
+<input id="name" placeholder="الاسم الثلاثي">
+<input id="code" type="password" placeholder="الرمز السري">
+<button onclick="login()">دخول إلى المنصة</button>
+<p>رمز الطالب التجريبي: <b>1234</b></p>
+</section>
+
+<section class="box hidden" id="student">
+<h2 id="welcome"></h2>
+<p>اختر المادة التي تريد دراستها:</p>
+
+<div class="grid">
+<div class="card"><div class="icon">🧬</div>الأحياء</div>
+<div class="card"><div class="icon">⚗️</div>الكيمياء</div>
+<div class="card"><div class="icon">🧲</div>الفيزياء</div>
+<div class="card"><div class="icon">📐</div>الرياضيات</div>
+<div class="card"><div class="icon">📘</div>الإنكليزي</div>
+<div class="card"><div class="icon">📝</div>الاختبارات</div>
+</div>
+
+<h3>الدروس والملفات</h3>
+<p>سيتم إضافة ملفات PDF والفيديوهات هنا لاحقاً.</p>
+
+<h3>اختبار تجريبي</h3>
+<button onclick="alert('إجابة صحيحة ✅')">ابدأ الاختبار</button>
+</section>
+
+<section class="box teacher">
+<h2>لوحة المعلم</h2>
+<input id="teacherCode" type="password" placeholder="رمز المعلم">
+<button onclick="teacher()">دخول المعلم</button>
+
+<div id="teacherPanel" class="hidden">
+<h3>إضافة درس جديد</h3>
+<select>
+<option>الأحياء</option>
+<option>الكيمياء</option>
+<option>الفيزياء</option>
+<option>الرياضيات</option>
+<option>الإنكليزي</option>
+</select>
+<input placeholder="عنوان الدرس">
+<input placeholder="رابط PDF أو فيديو">
+<button onclick="alert('سيتم ربط الإضافة لاحقاً بـ Firebase')">إضافة الدرس</button>
+</div>
+</section>
+
+<div class="footer">© آفاق التعليمية - الأستاذ أحمد عمر</div>
+
+<script>
+function login(){
+let n=document.getElementById("name").value.trim();
+let c=document.getElementById("code").value.trim();
+if(!n||c!="1234"){alert("الاسم أو الرمز غير صحيح");return;}
+document.getElementById("login").classList.add("hidden");
+document.getElementById("student").classList.remove("hidden");
+document.getElementById("welcome").innerText="مرحباً "+n;
+}
+function teacher(){
+if(document.getElementById("teacherCode").value!="2026"){alert("رمز المعلم غير صحيح");return;}
+document.getElementById("teacherPanel").classList.remove("hidden");
+}
+</script>
 
 </body>
 </html>

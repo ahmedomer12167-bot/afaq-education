@@ -217,7 +217,7 @@ margin-top:10px;
 
 <h3>إضافة درس جديد</h3>
 
-<select>
+<select id="subject">
 <option>الأحياء</option>
 <option>الكيمياء</option>
 <option>الفيزياء</option>
@@ -226,16 +226,18 @@ margin-top:10px;
 <option>الاجتماعيات</option>
 </select>
 
-<input placeholder="عنوان الدرس">
+<input id="lessonTitle" placeholder="عنوان الدرس">
 
-<input placeholder="رابط فيديو أو ملف PDF">
+<input id="lessonLink" placeholder="رابط PDF أو فيديو">
 
-<button onclick="alert('سيتم ربط Firebase لاحقاً')">
+<input id="lessonTitle" placeholder="عنوان الدرس">
+
+<input id="lessonLink" placeholder="رابط PDF أو فيديو">
+
+<button onclick="saveLesson()">
 إضافة الدرس
 </button>
-
-</div>
-
+<div id="lessons"></div>
 </section>
 
 </div>

@@ -287,10 +287,10 @@ import {
 getFirestore,
 collection,
 addDoc,
-getDocs
+getDocs,
+deleteDoc,
+doc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-const firebaseConfig = {
 apiKey: "AIzaSyChA_4GaKjLRg79BrTcx3yuXf3UYFQldrY",
 authDomain: "afaq-education.firebaseapp.com",
 projectId: "afaq-education",
@@ -348,7 +348,13 @@ const data = doc.data();
 
 container.innerHTML += `
 <div class="card">
+container.innerHTML += `
+<div class="card">
 <h3>${data.title}</h3>
+<a href="${data.link}" target="_blank">فتح الدرس</a>
+<button onclick="deleteLesson('${doc.id}')">حذف الدرس</button>
+</div>
+`;
 <a href="${data.link}" target="_blank">فتح الدرس</a>
 </div>
 `;
@@ -380,9 +386,17 @@ found = true;
 container.innerHTML += `
 <div class="card">
 <h3>${data.title}</h3>
+
 <a href="${data.link}" target="_blank">
 فتح الدرس
 </a>
+
+<br><br>
+
+<button onclick="deleteLesson('${doc.id}')">
+حذف الدرس
+</button>
+
 </div>
 `;
 
@@ -394,7 +408,21 @@ container.innerHTML += "<p>لا توجد دروس لهذه المادة</p>";
 }
 
 };
+window.deleteLesson = async function(id){
 
+if(!confirm("هل تريد حذف هذا الدرس؟")){
+return;
+}
+
+await deleteDoc(
+doc(db,"lessons",id)
+);
+
+alert("تم حذف الدرس");
+
+loadLessons();
+
+};
 loadLessons();
 </script>
 </body>

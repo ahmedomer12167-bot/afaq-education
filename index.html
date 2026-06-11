@@ -4,94 +4,282 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>آفاق التعليمية</title>
+
 <style>
-body{margin:0;font-family:Tahoma;background:#eef4ff;color:#102033}
-.hero{background:linear-gradient(135deg,#062b66,#0b77c5,#00c2c7);color:white;padding:35px 20px;border-radius:0 0 35px 35px;text-align:center}
-.logo{width:80px;height:80px;border-radius:25px;background:white;color:#0b4f9c;margin:auto;display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:bold}
-h1{font-size:38px;margin:15px 0 5px}
-.box{background:white;margin:18px;padding:22px;border-radius:24px;box-shadow:0 10px 30px #0002}
-input,select{width:100%;padding:15px;margin:8px 0;border:1px solid #d0d7e2;border-radius:15px;font-size:16px}
-button{background:#0b4f9c;color:white;border:0;border-radius:15px;padding:14px 20px;margin:7px 0;font-size:16px;width:100%}
-.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
-.card{background:linear-gradient(135deg,#eaf5ff,#ffffff);border:1px solid #d8e9ff;padding:20px;border-radius:22px;text-align:center;font-weight:bold;box-shadow:0 6px 16px #0001}
-.icon{font-size:30px;margin-bottom:8px}
+*{box-sizing:border-box}
+body{
+margin:0;
+font-family:Tahoma,Arial,sans-serif;
+background:
+radial-gradient(circle at top,#7c3aed 0,#29145c 35%,#090414 100%);
+color:white;
+min-height:100vh;
+}
+.hero{
+padding:45px 22px 35px;
+text-align:center;
+position:relative;
+overflow:hidden;
+}
+.logo{
+width:90px;
+height:90px;
+margin:auto;
+border-radius:28px;
+background:rgba(255,255,255,.14);
+backdrop-filter:blur(12px);
+border:1px solid rgba(255,255,255,.25);
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:40px;
+font-weight:bold;
+box-shadow:0 20px 60px rgba(124,58,237,.45);
+}
+.hero h1{
+font-size:42px;
+margin:18px 0 8px;
+}
+.hero p{
+margin:8px 0;
+color:#e9ddff;
+font-size:17px;
+}
+.container{
+padding:0 16px 30px;
+}
+.box{
+background:rgba(255,255,255,.12);
+backdrop-filter:blur(18px);
+border:1px solid rgba(255,255,255,.18);
+border-radius:28px;
+padding:22px;
+margin:18px 0;
+box-shadow:0 18px 45px rgba(0,0,0,.25);
+}
+.box h2{
+margin-top:0;
+font-size:28px;
+}
+input,select{
+width:100%;
+padding:16px;
+margin:9px 0;
+border-radius:18px;
+border:1px solid rgba(255,255,255,.25);
+background:rgba(255,255,255,.13);
+color:white;
+font-size:16px;
+outline:none;
+}
+input::placeholder{color:#d8c8ff}
+button{
+width:100%;
+padding:16px;
+border:0;
+border-radius:18px;
+font-size:17px;
+font-weight:bold;
+color:white;
+background:linear-gradient(135deg,#8b5cf6,#ec4899);
+box-shadow:0 12px 25px rgba(236,72,153,.3);
+margin-top:10px;
+}
+.grid{
+display:grid;
+grid-template-columns:repeat(2,1fr);
+gap:14px;
+margin-top:15px;
+}
+.card{
+background:rgba(255,255,255,.13);
+border:1px solid rgba(255,255,255,.18);
+border-radius:24px;
+padding:20px 10px;
+text-align:center;
+box-shadow:0 12px 30px rgba(0,0,0,.18);
+}
+.card .icon{
+font-size:34px;
+margin-bottom:8px;
+}
+.card span{
+display:block;
+font-weight:bold;
+font-size:16px;
+}
 .hidden{display:none}
-.teacher{border:2px dashed #0b77c5}
-.footer{text-align:center;color:#667;margin:20px}
+.teacher{
+border:1px dashed rgba(255,255,255,.45);
+}
+.footer{
+text-align:center;
+padding:25px 10px;
+color:#d8c8ff;
+font-size:14px;
+}
+.badge{
+display:inline-block;
+padding:8px 14px;
+border-radius:999px;
+background:rgba(255,255,255,.14);
+border:1px solid rgba(255,255,255,.18);
+color:#f4eaff;
+font-size:14px;
+margin-top:10px;
+}
 </style>
 </head>
 <body>
-
-<div class="hero">
-<div class="logo">آ</div>
+  <div class="hero">
+<div class="logo">🎓</div>
 <h1>آفاق التعليمية</h1>
-<p>منصة تعليمية شاملة لجميع المواد</p>
+<p>منصة تعليمية حديثة لجميع المواد</p>
 <p>بإشراف الأستاذ أحمد عمر</p>
+<div class="badge">نسخة تجريبية 2026</div>
 </div>
+
+<div class="container">
 
 <section class="box" id="login">
 <h2>تسجيل دخول الطالب</h2>
+
 <input id="name" placeholder="الاسم الثلاثي">
+
 <input id="code" type="password" placeholder="الرمز السري">
+
 <button onclick="login()">دخول إلى المنصة</button>
+
 <p>رمز الطالب التجريبي: <b>1234</b></p>
 </section>
 
 <section class="box hidden" id="student">
+
 <h2 id="welcome"></h2>
-<p>اختر المادة التي تريد دراستها:</p>
+
+<p>اختر المادة التي تريد دراستها</p>
 
 <div class="grid">
-<div class="card"><div class="icon">🧬</div>الأحياء</div>
-<div class="card"><div class="icon">⚗️</div>الكيمياء</div>
-<div class="card"><div class="icon">🧲</div>الفيزياء</div>
-<div class="card"><div class="icon">📐</div>الرياضيات</div>
-<div class="card"><div class="icon">📘</div>الإنكليزي</div>
-<div class="card"><div class="icon">📝</div>الاختبارات</div>
+
+<div class="card">
+<div class="icon">🧬</div>
+<span>الأحياء</span>
+</div>
+
+<div class="card">
+<div class="icon">🧪</div>
+<span>الكيمياء</span>
+</div>
+
+<div class="card">
+<div class="icon">⚡</div>
+<span>الفيزياء</span>
+</div>
+
+<div class="card">
+<div class="icon">📐</div>
+<span>الرياضيات</span>
+</div>
+
+<div class="card">
+<div class="icon">💻</div>
+<span>الإنكليزي</span>
+</div>
+
+<div class="card">
+<div class="icon">📚</div>
+<span>الاجتماعيات</span>
+</div>
+
 </div>
 
 <h3>الدروس والملفات</h3>
-<p>سيتم إضافة ملفات PDF والفيديوهات هنا لاحقاً.</p>
 
-<h3>اختبار تجريبي</h3>
-<button onclick="alert('إجابة صحيحة ✅')">ابدأ الاختبار</button>
+<p>سيتم هنا إضافة ملفات PDF والفيديوهات والاختبارات.</p>
+
+<button onclick="alert('سيتم إضافة نظام الاختبارات قريباً')">
+الاختبارات الإلكترونية
+</button>
+
 </section>
 
 <section class="box teacher">
+
 <h2>لوحة المعلم</h2>
+
 <input id="teacherCode" type="password" placeholder="رمز المعلم">
-<button onclick="teacher()">دخول المعلم</button>
+
+<button onclick="teacher()">
+دخول المعلم
+</button>
 
 <div id="teacherPanel" class="hidden">
+
 <h3>إضافة درس جديد</h3>
+
 <select>
 <option>الأحياء</option>
 <option>الكيمياء</option>
 <option>الفيزياء</option>
 <option>الرياضيات</option>
 <option>الإنكليزي</option>
+<option>الاجتماعيات</option>
 </select>
+
 <input placeholder="عنوان الدرس">
-<input placeholder="رابط PDF أو فيديو">
-<button onclick="alert('سيتم ربط الإضافة لاحقاً بـ Firebase')">إضافة الدرس</button>
+
+<input placeholder="رابط فيديو أو ملف PDF">
+
+<button onclick="alert('سيتم ربط Firebase لاحقاً')">
+إضافة الدرس
+</button>
+
 </div>
+
 </section>
 
-<div class="footer">© آفاق التعليمية - الأستاذ أحمد عمر</div>
+</div>
+
+<div class="footer">
+© آفاق التعليمية - الأستاذ أحمد عمر
+</div>
 
 <script>
+
 function login(){
+
 let n=document.getElementById("name").value.trim();
+
 let c=document.getElementById("code").value.trim();
-if(!n||c!="1234"){alert("الاسم أو الرمز غير صحيح");return;}
+
+if(!n || c!="1234"){
+alert("الاسم أو الرمز غير صحيح");
+return;
+}
+
 document.getElementById("login").classList.add("hidden");
+
 document.getElementById("student").classList.remove("hidden");
-document.getElementById("welcome").innerText="مرحباً "+n;
+
+document.getElementById("welcome").innerText=
+"مرحباً " + n;
+
 }
+
 function teacher(){
-if(document.getElementById("teacherCode").value!="2026"){alert("رمز المعلم غير صحيح");return;}
-document.getElementById("teacherPanel").classList.remove("hidden");
+
+if(
+document.getElementById("teacherCode").value!="2026"
+){
+alert("رمز المعلم غير صحيح");
+return;
 }
+
+document.getElementById("teacherPanel")
+.classList.remove("hidden");
+
+}
+
 </script>
 
 </body>

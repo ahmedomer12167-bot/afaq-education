@@ -287,7 +287,9 @@ import {
 getFirestore,
 collection,
 addDoc,
-getDocs
+getDocs,
+deleteDoc,
+doc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 const firebaseConfig = {
 apiKey: "AIzaSyChA_4GaKjLRg79BrTcx3yuXf3UYFQldrY",
@@ -349,12 +351,26 @@ container.innerHTML += `
 <div class="card">
 <h3>${data.title}</h3>
 <a href="${data.link}" target="_blank">فتح الدرس</a>
+<br><br>
+<button onclick="deleteLesson('${doc.id}')">حذف الدرس</button>
 </div>
 `;
 });
 
 };
+window.deleteLesson = async function(id){
 
+if(!confirm("هل تريد حذف هذا الدرس؟")){
+return;
+}
+
+await deleteDoc(doc(db,"lessons",id));
+
+alert("تم حذف الدرس بنجاح");
+
+loadLessons();
+
+};
 window.showLessonsBySubject = async function(subjectName){
 
 const container =

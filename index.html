@@ -161,37 +161,37 @@ margin-top:10px;
 
 <div class="grid">
 
-<div class="card">
+<div class="card" onclick="showLessonsBySubject('الأحياء')">
 <div class="icon">🧬</div>
 <span>الأحياء</span>
 </div>
 
-<div class="card">
+<div class="card" onclick="showLessonsBySubject('الكيمياء')">
 <div class="icon">🧪</div>
 <span>الكيمياء</span>
 </div>
 
-<div class="card">
+<div class="card" onclick="showLessonsBySubject('الفيزياء')">
 <div class="icon">⚡</div>
 <span>الفيزياء</span>
 </div>
 
-<div class="card">
+<div class="card" onclick="showLessonsBySubject('الرياضيات')">
 <div class="icon">📐</div>
 <span>الرياضيات</span>
 </div>
 
-<div class="card">
+<div class="card" onclick="showLessonsBySubject('الإنكليزي')">
 <div class="icon">💻</div>
 <span>الإنكليزي</span>
 </div>
 
-<div class="card">
+<div class="card" onclick="showLessonsBySubject('الاجتماعيات')">
 <div class="icon">📚</div>
 <span>الاجتماعيات</span>
 </div>
 
-</div>
+<div id="studentLessons"></div>
 
 <h3>الدروس والملفات</h3>
 
@@ -335,7 +335,50 @@ loadLessons();
 };
 
 window.loadLessons = async function(){
+ }; 
+window.showLessonsBySubject = async function(subjectName){
+  
 
+const container =
+document.getElementById("studentLessons");
+
+container.innerHTML =
+"<h3>دروس " + subjectName + "</h3>";
+
+const querySnapshot =
+await getDocs(collection(db,"lessons"));
+
+let found = false;
+
+querySnapshot.forEach((doc)=>{
+
+const data = doc.data();
+
+if(data.subject === subjectName){
+
+found = true;
+
+container.innerHTML += `
+<div class="card">
+<h3>${data.title}</h3>
+<a href="${data.link}" target="_blank">
+فتح الدرس
+</a>
+</div>
+`;
+
+}
+
+});
+
+if(!found){
+
+container.innerHTML +=
+"<p>لا توجد دروس لهذه المادة</p>";
+
+}
+
+};
 const container =
 document.getElementById("lessons");
 

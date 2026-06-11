@@ -335,9 +335,28 @@ loadLessons();
 };
 
 window.loadLessons = async function(){
- }; 
+
+const container = document.getElementById("lessons");
+if(!container) return;
+
+container.innerHTML = "";
+
+const querySnapshot = await getDocs(collection(db,"lessons"));
+
+querySnapshot.forEach((doc)=>{
+const data = doc.data();
+
+container.innerHTML += `
+<div class="card">
+<h3>${data.title}</h3>
+<a href="${data.link}" target="_blank">فتح الدرس</a>
+</div>
+`;
+});
+
+};
+
 window.showLessonsBySubject = async function(subjectName){
-  
 
 const container =
 document.getElementById("studentLessons");
@@ -370,39 +389,12 @@ container.innerHTML += `
 }
 
 });
-
 if(!found){
-
-container.innerHTML +=
-"<p>لا توجد دروس لهذه المادة</p>";
-
+container.innerHTML += "<p>لا توجد دروس لهذه المادة</p>";
 }
 
 };
-const container =
-document.getElementById("lessons");
 
-container.innerHTML = "";
-
-const querySnapshot =
-await getDocs(collection(db,"lessons"));
-
-querySnapshot.forEach((doc)=>{
-
-const data = doc.data();
-
-container.innerHTML += `
-<div class="card">
-<h3>${data.title}</h3>
-<a href="${data.link}" target="_blank">
-فتح الدرس
-</a>
-</div>
-`;
-
-});
-
-};
 loadLessons();
 </script>
 </body>

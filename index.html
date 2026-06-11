@@ -289,7 +289,8 @@ collection,
 addDoc,
 getDocs,
 deleteDoc,
-doc
+doc,
+updateDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 const firebaseConfig = {
 apiKey: "AIzaSyChA_4GaKjLRg79BrTcx3yuXf3UYFQldrY",
@@ -352,8 +353,8 @@ container.innerHTML += `
 <h3>${data.title}</h3>
 <a href="${data.link}" target="_blank">فتح الدرس</a>
 <br><br>
+<button onclick="editLesson('${doc.id}','${data.title}','${data.link}')">تعديل الدرس</button>
 <button onclick="deleteLesson('${doc.id}')">حذف الدرس</button>
-</div>
 `;
 });
 
@@ -371,6 +372,24 @@ alert("تم حذف الدرس بنجاح");
 loadLessons();
 
 };
+window.editLesson = async function(id, oldTitle, oldLink){
+
+const newTitle = prompt("اكتب عنوان الدرس الجديد", oldTitle);
+if(!newTitle) return;
+
+const newLink = prompt("اكتب رابط PDF الجديد", oldLink);
+if(!newLink) return;
+
+await updateDoc(doc(db,"lessons",id), {
+title: newTitle,
+link: newLink
+});
+
+alert("تم تعديل الدرس بنجاح");
+
+loadLessons();
+
+};  
 window.showLessonsBySubject = async function(subjectName){
 
 const container =

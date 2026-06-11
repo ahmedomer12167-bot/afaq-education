@@ -230,9 +230,6 @@ margin-top:10px;
 
 <input id="lessonLink" placeholder="رابط PDF أو فيديو">
 
-<input id="lessonTitle" placeholder="عنوان الدرس">
-
-<input id="lessonLink" placeholder="رابط PDF أو فيديو">
 
 <button onclick="saveLesson()">
 إضافة الدرس
@@ -332,6 +329,8 @@ created:new Date()
 );
 
 alert("تم حفظ الدرس بنجاح");
+
+loadLessons();
 
 };
 

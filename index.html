@@ -499,6 +499,130 @@ alert("مرحباً بعودتك " + name);
 }
 
 checkStudent();
+function getLessons(){
+
+return JSON.parse(
+localStorage.getItem("lessons") || "[]"
+);
+
+}
+
+function saveLessons(lessons){
+
+localStorage.setItem(
+"lessons",
+JSON.stringify(lessons)
+);
+
+}
+
+function saveLesson(){
+
+const stage =
+document.getElementById("teacherLessonStage").value;
+
+const subject =
+document.getElementById("teacherLessonSubject").value;
+
+const title =
+document.getElementById("teacherLessonTitle").value.trim();
+
+const link =
+document.getElementById("teacherLessonLink").value.trim();
+
+if(!title || !link){
+
+alert("أكمل البيانات");
+
+return;
+
+}
+
+const lessons = getLessons();
+
+lessons.push({
+
+stage:stage,
+subject:subject,
+title:title,
+link:link
+
+});
+
+saveLessons(lessons);
+
+document.getElementById("teacherLessonTitle").value="";
+document.getElementById("teacherLessonLink").value="";
+
+alert("تم حفظ الدرس");
+
+showTeacherLessons();
+
+}
+
+function showTeacherLessons(){
+
+const box =
+document.getElementById("teacherLessons");
+
+const lessons = getLessons();
+
+if(lessons.length === 0){
+
+box.innerHTML = `
+<div class="start-card">
+لا توجد دروس مضافة حالياً
+</div>
+`;
+
+return;
+
+}
+
+box.innerHTML = "";
+
+lessons.forEach((lesson,index)=>{
+
+box.innerHTML += `
+<div class="start-card">
+
+<h3>${lesson.title}</h3>
+
+<p>
+${lesson.stage}
+-
+${lesson.subject}
+</p>
+
+<a href="${lesson.link}"
+target="_blank">
+فتح الدرس
+</a>
+
+<br><br>
+
+<button onclick="deleteLesson(${index})">
+حذف الدرس
+</button>
+
+</div>
+`;
+
+});
+
+}
+
+function deleteLesson(index){
+
+const lessons = getLessons();
+
+lessons.splice(index,1);
+
+saveLessons(lessons);
+
+showTeacherLessons();
+
+}
 </script>
 
 </body>

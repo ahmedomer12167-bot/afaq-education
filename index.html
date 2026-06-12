@@ -353,36 +353,7 @@ set("essays", essays);
 set("students", students);
 
 alert("تم حفظ الدرجة وإضافتها للطالب");
-function sendEssay(i){
 
-let qs = get("quizzes").filter(q =>
-q.stage === currentStudent.stage &&
-q.subject === currentSubject &&
-q.status === "published"
-);
-
-let q = qs[i];
-
-let ans = document.getElementById("essay" + i).value.trim();
-
-if(!ans){
-alert("اكتب الإجابة");
-return;
-}
-
-let e = get("essays");
-
-e.push({
-studentId: currentStudent.id,
-name: currentStudent.name,
-question: q.question,
-answer: ans,
-grade: "لم تصحح"
-});
-
-set("essays", e);
-
-alert("تم إرسال الإجابة للمدرس");
 
 }
 renderTeacher();
@@ -399,7 +370,40 @@ function showStudentNotices(){let n=get("notices").filter(x=>x.stage===currentSt
 function sendQuestion(){let q=get("questions");q.push({name:currentStudent.name,text:studentQuestion.value,reply:""});set("questions",q);studentQuestion.value="";alert("تم الإرسال")}
 function replyQuestion(i){let q=get("questions");q[i].reply=prompt("اكتب الرد",q[i].reply)||q[i].reply;set("questions",q);renderTeacher()}
 function showReplies(){let q=get("questions").filter(x=>x.name===currentStudent.name);studentReplies.innerHTML=q.map(x=>`<div class="card"><b>سؤالك:</b> ${x.text}<br><b>الرد:</b> ${x.reply||"لم يتم الرد"}</div>`).join("")}
+function sendEssay(i){
 
+let qs = get("quizzes").filter(q =>
+q.stage === currentStudent.stage &&
+q.subject === currentSubject &&
+q.status === "published"
+);
+
+let q = qs[i];
+
+let ans = document.getElementById("essay" + i).value.trim();
+
+if(!ans){
+alert("اكتب الإجابة أولاً");
+return;
+}
+
+let essays = get("essays");
+
+essays.push({
+studentId: currentStudent.id,
+name: currentStudent.name,
+stage: currentStudent.stage,
+subject: currentSubject,
+question: q.question,
+answer: ans,
+grade: "لم تصحح"
+});
+
+set("essays", essays);
+
+alert("تم إرسال الإجابة للمدرس بنجاح");
+
+}
 function renderTeacher(){
 teacherLessons.innerHTML=get("lessons").map((l,i)=>`<div class="card"><h3>${l.title}</h3><p>${l.stage} - ${l.subject}</p><a href="${l.link}" target="_blank">فتح</a><button class="danger" onclick="deleteLesson(${i})">حذف</button></div>`).join("");
 teacherQuizzes.innerHTML=get("quizzes").map((q,i)=>`<div class="card"><h3>${q.question}</h3><p>${q.stage} - ${q.subject} - ${q.type} - ${q.status}</p></div>`).join("");

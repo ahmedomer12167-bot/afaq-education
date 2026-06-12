@@ -7,162 +7,26 @@
 
 <style>
 *{box-sizing:border-box}
+
 body{
 margin:0;
 font-family:Tahoma,Arial,sans-serif;
-background:
-radial-gradient(circle at top,#7c3aed 0,#29145c 35%,#090414 100%);
+background:#020617;
 color:white;
 min-height:100vh;
 }
-.hero{
-padding:45px 22px 35px;
-text-align:center;
-position:relative;
-overflow:hidden;
-}
-.logo{
-width:90px;
-height:90px;
-margin:auto;
-border-radius:28px;
-background:rgba(255,255,255,.14);
-backdrop-filter:blur(12px);
-border:1px solid rgba(255,255,255,.25);
-display:flex;
-align-items:center;
-justify-content:center;
-font-size:40px;
-font-weight:bold;
-box-shadow:0 20px 60px rgba(124,58,237,.45);
-}
-.hero h1{
-font-size:42px;
-margin:18px 0 8px;
-}
-.hero p{
-margin:8px 0;
-color:#e9ddff;
-font-size:17px;
-}
-.container{
-padding:0 16px 30px;
-}
-.box{
-background:rgba(255,255,255,.12);
-backdrop-filter:blur(18px);
-border:1px solid rgba(255,255,255,.18);
-border-radius:28px;
-padding:22px;
-margin:18px 0;
-box-shadow:0 18px 45px rgba(0,0,0,.25);
-}
-.box h2{
-margin-top:0;
-font-size:28px;
-}
-input,select{
-width:100%;
-padding:16px;
-margin:9px 0;
-border-radius:18px;
-border:1px solid rgba(255,255,255,.25);
-background:rgba(255,255,255,.13);
-color:white;
-font-size:16px;
-outline:none;
-}
-input::placeholder{color:#d8c8ff}
+
 button{
-width:100%;
-padding:16px;
 border:0;
 border-radius:18px;
-font-size:17px;
-font-weight:bold;
-color:white;
-background:linear-gradient(135deg,#8b5cf6,#ec4899);
-box-shadow:0 12px 25px rgba(236,72,153,.3);
-margin-top:10px;
-}
-.grid{
-display:grid;
-grid-template-columns:repeat(2,1fr);
-gap:14px;
-margin-top:15px;
-}
-.card{
-background:rgba(255,255,255,.13);
-border:1px solid rgba(255,255,255,.18);
-border-radius:24px;
-padding:20px 10px;
-text-align:center;
-box-shadow:0 12px 30px rgba(0,0,0,.18);
-}
-.card .icon{
-font-size:34px;
-margin-bottom:8px;
-}
-.card span{
-display:block;
-font-weight:bold;
-font-size:16px;
-}
-.hidden{display:none}
-.teacher{
-border:1px dashed rgba(255,255,255,.45);
-}
-.footer{
-text-align:center;
-padding:25px 10px;
-color:#d8c8ff;
-font-size:14px;
-}
-.badge{
-display:inline-block;
-padding:8px 14px;
-border-radius:999px;
-background:rgba(255,255,255,.14);
-border:1px solid rgba(255,255,255,.18);
-color:#f4eaff;
-font-size:14px;
-margin-top:10px;
-}
-margin-top:10px;
-}
-
-.quiz-box{
-background:rgba(255,255,255,0.12);
-border:1px solid rgba(255,255,255,0.25);
-border-radius:25px;
-padding:20px;
-margin:20px 0;
-text-align:right;
-}
-
-.quiz-box h3{
-font-size:22px;
-margin-bottom:18px;
-color:white;
-}
-
-.quiz-option{
-display:block;
-width:100%;
-background:rgba(255,255,255,0.12);
-color:white;
-border:1px solid rgba(255,255,255,0.25);
-border-radius:18px;
-padding:14px;
-margin:10px 0;
+padding:16px;
 font-size:18px;
-text-align:right;
+font-weight:bold;
+color:white;
+background:linear-gradient(135deg,#2563eb,#06b6d4);
 cursor:pointer;
 }
 
-.quiz-option:hover{
-background:linear-gradient(135deg,#9b5cff,#ec4899);
-}
 .landing-hero{
 min-height:100vh;
 padding:35px 18px;
@@ -182,7 +46,18 @@ box-shadow:0 25px 70px rgba(0,0,0,.35);
 }
 
 .hero-logo{
-font-size:55px;
+font-size:60px;
+}
+
+h1{
+font-size:44px;
+margin:15px 0 8px;
+}
+
+p{
+font-size:19px;
+line-height:1.8;
+color:#dbeafe;
 }
 
 .hero-buttons{
@@ -207,12 +82,25 @@ border:1px solid rgba(255,255,255,.22);
 border-radius:22px;
 padding:18px;
 font-weight:bold;
+box-shadow:0 15px 35px rgba(0,0,0,.20);
+}
+
+.start-card h2{
+margin:10px 0 0;
+color:#bae6fd;
+font-size:32px;
 }
 
 .stage-card{
 padding:25px;
 font-size:18px;
 box-shadow:0 15px 35px rgba(0,0,0,.25);
+}
+
+.footer{
+text-align:center;
+padding:25px;
+color:#cbd5e1;
 }
 
 @media(max-width:700px){
@@ -222,11 +110,17 @@ box-shadow:0 15px 35px rgba(0,0,0,.25);
 .stages-grid{
 grid-template-columns:1fr;
 }
+
+h1{
+font-size:36px;
 }
-</style>  
+}
+</style>
 </head>
+
 <body>
- <section id="landingPage" class="landing-hero">
+
+<section id="landingPage" class="landing-hero">
 
 <div class="hero-glass">
 
@@ -242,13 +136,14 @@ grid-template-columns:1fr;
 <p>إشراف الأستاذ أحمد عمر</p>
 
 <div class="hero-buttons">
-<button onclick="showStudentLogin()">دخول الطالب</button>
-<button onclick="showTeacherLogin()">دخول المدرس</button>
+<button onclick="alert('سيتم ربط دخول الطالب في الخطوة القادمة')">دخول الطالب</button>
+<button onclick="alert('سيتم ربط دخول المدرس في الخطوة القادمة')">دخول المدرس</button>
 </div>
 
 <h2>📊 إحصائيات المنصة</h2>
 
 <div class="stat-grid">
+
 <div class="start-card">
 📚<br>
 عدد الدروس
@@ -266,26 +161,31 @@ grid-template-columns:1fr;
 عدد الطلاب
 <h2 id="statStudents">0</h2>
 </div>
+
 </div>
 
 <h2>🌟 مميزات المنصة</h2>
 
 <div class="features-grid">
+
 <div class="start-card">📚<br>دروس منظمة</div>
 <div class="start-card">📝<br>اختبارات إلكترونية</div>
 <div class="start-card">📊<br>نتائج فورية</div>
 <div class="start-card">📱<br>تعمل على الهاتف</div>
 <div class="start-card">🔒<br>نظام آمن</div>
 <div class="start-card">⚡<br>سرعة عالية</div>
+
 </div>
 
 <h2>🎯 المراحل الدراسية</h2>
 
 <div class="stages-grid">
+
 <div class="start-card stage-card">📘 الثالث متوسط</div>
 <div class="start-card stage-card">📗 الرابع العلمي</div>
 <div class="start-card stage-card">📙 الخامس العلمي</div>
 <div class="start-card stage-card">📕 السادس العلمي</div>
+
 </div>
 
 <h2>🏆 مرحباً بكم في منصة آفاق التعليمية</h2>
@@ -295,444 +195,9 @@ grid-template-columns:1fr;
 
 </section>
 
-<div class="container">
-
-<section class="box" id="login">
-<h2>تسجيل دخول الطالب</h2>
-
-<input id="name" placeholder="الاسم الثلاثي">
-
-<input id="code" type="password" placeholder="الرمز السري">
-
-<button onclick="login()">دخول إلى المنصة</button>
-
-<p>رمز الطالب التجريبي: <b>1234</b></p>
-</section>
-
-<section class="box hidden" id="student">
-
-<h2 id="welcome"></h2>
-
-<p>اختر المادة التي تريد دراستها</p>
-
-<div class="grid">
-
-<div class="card" onclick="showLessonsBySubject('الأحياء')">
-<div class="icon">🧬</div>
-<span>الأحياء</span>
-</div>
-
-<div class="card" onclick="showLessonsBySubject('الكيمياء')">
-<div class="icon">🧪</div>
-<span>الكيمياء</span>
-</div>
-
-<div class="card" onclick="showLessonsBySubject('الفيزياء')">
-<div class="icon">⚡</div>
-<span>الفيزياء</span>
-</div>
-
-<div class="card" onclick="showLessonsBySubject('الرياضيات')">
-<div class="icon">📐</div>
-<span>الرياضيات</span>
-</div>
-
-<div class="card" onclick="showLessonsBySubject('الإنكليزي')">
-<div class="icon">💻</div>
-<span>الإنكليزي</span>
-</div>
-
-<div class="card" onclick="showLessonsBySubject('الاجتماعيات')">
-<div class="icon">📚</div>
-<span>الاجتماعيات</span>
-</div>
-
-<div id="studentLessons"></div>
-<div id="studentQuizzes"></div>
-<h3>الدروس والملفات</h3>
-
-<p>سيتم هنا إضافة ملفات PDF والفيديوهات والاختبارات.</p>
-
-<button onclick="alert('سيتم إضافة نظام الاختبارات قريباً')">
-الاختبارات الإلكترونية
-</button>
-
-</section>
-
-<section class="box teacher">
-
-<h2>لوحة المعلم</h2>
-
-<input id="teacherCode" type="password" placeholder="رمز المعلم">
-
-<button onclick="teacher()">
-دخول المعلم
-</button>
-
-<div id="teacherPanel" class="hidden">
-
-<h3>إضافة درس جديد</h3>
-
-<select id="subject">
-<option>الأحياء</option>
-<option>الكيمياء</option>
-<option>الفيزياء</option>
-<option>الرياضيات</option>
-<option>الإنكليزي</option>
-<option>الاجتماعيات</option>
-</select>
-
-<input id="lessonTitle" placeholder="عنوان الدرس">
-
-<input id="lessonLink" placeholder="رابط PDF أو فيديو">
-
-
-<button onclick="saveLesson()">
-إضافة الدرس
-</button>
-<div id="lessons"></div>
-<h3>إضافة سؤال اختيار من متعدد</h3>
-
-<select id="quizSubject">
-
-<option>الأحياء</option>
-
-<option>الكيمياء</option>
-
-<option>الفيزياء</option>
-
-<option>الرياضيات</option>
-
-<option>الإنكليزي</option>
-
-<option>الاجتماعيات</option>
-
-</select>
-
-<input id="quizQuestion" placeholder="نص السؤال">
-
-<input id="choice1" placeholder="الاختيار الأول">
-
-<input id="choice2" placeholder="الاختيار الثاني">
-
-<input id="choice3" placeholder="الاختيار الثالث">
-
-<input id="choice4" placeholder="الاختيار الرابع">
-
-<input id="correctAnswer" placeholder="الإجابة الصحيحة">
-<select id="quizStatus">
-<option value="hidden">مخفي عن الطلاب</option>
-<option value="published">منشور للطلاب</option>
-</select>
-<button onclick="saveQuiz()">
-
-حفظ السؤال
-
-</button>
-
-<div id="teacherQuizzes"></div> 
-</section>
-
-</div>
-
 <div class="footer">
 © آفاق التعليمية - الأستاذ أحمد عمر
 </div>
 
-<script>
-
-function login(){
-
-let n=document.getElementById("name").value.trim();
-
-let c=document.getElementById("code").value.trim();
-
-if(!n || c!="1234"){
-alert("الاسم أو الرمز غير صحيح");
-return;
-}
-
-document.getElementById("login").classList.add("hidden");
-
-document.getElementById("student").classList.remove("hidden");
-
-document.getElementById("welcome").innerText=
-"مرحباً " + n;
-
-}
-
-function teacher(){
-
-if(
-document.getElementById("teacherCode").value!="2026"
-){
-alert("رمز المعلم غير صحيح");
-return;
-}
-
-document.getElementById("teacherPanel")
-.classList.remove("hidden");
-
-}
-
-</script>
-<script type="module">
-
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import {
-getFirestore,
-collection,
-addDoc,
-getDocs,
-deleteDoc,
-doc,
-updateDoc
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-const firebaseConfig = {
-apiKey: "AIzaSyChA_4GaKjLRg79BrTcx3yuXf3UYFQldrY",
-authDomain: "afaq-education.firebaseapp.com",
-projectId: "afaq-education",
-storageBucket: "afaq-education.firebasestorage.app",
-messagingSenderId: "818053642776",
-appId: "1:818053642776:web:f3d766691bcf74a76c616d"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-window.saveLesson = async function(){
-
-const subject =
-document.getElementById("subject").value;
-
-const title =
-document.getElementById("lessonTitle").value;
-
-const link =
-document.getElementById("lessonLink").value;
-
-if(!title || !link){
-alert("أكمل البيانات");
-return;
-}
-
-await addDoc(
-collection(db,"lessons"),
-{
-subject,
-title,
-link,
-created:new Date()
-}
-);
-
-alert("تم حفظ الدرس بنجاح");
-
-loadLessons();
-
-};
-
-window.loadLessons = async function(){
-
-const container = document.getElementById("lessons");
-if(!container) return;
-
-container.innerHTML = "";
-
-const querySnapshot = await getDocs(collection(db,"lessons"));
-
-querySnapshot.forEach((doc)=>{
-const data = doc.data();
-
-container.innerHTML += `
-<div class="card">
-<h3>${data.title}</h3>
-<a href="${data.link}" target="_blank">فتح الدرس</a>
-<br><br>
-<button onclick="editLesson('${doc.id}','${data.title}','${data.link}')">تعديل الدرس</button>
-<button onclick="deleteLesson('${doc.id}')">حذف الدرس</button>
-`;
-});
-
-};
-window.deleteLesson = async function(id){
-
-if(!confirm("هل تريد حذف هذا الدرس؟")){
-return;
-}
-
-await deleteDoc(doc(db,"lessons",id));
-
-alert("تم حذف الدرس بنجاح");
-
-loadLessons();
-
-};
-window.editLesson = async function(id, oldTitle, oldLink){
-
-const newTitle = prompt("اكتب عنوان الدرس الجديد", oldTitle);
-if(!newTitle) return;
-
-const newLink = prompt("اكتب رابط PDF الجديد", oldLink);
-if(!newLink) return;
-
-await updateDoc(doc(db,"lessons",id), {
-title: newTitle,
-link: newLink
-});
-
-alert("تم تعديل الدرس بنجاح");
-
-loadLessons();
-
-};  
-window.saveQuiz = async function(){
-
-const subject =
-document.getElementById("quizSubject").value;
-
-const question =
-document.getElementById("quizQuestion").value;
-
-const choice1 =
-document.getElementById("choice1").value;
-
-const choice2 =
-document.getElementById("choice2").value;
-
-const choice3 =
-document.getElementById("choice3").value;
-
-const choice4 =
-document.getElementById("choice4").value;
-
-const correctAnswer =
-document.getElementById("correctAnswer").value;
-const status =
-document.getElementById("quizStatus").value;
-if(
-!question ||
-!choice1 ||
-!choice2 ||
-!choice3 ||
-!choice4 ||
-!correctAnswer
-){
-alert("أكمل جميع الحقول");
-return;
-}
-
-await addDoc(
-collection(db,"quizzes"),{
-subject,
-question,
-choice1,
-choice2,
-choice3,
-choice4,
-correctAnswer,
-status,
-created:new Date()
-}
-);
-alert("تم حفظ السؤال بنجاح");
-
-};  
-window.showLessonsBySubject = async function(subjectName){
-
-const container =
-document.getElementById("studentLessons");
-
-container.innerHTML =
-"<h3>دروس " + subjectName + "</h3>";
-
-const querySnapshot =
-await getDocs(collection(db,"lessons"));
-
-let found = false;
-
-querySnapshot.forEach((doc)=>{
-
-const data = doc.data();
-
-if(data.subject === subjectName){
-
-found = true;
-
-container.innerHTML += `
-<div class="card">
-<h3>${data.title}</h3>
-
-<a href="${data.link}" target="_blank">
-فتح الدرس
-</a>
-
-</div>
-`;
-
-}
-
-});
-if(!found){
-container.innerHTML += "<p>لا توجد دروس لهذه المادة</p>";
-}
-loadQuizzesBySubject(subjectName);
-};
-
-window.loadQuizzesBySubject = async function(subjectName){
-
-const container = document.getElementById("studentQuizzes");
-if(!container) return;
-
-container.innerHTML = "<h3>اختبارات " + subjectName + "</h3>";
-quizScore = 0;
-quizAnswered = 0;
-const querySnapshot = await getDocs(collection(db,"quizzes"));
-
-let found = false;
-
-querySnapshot.forEach((doc)=>{
-const data = doc.data();
-
-if(data.subject === subjectName && data.status === "published"){
-found = true;
-
-container.innerHTML += `
-<div class="quiz-box">
-<h3>${data.question}</h3>
-<button class="quiz-option" onclick="checkAnswer(this,'${data.choice1}','${data.correctAnswer}')">${data.choice1}</button>
-<button class="quiz-option" onclick="checkAnswer(this,'${data.choice2}','${data.correctAnswer}')">${data.choice2}</button>
-<button class="quiz-option" onclick="checkAnswer(this,'${data.choice3}','${data.correctAnswer}')">${data.choice3}</button>
-<button class="quiz-option" onclick="checkAnswer(this,'${data.choice4}','${data.correctAnswer}')">${data.choice4}</button>
-<p class="quiz-result"></p>
-<p class="quiz-score"></p>
-</div>
-`;
-}
-
-});
-
-if(!found){
-container.innerHTML += "<p>لا توجد اختبارات منشورة لهذه المادة حالياً.</p>";
-}
-
-};
-
-window.checkAnswer = function(btn, answer, correct){
-
-const box = btn.closest(".quiz-box");
-const result = box.querySelector(".quiz-result");
-
-if(answer === correct){
-result.innerHTML = "✅ إجابة صحيحة";
-result.style.color = "#22c55e";
-}else{
-result.innerHTML = "❌ إجابة خاطئة";
-result.style.color = "#ef4444";
-}
-};
-
-loadLessons();
-</script>
 </body>
 </html>

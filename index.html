@@ -281,12 +281,14 @@ if(code !== stageCodes[stage]){
 alert("رمز المرحلة غير صحيح");
 return;
 }
-
+localStorage.setItem("studentName",name);
+localStorage.setItem("studentStage",stage);
 alert("مرحباً " + name + " - " + stage);
 
 }
 
 function teacherLogin(){
+
 const code=document.getElementById("teacherCode").value;
 
 if(code==="444"){
@@ -294,7 +296,19 @@ alert("تم دخول المدرس بنجاح");
 }else{
 alert("كود المدرس غير صحيح");
 }
+
+}   // ← هذا القوس كان مفقودًا
+
+function checkStudent(){
+
+const name = localStorage.getItem("studentName");
+const stage = localStorage.getItem("studentStage");
+
+if(name && stage){
+alert("مرحباً بعودتك " + name);
 }
+}
+checkStudent();
 </script>
 </body>
 </html>

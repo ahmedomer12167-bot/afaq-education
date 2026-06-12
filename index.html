@@ -260,7 +260,30 @@ document.getElementById("teacherLoginPage").style.display="block";
 }
 
 function studentLogin(){
-alert("سيتم ربط دخول الطالب بالمرحلة والكود في الخطوة القادمة");
+
+const name = document.getElementById("studentName").value.trim();
+const stage = document.getElementById("studentStage").value;
+const code = document.getElementById("studentCode").value.trim();
+
+const stageCodes = {
+"الثالث متوسط":"333",
+"الرابع العلمي":"444",
+"الخامس العلمي":"555",
+"السادس العلمي":"666"
+};
+
+if(!name){
+alert("اكتب الاسم الثلاثي");
+return;
+}
+
+if(code !== stageCodes[stage]){
+alert("رمز المرحلة غير صحيح");
+return;
+}
+
+alert("مرحباً " + name + " - " + stage);
+
 }
 
 function teacherLogin(){

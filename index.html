@@ -281,17 +281,59 @@ h1{font-size:36px}
 
 </div>
 </section>
+<section id="teacherPage" class="student-page" style="display:none;">
+<div class="student-box">
 
+<h1>لوحة تحكم المدرس</h1>
+<p>مرحباً أستاذ أحمد عمر</p>
+
+<h2>📚 إضافة درس جديد</h2>
+
+<select id="teacherLessonStage">
+<option>الثالث متوسط</option>
+<option>الرابع العلمي</option>
+<option>الخامس العلمي</option>
+<option>السادس العلمي</option>
+</select>
+
+<select id="teacherLessonSubject">
+<option>الأحياء</option>
+<option>الكيمياء</option>
+<option>الفيزياء</option>
+<option>الرياضيات</option>
+<option>الإنكليزي</option>
+<option>الاجتماعيات</option>
+<option>العربي</option>
+<option>الإسلامية</option>
+</select>
+
+<input id="teacherLessonTitle" placeholder="عنوان الدرس">
+
+<input id="teacherLessonLink" placeholder="رابط PDF أو فيديو">
+
+<button onclick="saveLesson()">حفظ الدرس</button>
+
+<h2>📋 الدروس المضافة</h2>
+
+<div id="teacherLessons"></div>
+
+<button onclick="goHome()">تسجيل الخروج</button>
+
+</div>
+</section>
 <div class="footer">
 © آفاق التعليمية - الأستاذ أحمد عمر
 </div>
 
 <script>
 function hideAll(){
+
 document.getElementById("landingPage").style.display="none";
 document.getElementById("studentLoginPage").style.display="none";
 document.getElementById("teacherLoginPage").style.display="none";
 document.getElementById("studentPage").style.display="none";
+document.getElementById("teacherPage").style.display="none";
+
 }
 
 function goHome(){
@@ -426,12 +468,21 @@ showStudentPage(name,stage);
 
 function teacherLogin(){
 
-const code = document.getElementById("teacherCode").value.trim();
+const code =
+document.getElementById("teacherCode").value.trim();
 
 if(code === "444"){
-alert("تم دخول المدرس بنجاح");
+
+hideAll();
+
+document.getElementById("teacherPage").style.display="block";
+
+showTeacherLessons();
+
 }else{
+
 alert("كود المدرس غير صحيح");
+
 }
 
 }

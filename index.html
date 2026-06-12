@@ -331,7 +331,9 @@ return;
 
 essays[i].grade = grade;
 
-let student = students.find(s => s.id === essays[i].studentId);
+let student = students.find(function(s){
+return s.id === essays[i].studentId;
+});
 
 if(student){
 
@@ -339,13 +341,50 @@ student.points = Number(student.points || 0) + grade;
 student.tests = Number(student.tests || 0) + 1;
 student.correct = Number(student.correct || 0) + 1;
 
+localStorage.setItem("currentStudent", JSON.stringify(student));
+
+}else{
+
+alert("لم يتم العثور على الطالب");
+
 }
 
 set("essays", essays);
 set("students", students);
 
-alert("تم حفظ درجة الطالب وإضافتها إلى نقاطه");
+alert("تم حفظ الدرجة وإضافتها للطالب");
+function sendEssay(i){
 
+let qs = get("quizzes").filter(q =>
+q.stage === currentStudent.stage &&
+q.subject === currentSubject &&
+q.status === "published"
+);
+
+let q = qs[i];
+
+let ans = document.getElementById("essay" + i).value.trim();
+
+if(!ans){
+alert("اكتب الإجابة");
+return;
+}
+
+let e = get("essays");
+
+e.push({
+studentId: currentStudent.id,
+name: currentStudent.name,
+question: q.question,
+answer: ans,
+grade: "لم تصحح"
+});
+
+set("essays", e);
+
+alert("تم إرسال الإجابة للمدرس");
+
+}
 renderTeacher();
 
 }

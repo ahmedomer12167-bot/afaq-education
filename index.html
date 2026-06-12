@@ -115,6 +115,50 @@ h1{
 font-size:36px;
 }
 }
+.student-page{
+min-height:100vh;
+padding:25px 18px;
+background:radial-gradient(circle at top,#0ea5e9,#0f172a 55%,#020617);
+}
+
+.student-box{
+max-width:950px;
+margin:auto;
+padding:25px 18px;
+border-radius:30px;
+background:rgba(255,255,255,.12);
+border:1px solid rgba(255,255,255,.25);
+backdrop-filter:blur(18px);
+}
+
+.info-grid{
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:12px;
+margin:20px 0;
+}
+
+.subjects-grid{
+display:grid;
+grid-template-columns:repeat(2,1fr);
+gap:14px;
+}
+
+.subject-card{
+background:rgba(255,255,255,.13);
+border:1px solid rgba(255,255,255,.22);
+border-radius:22px;
+padding:25px;
+text-align:center;
+font-size:20px;
+font-weight:bold;
+}
+
+@media(max-width:700px){
+.info-grid{
+grid-template-columns:1fr;
+}
+}  
 </style>
 </head>
 
@@ -234,6 +278,57 @@ font-size:36px;
 </div>
 
 </section>
+<section id="studentPage" class="student-page" style="display:none;">
+
+<div class="student-box">
+
+<h1 id="welcomeStudent">مرحباً</h1>
+<p id="studentStageText"></p>
+
+<div class="info-grid">
+
+<div class="start-card">
+⭐<br>
+النقاط
+<h2 id="studentPoints">0</h2>
+</div>
+
+<div class="start-card">
+🎖️<br>
+المستوى
+<h2 id="studentLevel">مبتدئ</h2>
+</div>
+
+<div class="start-card">
+📝<br>
+الاختبارات
+<h2 id="studentTests">0</h2>
+</div>
+
+</div>
+
+<h2>📚 المواد الدراسية</h2>
+
+<div class="subjects-grid">
+
+<div class="subject-card">🧬<br>الأحياء</div>
+<div class="subject-card">🧪<br>الكيمياء</div>
+<div class="subject-card">⚡<br>الفيزياء</div>
+<div class="subject-card">📐<br>الرياضيات</div>
+<div class="subject-card">💻<br>الإنكليزي</div>
+<div class="subject-card">📚<br>الاجتماعيات</div>
+<div class="subject-card">📖<br>العربي</div>
+<div class="subject-card">🕌<br>الإسلامية</div>
+
+</div>
+
+<br>
+
+<button onclick="goHome()">تسجيل الخروج</button>
+
+</div>
+
+</section>
 <div class="footer">
 © آفاق التعليمية - الأستاذ أحمد عمر
 </div>
@@ -242,6 +337,7 @@ function hideAll(){
 document.getElementById("landingPage").style.display="none";
 document.getElementById("studentLoginPage").style.display="none";
 document.getElementById("teacherLoginPage").style.display="none";
+document.getElementById("studentPage").style.display="none";
 }
 
 function goHome(){
@@ -283,7 +379,7 @@ return;
 }
 localStorage.setItem("studentName",name);
 localStorage.setItem("studentStage",stage);
-alert("مرحباً " + name + " - " + stage);
+showStudentPage(name,stage);
 
 }
 
@@ -307,6 +403,15 @@ const stage = localStorage.getItem("studentStage");
 if(name && stage){
 alert("مرحباً بعودتك " + name);
 }
+}
+function showStudentPage(name,stage){
+
+hideAll();
+
+document.getElementById("studentPage").style.display="block";
+document.getElementById("welcomeStudent").innerText="مرحباً " + name;
+document.getElementById("studentStageText").innerText="المرحلة الدراسية: " + stage;
+
 }
 checkStudent();
 </script>

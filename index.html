@@ -192,7 +192,7 @@ margin-top:10px;
 </div>
 
 <div id="studentLessons"></div>
-
+<div id="studentQuizzes"></div>
 <h3>الدروس والملفات</h3>
 
 <p>سيتم هنا إضافة ملفات PDF والفيديوهات والاختبارات.</p>
@@ -520,9 +520,54 @@ container.innerHTML += `
 if(!found){
 container.innerHTML += "<p>لا توجد دروس لهذه المادة</p>";
 }
+loadQuizzesBySubject(subjectName);
+};
+window.loadQuizzesBySubject = async function(subjectName){
+
+const container = document.getElementById("studentQuizzes");
+if(!container) return;
+
+container.innerHTML = "<h3>اختبارات " + subjectName + "</h3>";
+
+const querySnapshot = await getDocs(collection(db,"quizzes"));
+
+let found = false;
+
+querySnapshot.forEach((doc)=>{
+const data = doc.data();
+
+if(data.subject === subjectName && data.status === "published"){
+found = true;
+
+container.innerHTML += `
+<div class="card">
+<h3>${data.question}</h3>
+
+<button onclick="checkAnswer('${data.choice1}','${data.correctAnswer}')">${data.choice1}</button>
+<button onclick="checkAnswer('${data.choice2}','${data.correctAnswer}')">${data.choice2}</button>
+<button onclick="checkAnswer('${data.choice3}','${data.correctAnswer}')">${data.choice3}</button>
+<button onclick="checkAnswer('${data.choice4}','${data.correctAnswer}')">${data.choice4}</button>
+</div>
+`;
+}
+
+});
+
+if(!found){
+container.innerHTML += "<p>لا توجد اختبارات منشورة لهذه المادة حالياً.</p>";
+}
 
 };
 
+window.checkAnswer = function(answer, correct){
+
+if(answer === correct){
+alert("إجابة صحيحة ✅");
+}else{
+alert("إجابة غير صحيحة ❌");
+}
+
+};
 loadLessons();
 </script>
 </body>

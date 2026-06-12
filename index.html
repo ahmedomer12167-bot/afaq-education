@@ -163,18 +163,137 @@ cursor:pointer;
 .quiz-option:hover{
 background:linear-gradient(135deg,#9b5cff,#ec4899);
 }
+.landing-hero{
+min-height:100vh;
+padding:35px 18px;
+background:radial-gradient(circle at top,#0ea5e9,#0f172a 55%,#020617);
+text-align:center;
+}
 
+.hero-glass{
+max-width:950px;
+margin:auto;
+padding:35px 20px;
+border-radius:35px;
+background:rgba(255,255,255,.12);
+border:1px solid rgba(255,255,255,.25);
+backdrop-filter:blur(18px);
+box-shadow:0 25px 70px rgba(0,0,0,.35);
+}
+
+.hero-logo{
+font-size:55px;
+}
+
+.hero-buttons{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:12px;
+margin:25px 0;
+}
+
+.stat-grid,
+.features-grid,
+.stages-grid{
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:12px;
+margin-top:15px;
+}
+
+.start-card{
+background:rgba(255,255,255,.13);
+border:1px solid rgba(255,255,255,.22);
+border-radius:22px;
+padding:18px;
+font-weight:bold;
+}
+
+.stage-card{
+padding:25px;
+font-size:18px;
+box-shadow:0 15px 35px rgba(0,0,0,.25);
+}
+
+@media(max-width:700px){
+.hero-buttons,
+.stat-grid,
+.features-grid,
+.stages-grid{
+grid-template-columns:1fr;
+}
+}
 </style>  
-</style>
 </head>
 <body>
-  <div class="hero">
-<div class="logo">🎓</div>
+ <section id="landingPage" class="landing-hero">
+
+<div class="hero-glass">
+
+<div class="hero-logo">🎓</div>
+
 <h1>آفاق التعليمية</h1>
-<p>منصة تعليمية حديثة لجميع المواد</p>
-<p>بإشراف الأستاذ أحمد عمر</p>
-<div class="badge">نسخة تجريبية 2026</div>
+
+<p>
+منصة تعليمية متكاملة<br>
+للدروس والاختبارات الإلكترونية
+</p>
+
+<p>إشراف الأستاذ أحمد عمر</p>
+
+<div class="hero-buttons">
+<button onclick="showStudentLogin()">دخول الطالب</button>
+<button onclick="showTeacherLogin()">دخول المدرس</button>
 </div>
+
+<h2>📊 إحصائيات المنصة</h2>
+
+<div class="stat-grid">
+<div class="start-card">
+📚<br>
+عدد الدروس
+<h2 id="statLessons">0</h2>
+</div>
+
+<div class="start-card">
+📝<br>
+عدد الاختبارات
+<h2 id="statQuizzes">0</h2>
+</div>
+
+<div class="start-card">
+👨‍🎓<br>
+عدد الطلاب
+<h2 id="statStudents">0</h2>
+</div>
+</div>
+
+<h2>🌟 مميزات المنصة</h2>
+
+<div class="features-grid">
+<div class="start-card">📚<br>دروس منظمة</div>
+<div class="start-card">📝<br>اختبارات إلكترونية</div>
+<div class="start-card">📊<br>نتائج فورية</div>
+<div class="start-card">📱<br>تعمل على الهاتف</div>
+<div class="start-card">🔒<br>نظام آمن</div>
+<div class="start-card">⚡<br>سرعة عالية</div>
+</div>
+
+<h2>🎯 المراحل الدراسية</h2>
+
+<div class="stages-grid">
+<div class="start-card stage-card">📘 الثالث متوسط</div>
+<div class="start-card stage-card">📗 الرابع العلمي</div>
+<div class="start-card stage-card">📙 الخامس العلمي</div>
+<div class="start-card stage-card">📕 السادس العلمي</div>
+</div>
+
+<h2>🏆 مرحباً بكم في منصة آفاق التعليمية</h2>
+<p>تعلم - اختبر - تفوق</p>
+
+</div>
+
+</section>
 
 <div class="container">
 

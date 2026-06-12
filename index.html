@@ -434,14 +434,47 @@ showStudentLessons();
 
 function showStudentLessons(){
 
-const box = document.getElementById("studentLessons");
+const box =
+document.getElementById("studentLessons");
+
+const lessons = getLessons();
+
+if(lessons.length === 0){
 
 box.innerHTML = `
 <div class="start-card">
 <h3>لا توجد دروس حالياً</h3>
-<p>سيتم عرض الدروس هنا بعد ربطها بلوحة المدرس</p>
+<p>لم يقم الأستاذ بإضافة أي درس بعد</p>
 </div>
 `;
+
+return;
+
+}
+
+box.innerHTML = "";
+
+lessons.forEach((lesson)=>{
+
+box.innerHTML += `
+<div class="start-card">
+
+<h3>${lesson.title}</h3>
+
+<p>
+${lesson.stage}
+-
+${lesson.subject}
+</p>
+
+<a href="${lesson.link}" target="_blank">
+📖 فتح الدرس
+</a>
+
+</div>
+`;
+
+});
 
 }
 

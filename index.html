@@ -271,6 +271,22 @@ grid-template-columns:1fr;
 <input id="teacherCode" type="password" placeholder="كود المدرس">
 
 <button onclick="teacherLogin()">دخول لوحة التحكم</button>
+<h2>📚 الدروس والملفات</h2>
+
+<select id="lessonSubjectFilter">
+<option>الأحياء</option>
+<option>الكيمياء</option>
+<option>الفيزياء</option>
+<option>الرياضيات</option>
+<option>الإنكليزي</option>
+<option>الاجتماعيات</option>
+<option>العربي</option>
+<option>الإسلامية</option>
+</select>
+
+<input id="lessonSearch" placeholder="ابحث عن درس">
+
+<div id="studentLessons"></div>
 <button onclick="addTestPoint()">تجربة إضافة نقطة</button>
 <button onclick="goHome()">رجوع</button>
 
@@ -473,6 +489,18 @@ localStorage.setItem("studentPoints_" + name,points);
 localStorage.setItem("studentTests_" + name,tests);
 
 showStudentPage(name,stage);
+showStudentLessons();
+}
+function showStudentLessons(){
+
+const box = document.getElementById("studentLessons");
+
+box.innerHTML = `
+<div class="start-card">
+<h3>لا توجد دروس حالياً</h3>
+<p>سيتم عرض الدروس هنا بعد ربطها بلوحة المدرس</p>
+</div>
+`;
 
 }
 checkStudent();

@@ -469,7 +469,7 @@ document.getElementById("studentPoints").innerText = points;
 document.getElementById("studentTests").innerText = tests;
 document.getElementById("studentLevel").innerText =
 getStudentLevel(points);
-
+showStudentLessons();
 }
 function addTestPoint(){
 
@@ -489,7 +489,7 @@ localStorage.setItem("studentPoints_" + name,points);
 localStorage.setItem("studentTests_" + name,tests);
 
 showStudentPage(name,stage);
-showStudentLessons();
+
 }
 function showStudentLessons(){
 

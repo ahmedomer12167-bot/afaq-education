@@ -559,13 +559,16 @@ container.innerHTML += "<p>لا توجد دروس لهذه المادة</p>";
 }
 loadQuizzesBySubject(subjectName);
 };
+let quizScore = 0;
+let quizAnswered = 0; 
 window.loadQuizzesBySubject = async function(subjectName){
 
 const container = document.getElementById("studentQuizzes");
 if(!container) return;
 
 container.innerHTML = "<h3>اختبارات " + subjectName + "</h3>";
-
+quizScore = 0;
+quizAnswered = 0;
 const querySnapshot = await getDocs(collection(db,"quizzes"));
 
 let found = false;
@@ -584,6 +587,7 @@ container.innerHTML += `
 <button class="quiz-option" onclick="checkAnswer(this,'${data.choice3}','${data.correctAnswer}')">${data.choice3}</button>
 <button class="quiz-option" onclick="checkAnswer(this,'${data.choice4}','${data.correctAnswer}')">${data.choice4}</button>
 <p class="quiz-result"></p>
+<p class="quiz-score"></p>
 </div>
 `;
 }
@@ -600,19 +604,29 @@ window.checkAnswer = function(btn, answer, correct){
 
 const box = btn.closest(".quiz-box");
 const result = box.querySelector(".quiz-result");
+const scoreText = box.querySelector(".quiz-score");
 
-if(answer === correct){
-
-result.innerHTML = "✅ إجابة صحيحة";
-result.style.color = "#22c55e";
-
-}else{
-
-result.innerHTML = "❌ إجابة خاطئة";
-result.style.color = "#ef4444";
-
+if(box.dataset.answered === "true"){
+return;
 }
 
+box.dataset.answered = "true";
+quizAnswered++;
+
+if(answer === correct){
+quizScore++;
+result.innerHTML = "✅ إجابة صحيحة";
+result.style.color = "#22c55e";
+btn.style.background = "#22c55e";
+}else{
+result.innerHTML = "❌ إجابة خاطئة";
+result.style.color = "#ef4444";
+btn.style.background = "#ef4444";
+}
+
+scoreText.innerHTML = "درجتك الحالية: " + quizScore + " من " + quizAnswered;
+
+}
 };
 loadLessons();
 </script>

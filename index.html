@@ -311,10 +311,43 @@ st.tests++; ok?st.correct++:st.wrong++; st.points+=ok?q.degree:-1; if(st.points<
 set("students",students);currentStudent=st;localStorage.setItem("currentStudent",JSON.stringify(st));
 document.getElementById("res"+i).innerText=ok?"✅ إجابة صحيحة":"❌ إجابة خاطئة";showStudentPage()
 }
-function sendEssay(i){
-let qs=get("quizzes").filter(q=>q.stage===currentStudent.stage&&q.subject===currentSubject&&q.status==="published"), q=qs[i], ans=document.getElementById("essay"+i).value.trim();
-if(!ans)return alert("اكتب الإجابة");
-let e=get("essays");e.push({studentId:currentStudent.id,name:currentStudent.name,question:q.question,answer:ans,grade:"لم تصحح"});set("essays",e);alert("تم إرسال الإجابة")
+function gradeEssay(i){
+
+let essays = get("essays");
+let students = get("students");
+
+let grade = prompt("اكتب درجة الطالب");
+
+if(grade === null){
+return;
+}
+
+grade = Number(grade);
+
+if(isNaN(grade)){
+alert("اكتب رقم صحيح");
+return;
+}
+
+essays[i].grade = grade;
+
+let student = students.find(s => s.id === essays[i].studentId);
+
+if(student){
+
+student.points = Number(student.points || 0) + grade;
+student.tests = Number(student.tests || 0) + 1;
+student.correct = Number(student.correct || 0) + 1;
+
+}
+
+set("essays", essays);
+set("students", students);
+
+alert("تم حفظ درجة الطالب وإضافتها إلى نقاطه");
+
+renderTeacher();
+
 }
 function gradeEssay(i){
 let e=get("essays"), g=prompt("اكتب الدرجة");if(g===null)return;e[i].grade=g;set("essays",e);renderTeacher()

@@ -271,6 +271,7 @@ grid-template-columns:1fr;
 <input id="teacherCode" type="password" placeholder="كود المدرس">
 
 <button onclick="teacherLogin()">دخول لوحة التحكم</button>
+<button onclick="addTestPoint()">تجربة إضافة نقطة</button>
 <button onclick="goHome()">رجوع</button>
 
 <p>الكود التجريبي: 444</p>
@@ -379,7 +380,33 @@ return;
 }
 localStorage.setItem("studentName",name);
 localStorage.setItem("studentStage",stage);
+function getStudentLevel(points){
+
+if(points >= 100){
+return "أسطورة";
+}else if(points >= 51){
+return "خبير";
+}else if(points >= 26){
+return "متفوق";
+}else if(points >= 11){
+return "مجتهد";
+}else{
+return "مبتدئ";
+}
+
+}
+localStorage.setItem("studentName",name);
+localStorage.setItem("studentStage",stage);
+
+if(localStorage.getItem("studentPoints_" + name) === null){
+localStorage.setItem("studentPoints_" + name,0);
+}
+
+if(localStorage.getItem("studentTests_" + name) === null){
+localStorage.setItem("studentTests_" + name,0);
+}
 showStudentPage(name,stage);
+
 
 }
 
@@ -408,9 +435,44 @@ function showStudentPage(name,stage){
 
 hideAll();
 
+const points =
+Number(localStorage.getItem("studentPoints_" + name) || 0);
+
+const tests =
+Number(localStorage.getItem("studentTests_" + name) || 0);
+
 document.getElementById("studentPage").style.display="block";
-document.getElementById("welcomeStudent").innerText="مرحباً " + name;
-document.getElementById("studentStageText").innerText="المرحلة الدراسية: " + stage;
+
+document.getElementById("welcomeStudent").innerText =
+"مرحباً " + name;
+
+document.getElementById("studentStageText").innerText =
+"المرحلة الدراسية: " + stage;
+
+document.getElementById("studentPoints").innerText = points;
+document.getElementById("studentTests").innerText = tests;
+document.getElementById("studentLevel").innerText =
+getStudentLevel(points);
+
+}
+function addTestPoint(){
+
+const name = localStorage.getItem("studentName");
+const stage = localStorage.getItem("studentStage");
+
+let points =
+Number(localStorage.getItem("studentPoints_" + name) || 0);
+
+let tests =
+Number(localStorage.getItem("studentTests_" + name) || 0);
+
+points++;
+tests++;
+
+localStorage.setItem("studentPoints_" + name,points);
+localStorage.setItem("studentTests_" + name,tests);
+
+showStudentPage(name,stage);
 
 }
 checkStudent();

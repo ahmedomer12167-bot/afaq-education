@@ -577,13 +577,12 @@ if(data.subject === subjectName && data.status === "published"){
 found = true;
 
 container.innerHTML += `
-<div class="card">
+<div class="quiz-box">
 <h3>${data.question}</h3>
-
-<button onclick="checkAnswer('${data.choice1}','${data.correctAnswer}')">${data.choice1}</button>
-<button onclick="checkAnswer('${data.choice2}','${data.correctAnswer}')">${data.choice2}</button>
-<button onclick="checkAnswer('${data.choice3}','${data.correctAnswer}')">${data.choice3}</button>
-<button onclick="checkAnswer('${data.choice4}','${data.correctAnswer}')">${data.choice4}</button>
+<button class="quiz-option" onclick="checkAnswer('${data.choice1}','${data.correctAnswer}')">${data.choice1}</button>
+<button class="quiz-option" onclick="checkAnswer('${data.choice2}','${data.correctAnswer}')">${data.choice2}</button>
+<button class="quiz-option" onclick="checkAnswer('${data.choice3}','${data.correctAnswer}')">${data.choice3}</button>
+<button class="quiz-option" onclick="checkAnswer('${data.choice4}','${data.correctAnswer}')">${data.choice4}</button>
 </div>
 `;
 }

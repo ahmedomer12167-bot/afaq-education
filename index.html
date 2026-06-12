@@ -598,10 +598,18 @@ container.innerHTML += "<p>لا توجد اختبارات منشورة لهذه 
 
 window.checkAnswer = function(answer, correct){
 
+const result = document.querySelector(".quiz-result");
+
 if(answer === correct){
-alert("إجابة صحيحة ✅");
+
+result.innerHTML = "✅ إجابة صحيحة";
+result.style.color = "#22c55e";
+
 }else{
-alert("إجابة غير صحيحة ❌");
+
+result.innerHTML = "❌ إجابة خاطئة";
+result.style.color = "#ef4444";
+
 }
 
 };

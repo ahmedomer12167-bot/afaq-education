@@ -264,7 +264,10 @@ margin-top:10px;
 <input id="choice4" placeholder="الاختيار الرابع">
 
 <input id="correctAnswer" placeholder="الإجابة الصحيحة">
-
+<select id="quizStatus">
+<option value="hidden">مخفي عن الطلاب</option>
+<option value="published">منشور للطلاب</option>
+</select>
 <button onclick="saveQuiz()">
 
 حفظ السؤال
@@ -449,7 +452,8 @@ document.getElementById("choice4").value;
 
 const correctAnswer =
 document.getElementById("correctAnswer").value;
-
+const status =
+document.getElementById("quizStatus").value;
 if(
 !question ||
 !choice1 ||
@@ -463,8 +467,7 @@ return;
 }
 
 await addDoc(
-collection(db,"quizzes"),
-{
+collection(db,"quizzes"),{
 subject,
 question,
 choice1,
@@ -472,10 +475,10 @@ choice2,
 choice3,
 choice4,
 correctAnswer,
+status,
 created:new Date()
 }
 );
-
 alert("تم حفظ السؤال بنجاح");
 
 };  

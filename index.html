@@ -249,14 +249,14 @@ h1{font-size:36px}
 <h2>📚 المواد الدراسية</h2>
 
 <div class="subjects-grid">
-<div class="subject-card">🧬<br>الأحياء</div>
-<div class="subject-card">🧪<br>الكيمياء</div>
-<div class="subject-card">⚡<br>الفيزياء</div>
-<div class="subject-card">📐<br>الرياضيات</div>
-<div class="subject-card">💻<br>الإنكليزي</div>
-<div class="subject-card">📚<br>الاجتماعيات</div>
-<div class="subject-card">📖<br>العربي</div>
-<div class="subject-card">🕌<br>الإسلامية</div>
+<div class="subject-card" onclick="filterLessons('الأحياء')">🧬<br>الأحياء</div>
+<div class="subject-card" onclick="filterLessons('الكيمياء')">🧪<br>الكيمياء</div>
+<div class="subject-card" onclick="filterLessons('الفيزياء')">⚡<br>الفيزياء</div>
+<div class="subject-card" onclick="filterLessons('الرياضيات')">📐<br>الرياضيات</div>
+<div class="subject-card" onclick="filterLessons('الإنكليزي')">💻<br>الإنكليزي</div>
+<div class="subject-card" onclick="filterLessons('الاجتماعيات')">📚<br>الاجتماعيات</div>
+<div class="subject-card" onclick="filterLessons('العربي')">📖<br>العربي</div>
+<div class="subject-card" onclick="filterLessons('الإسلامية')">🕌<br>الإسلامية</div>
 </div>
 
 <h2>📚 الدروس والملفات</h2>
@@ -530,7 +530,61 @@ alert("مرحباً بعودتك " + name);
 }
 
 }
+function filterLessons(subject){
 
+document.getElementById("lessonSubjectFilter").value = subject;
+
+function showStudentLessons(){
+
+const box = document.getElementById("studentLessons");
+const lessons = getLessons();
+
+const studentStage = localStorage.getItem("studentStage");
+const selectedSubject = document.getElementById("lessonSubjectFilter").value;
+const search = document.getElementById("lessonSearch").value.trim();
+
+const filteredLessons = lessons.filter(function(lesson){
+
+return lesson.stage === studentStage &&
+lesson.subject === selectedSubject &&
+lesson.title.includes(search);
+
+});
+
+if(filteredLessons.length === 0){
+
+box.innerHTML = `
+<div class="start-card">
+<h3>لا توجد دروس حالياً</h3>
+<p>لا توجد دروس منشورة لهذه المادة حالياً</p>
+</div>
+`;
+
+return;
+
+}
+
+box.innerHTML = "";
+
+filteredLessons.forEach(function(lesson){
+
+box.innerHTML += `
+<div class="start-card">
+
+<h3>${lesson.title}</h3>
+
+<p>${lesson.stage} - ${lesson.subject}</p>
+
+<a href="${lesson.link}" target="_blank">
+📖 فتح الدرس
+</a>
+
+</div>
+`;
+
+});
+
+}
 checkStudent();
 function getLessons(){
 

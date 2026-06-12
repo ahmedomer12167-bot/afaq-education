@@ -216,7 +216,41 @@ document.getElementById("studentPoints").innerText=currentStudent.points;
 document.getElementById("studentLevel").innerText=level(currentStudent.points);
 document.getElementById("studentTests").innerText=currentStudent.tests;
 document.getElementById("studentCorrect").innerText=currentStudent.correct;
-document.getElementById("subjectsBox").innerHTML=subjects.map(s=>`<div class="card" onclick="currentSubject='${s}';showStudentLessons();showStudentQuizzes()">📘<br>${s}</div>`).join("");
+document.getElementById("subjectsBox").innerHTML = `
+
+<div class="subject-card" onclick="openSubject('الأحياء')">
+🧬<br>الأحياء
+</div>
+
+<div class="subject-card" onclick="openSubject('الكيمياء')">
+⚗️<br>الكيمياء
+</div>
+
+<div class="subject-card" onclick="openSubject('الفيزياء')">
+🌌<br>الفيزياء
+</div>
+
+<div class="subject-card" onclick="openSubject('الرياضيات')">
+📐<br>الرياضيات
+</div>
+
+<div class="subject-card" onclick="openSubject('الإنكليزي')">
+🔤<br>الإنكليزي
+</div>
+
+<div class="subject-card" onclick="openSubject('الاجتماعيات')">
+🌍<br>الاجتماعيات
+</div>
+
+<div class="subject-card" onclick="openSubject('العربي')">
+📖<br>العربي
+</div>
+
+<div class="subject-card" onclick="openSubject('الإسلامية')">
+🕌<br>الإسلامية
+</div>
+
+`;
 showStudentLessons();showStudentQuizzes();showResults();showStudentNotices();showReplies()
 }
 
@@ -285,6 +319,19 @@ teacherNotices.innerHTML=get("notices").map(n=>`<div class="card">${n.stage}: ${
 teacherQuestions.innerHTML=get("questions").map((q,i)=>`<div class="card"><h3>${q.name}</h3><p>${q.text}</p><p>الرد: ${q.reply||"لا يوجد"}</p><button onclick="replyQuestion(${i})">رد</button></div>`).join("");
 }
 updateStats();
+function openSubject(subject){
+
+currentSubject = subject;
+
+showStudentLessons();
+
+showStudentQuizzes();
+
+document.getElementById("studentLessons").scrollIntoView({
+behavior:"smooth"
+});
+
+}
 </script>
 </body>
 </html>

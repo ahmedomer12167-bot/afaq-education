@@ -136,8 +136,8 @@ font-size:36px;
 <p>إشراف الأستاذ أحمد عمر</p>
 
 <div class="hero-buttons">
-<button onclick="alert('سيتم ربط دخول الطالب في الخطوة القادمة')">دخول الطالب</button>
-<button onclick="alert('سيتم ربط دخول المدرس في الخطوة القادمة')">دخول المدرس</button>
+<button onclick="showStudentLogin()">دخول الطالب</button>
+<button onclick="showTeacherLogin()">دخول المدرس</button>
 </div>
 
 <h2>📊 إحصائيات المنصة</h2>
@@ -194,10 +194,84 @@ font-size:36px;
 </div>
 
 </section>
+<section id="studentLoginPage" class="landing-hero" style="display:none;">
 
+<div class="hero-glass">
+
+<h1>تسجيل دخول الطالب</h1>
+
+<input id="studentName" placeholder="الاسم الثلاثي">
+
+<select id="studentStage">
+<option>الثالث متوسط</option>
+<option>الرابع العلمي</option>
+<option>الخامس العلمي</option>
+<option>السادس العلمي</option>
+</select>
+
+<input id="studentCode" type="password" placeholder="رمز المرحلة">
+
+<button onclick="studentLogin()">دخول الطالب</button>
+<button onclick="goHome()">رجوع</button>
+
+</div>
+
+</section>
+
+<section id="teacherLoginPage" class="landing-hero" style="display:none;">
+
+<div class="hero-glass">
+
+<h1>دخول المدرس</h1>
+
+<input id="teacherCode" type="password" placeholder="كود المدرس">
+
+<button onclick="teacherLogin()">دخول لوحة التحكم</button>
+<button onclick="goHome()">رجوع</button>
+
+<p>الكود التجريبي: 444</p>
+
+</div>
+
+</section>
 <div class="footer">
 © آفاق التعليمية - الأستاذ أحمد عمر
 </div>
+<script>
+function hideAll(){
+document.getElementById("landingPage").style.display="none";
+document.getElementById("studentLoginPage").style.display="none";
+document.getElementById("teacherLoginPage").style.display="none";
+}
 
+function goHome(){
+hideAll();
+document.getElementById("landingPage").style.display="block";
+}
+
+function showStudentLogin(){
+hideAll();
+document.getElementById("studentLoginPage").style.display="block";
+}
+
+function showTeacherLogin(){
+hideAll();
+document.getElementById("teacherLoginPage").style.display="block";
+}
+
+function studentLogin(){
+alert("سيتم ربط دخول الطالب بالمرحلة والكود في الخطوة القادمة");
+}
+
+function teacherLogin(){
+const code=document.getElementById("teacherCode").value;
+
+if(code==="444"){
+alert("تم دخول المدرس بنجاح");
+}else{
+alert("كود المدرس غير صحيح");
+}
+}
+</script>
 </body>
 </html>

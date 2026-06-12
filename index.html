@@ -16,25 +16,41 @@ color:white;
 min-height:100vh;
 }
 
-button{
+button,input,select{
+width:100%;
 border:0;
 border-radius:18px;
 padding:16px;
+margin:8px 0;
 font-size:18px;
 font-weight:bold;
+}
+
+button{
 color:white;
 background:linear-gradient(135deg,#2563eb,#06b6d4);
 cursor:pointer;
 }
 
-.landing-hero{
+input,select{
+background:rgba(255,255,255,.13);
+color:white;
+border:1px solid rgba(255,255,255,.25);
+}
+
+input::placeholder{color:#ddd}
+option{color:black}
+
+.landing-hero,
+.student-page{
 min-height:100vh;
 padding:35px 18px;
 background:radial-gradient(circle at top,#0ea5e9,#0f172a 55%,#020617);
 text-align:center;
 }
 
-.hero-glass{
+.hero-glass,
+.student-box{
 max-width:950px;
 margin:auto;
 padding:35px 20px;
@@ -45,14 +61,9 @@ backdrop-filter:blur(18px);
 box-shadow:0 25px 70px rgba(0,0,0,.35);
 }
 
-.hero-logo{
-font-size:60px;
-}
+.hero-logo{font-size:60px}
 
-h1{
-font-size:44px;
-margin:15px 0 8px;
-}
+h1{font-size:44px;margin:15px 0 8px}
 
 p{
 font-size:19px;
@@ -60,23 +71,26 @@ line-height:1.8;
 color:#dbeafe;
 }
 
-.hero-buttons{
+.hero-buttons,
+.info-grid{
 display:grid;
-grid-template-columns:1fr 1fr;
+grid-template-columns:repeat(2,1fr);
 gap:12px;
 margin:25px 0;
 }
 
 .stat-grid,
 .features-grid,
-.stages-grid{
+.stages-grid,
+.subjects-grid{
 display:grid;
-grid-template-columns:repeat(3,1fr);
+grid-template-columns:repeat(2,1fr);
 gap:12px;
 margin-top:15px;
 }
 
-.start-card{
+.start-card,
+.subject-card{
 background:rgba(255,255,255,.13);
 border:1px solid rgba(255,255,255,.22);
 border-radius:22px;
@@ -91,12 +105,6 @@ color:#bae6fd;
 font-size:32px;
 }
 
-.stage-card{
-padding:25px;
-font-size:18px;
-box-shadow:0 15px 35px rgba(0,0,0,.25);
-}
-
 .footer{
 text-align:center;
 padding:25px;
@@ -105,60 +113,15 @@ color:#cbd5e1;
 
 @media(max-width:700px){
 .hero-buttons,
+.info-grid,
 .stat-grid,
 .features-grid,
-.stages-grid{
-grid-template-columns:1fr;
-}
-
-h1{
-font-size:36px;
-}
-}
-.student-page{
-min-height:100vh;
-padding:25px 18px;
-background:radial-gradient(circle at top,#0ea5e9,#0f172a 55%,#020617);
-}
-
-.student-box{
-max-width:950px;
-margin:auto;
-padding:25px 18px;
-border-radius:30px;
-background:rgba(255,255,255,.12);
-border:1px solid rgba(255,255,255,.25);
-backdrop-filter:blur(18px);
-}
-
-.info-grid{
-display:grid;
-grid-template-columns:repeat(3,1fr);
-gap:12px;
-margin:20px 0;
-}
-
+.stages-grid,
 .subjects-grid{
-display:grid;
-grid-template-columns:repeat(2,1fr);
-gap:14px;
-}
-
-.subject-card{
-background:rgba(255,255,255,.13);
-border:1px solid rgba(255,255,255,.22);
-border-radius:22px;
-padding:25px;
-text-align:center;
-font-size:20px;
-font-weight:bold;
-}
-
-@media(max-width:700px){
-.info-grid{
 grid-template-columns:1fr;
 }
-}  
+h1{font-size:36px}
+}
 </style>
 </head>
 
@@ -187,59 +150,38 @@ grid-template-columns:1fr;
 <h2>📊 إحصائيات المنصة</h2>
 
 <div class="stat-grid">
-
-<div class="start-card">
-📚<br>
-عدد الدروس
-<h2 id="statLessons">0</h2>
-</div>
-
-<div class="start-card">
-📝<br>
-عدد الاختبارات
-<h2 id="statQuizzes">0</h2>
-</div>
-
-<div class="start-card">
-👨‍🎓<br>
-عدد الطلاب
-<h2 id="statStudents">0</h2>
-</div>
-
+<div class="start-card">📚<br>عدد الدروس<h2>0</h2></div>
+<div class="start-card">📝<br>عدد الاختبارات<h2>0</h2></div>
+<div class="start-card">👨‍🎓<br>عدد الطلاب<h2>0</h2></div>
 </div>
 
 <h2>🌟 مميزات المنصة</h2>
 
 <div class="features-grid">
-
 <div class="start-card">📚<br>دروس منظمة</div>
 <div class="start-card">📝<br>اختبارات إلكترونية</div>
 <div class="start-card">📊<br>نتائج فورية</div>
 <div class="start-card">📱<br>تعمل على الهاتف</div>
 <div class="start-card">🔒<br>نظام آمن</div>
 <div class="start-card">⚡<br>سرعة عالية</div>
-
 </div>
 
 <h2>🎯 المراحل الدراسية</h2>
 
 <div class="stages-grid">
-
-<div class="start-card stage-card">📘 الثالث متوسط</div>
-<div class="start-card stage-card">📗 الرابع العلمي</div>
-<div class="start-card stage-card">📙 الخامس العلمي</div>
-<div class="start-card stage-card">📕 السادس العلمي</div>
-
+<div class="start-card">📘 الثالث متوسط</div>
+<div class="start-card">📗 الرابع العلمي</div>
+<div class="start-card">📙 الخامس العلمي</div>
+<div class="start-card">📕 السادس العلمي</div>
 </div>
 
 <h2>🏆 مرحباً بكم في منصة آفاق التعليمية</h2>
 <p>تعلم - اختبر - تفوق</p>
 
 </div>
-
 </section>
-<section id="studentLoginPage" class="landing-hero" style="display:none;">
 
+<section id="studentLoginPage" class="landing-hero" style="display:none;">
 <div class="hero-glass">
 
 <h1>تسجيل دخول الطالب</h1>
@@ -259,11 +201,9 @@ grid-template-columns:1fr;
 <button onclick="goHome()">رجوع</button>
 
 </div>
-
 </section>
 
 <section id="teacherLoginPage" class="landing-hero" style="display:none;">
-
 <div class="hero-glass">
 
 <h1>دخول المدرس</h1>
@@ -271,32 +211,14 @@ grid-template-columns:1fr;
 <input id="teacherCode" type="password" placeholder="كود المدرس">
 
 <button onclick="teacherLogin()">دخول لوحة التحكم</button>
-<h2>📚 الدروس والملفات</h2>
-
-<select id="lessonSubjectFilter">
-<option>الأحياء</option>
-<option>الكيمياء</option>
-<option>الفيزياء</option>
-<option>الرياضيات</option>
-<option>الإنكليزي</option>
-<option>الاجتماعيات</option>
-<option>العربي</option>
-<option>الإسلامية</option>
-</select>
-
-<input id="lessonSearch" placeholder="ابحث عن درس">
-
-<div id="studentLessons"></div>
-<button onclick="addTestPoint()">تجربة إضافة نقطة</button>
 <button onclick="goHome()">رجوع</button>
 
 <p>الكود التجريبي: 444</p>
 
 </div>
-
 </section>
-<section id="studentPage" class="student-page" style="display:none;">
 
+<section id="studentPage" class="student-page" style="display:none;">
 <div class="student-box">
 
 <h1 id="welcomeStudent">مرحباً</h1>
@@ -324,32 +246,46 @@ grid-template-columns:1fr;
 
 </div>
 
+<h2>📚 المواد الدراسية</h2>
+
 <div class="subjects-grid">
-...
+<div class="subject-card">🧬<br>الأحياء</div>
+<div class="subject-card">🧪<br>الكيمياء</div>
+<div class="subject-card">⚡<br>الفيزياء</div>
+<div class="subject-card">📐<br>الرياضيات</div>
+<div class="subject-card">💻<br>الإنكليزي</div>
+<div class="subject-card">📚<br>الاجتماعيات</div>
+<div class="subject-card">📖<br>العربي</div>
+<div class="subject-card">🕌<br>الإسلامية</div>
 </div>
 
 <h2>📚 الدروس والملفات</h2>
 
 <select id="lessonSubjectFilter">
-...
+<option>الأحياء</option>
+<option>الكيمياء</option>
+<option>الفيزياء</option>
+<option>الرياضيات</option>
+<option>الإنكليزي</option>
+<option>الاجتماعيات</option>
+<option>العربي</option>
+<option>الإسلامية</option>
 </select>
 
 <input id="lessonSearch" placeholder="ابحث عن درس">
 
 <div id="studentLessons"></div>
 
-</div>
-
-<br>
-
+<button onclick="addTestPoint()">تجربة إضافة نقطة</button>
 <button onclick="goHome()">تسجيل الخروج</button>
 
 </div>
-
 </section>
+
 <div class="footer">
 © آفاق التعليمية - الأستاذ أحمد عمر
 </div>
+
 <script>
 function hideAll(){
 document.getElementById("landingPage").style.display="none";
@@ -371,6 +307,22 @@ document.getElementById("studentLoginPage").style.display="block";
 function showTeacherLogin(){
 hideAll();
 document.getElementById("teacherLoginPage").style.display="block";
+}
+
+function getStudentLevel(points){
+
+if(points >= 100){
+return "أسطورة";
+}else if(points >= 51){
+return "خبير";
+}else if(points >= 26){
+return "متفوق";
+}else if(points >= 11){
+return "مجتهد";
+}else{
+return "مبتدئ";
+}
+
 }
 
 function studentLogin(){
@@ -395,23 +347,7 @@ if(code !== stageCodes[stage]){
 alert("رمز المرحلة غير صحيح");
 return;
 }
-localStorage.setItem("studentName",name);
-localStorage.setItem("studentStage",stage);
-function getStudentLevel(points){
 
-if(points >= 100){
-return "أسطورة";
-}else if(points >= 51){
-return "خبير";
-}else if(points >= 26){
-return "متفوق";
-}else if(points >= 11){
-return "مجتهد";
-}else{
-return "مبتدئ";
-}
-
-}
 localStorage.setItem("studentName",name);
 localStorage.setItem("studentStage",stage);
 
@@ -422,32 +358,11 @@ localStorage.setItem("studentPoints_" + name,0);
 if(localStorage.getItem("studentTests_" + name) === null){
 localStorage.setItem("studentTests_" + name,0);
 }
+
 showStudentPage(name,stage);
 
-
 }
 
-function teacherLogin(){
-
-const code=document.getElementById("teacherCode").value;
-
-if(code==="444"){
-alert("تم دخول المدرس بنجاح");
-}else{
-alert("كود المدرس غير صحيح");
-}
-
-}   // ← هذا القوس كان مفقودًا
-
-function checkStudent(){
-
-const name = localStorage.getItem("studentName");
-const stage = localStorage.getItem("studentStage");
-
-if(name && stage){
-alert("مرحباً بعودتك " + name);
-}
-}
 function showStudentPage(name,stage){
 
 hideAll();
@@ -470,8 +385,24 @@ document.getElementById("studentPoints").innerText = points;
 document.getElementById("studentTests").innerText = tests;
 document.getElementById("studentLevel").innerText =
 getStudentLevel(points);
+
 showStudentLessons();
+
 }
+
+function showStudentLessons(){
+
+const box = document.getElementById("studentLessons");
+
+box.innerHTML = `
+<div class="start-card">
+<h3>لا توجد دروس حالياً</h3>
+<p>سيتم عرض الدروس هنا بعد ربطها بلوحة المدرس</p>
+</div>
+`;
+
+}
+
 function addTestPoint(){
 
 const name = localStorage.getItem("studentName");
@@ -492,19 +423,32 @@ localStorage.setItem("studentTests_" + name,tests);
 showStudentPage(name,stage);
 
 }
-function showStudentLessons(){
 
-const box = document.getElementById("studentLessons");
+function teacherLogin(){
 
-box.innerHTML = `
-<div class="start-card">
-<h3>لا توجد دروس حالياً</h3>
-<p>سيتم عرض الدروس هنا بعد ربطها بلوحة المدرس</p>
-</div>
-`;
+const code = document.getElementById("teacherCode").value.trim();
+
+if(code === "444"){
+alert("تم دخول المدرس بنجاح");
+}else{
+alert("كود المدرس غير صحيح");
+}
 
 }
+
+function checkStudent(){
+
+const name = localStorage.getItem("studentName");
+const stage = localStorage.getItem("studentStage");
+
+if(name && stage){
+alert("مرحباً بعودتك " + name);
+}
+
+}
+
 checkStudent();
 </script>
+
 </body>
 </html>

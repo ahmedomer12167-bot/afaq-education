@@ -235,6 +235,43 @@ margin-top:10px;
 إضافة الدرس
 </button>
 <div id="lessons"></div>
+<h3>إضافة سؤال اختيار من متعدد</h3>
+
+<select id="quizSubject">
+
+<option>الأحياء</option>
+
+<option>الكيمياء</option>
+
+<option>الفيزياء</option>
+
+<option>الرياضيات</option>
+
+<option>الإنكليزي</option>
+
+<option>الاجتماعيات</option>
+
+</select>
+
+<input id="quizQuestion" placeholder="نص السؤال">
+
+<input id="choice1" placeholder="الاختيار الأول">
+
+<input id="choice2" placeholder="الاختيار الثاني">
+
+<input id="choice3" placeholder="الاختيار الثالث">
+
+<input id="choice4" placeholder="الاختيار الرابع">
+
+<input id="correctAnswer" placeholder="الإجابة الصحيحة">
+
+<button onclick="saveQuiz()">
+
+حفظ السؤال
+
+</button>
+
+<div id="teacherQuizzes"></div> 
 </section>
 
 </div>
@@ -388,6 +425,58 @@ link: newLink
 alert("تم تعديل الدرس بنجاح");
 
 loadLessons();
+
+};  
+window.saveQuiz = async function(){
+
+const subject =
+document.getElementById("quizSubject").value;
+
+const question =
+document.getElementById("quizQuestion").value;
+
+const choice1 =
+document.getElementById("choice1").value;
+
+const choice2 =
+document.getElementById("choice2").value;
+
+const choice3 =
+document.getElementById("choice3").value;
+
+const choice4 =
+document.getElementById("choice4").value;
+
+const correctAnswer =
+document.getElementById("correctAnswer").value;
+
+if(
+!question ||
+!choice1 ||
+!choice2 ||
+!choice3 ||
+!choice4 ||
+!correctAnswer
+){
+alert("أكمل جميع الحقول");
+return;
+}
+
+await addDoc(
+collection(db,"quizzes"),
+{
+subject,
+question,
+choice1,
+choice2,
+choice3,
+choice4,
+correctAnswer,
+created:new Date()
+}
+);
+
+alert("تم حفظ السؤال بنجاح");
 
 };  
 window.showLessonsBySubject = async function(subjectName){

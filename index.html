@@ -579,10 +579,10 @@ found = true;
 container.innerHTML += `
 <div class="quiz-box">
 <h3>${data.question}</h3>
-<button class="quiz-option" onclick="checkAnswer('${data.choice1}','${data.correctAnswer}')">${data.choice1}</button>
-<button class="quiz-option" onclick="checkAnswer('${data.choice2}','${data.correctAnswer}')">${data.choice2}</button>
-<button class="quiz-option" onclick="checkAnswer('${data.choice3}','${data.correctAnswer}')">${data.choice3}</button>
-<button class="quiz-option" onclick="checkAnswer('${data.choice4}','${data.correctAnswer}')">${data.choice4}</button>
+<button class="quiz-option" onclick="checkAnswer(this,'${data.choice1}','${data.correctAnswer}')">${data.choice1}</button>
+<button class="quiz-option" onclick="checkAnswer(this,'${data.choice2}','${data.correctAnswer}')">${data.choice2}</button>
+<button class="quiz-option" onclick="checkAnswer(this,'${data.choice3}','${data.correctAnswer}')">${data.choice3}</button>
+<button class="quiz-option" onclick="checkAnswer(this,'${data.choice4}','${data.correctAnswer}')">${data.choice4}</button>
 <p class="quiz-result"></p>
 </div>
 `;
@@ -596,9 +596,10 @@ container.innerHTML += "<p>لا توجد اختبارات منشورة لهذه 
 
 };
 
-window.checkAnswer = function(answer, correct){
+window.checkAnswer = function(btn, answer, correct){
 
-const result = document.querySelector(".quiz-result");
+const box = btn.closest(".quiz-box");
+const result = box.querySelector(".quiz-result");
 
 if(answer === correct){
 

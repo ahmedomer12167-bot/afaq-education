@@ -113,7 +113,7 @@ a{color:#bae6fd;font-weight:bold}
 <h2>📊 النتائج</h2>
 <div id="studentResults"></div>
 <h2>🏆 لوحة المتفوقين</h2>
-<div id="studentLeaderboard"></div>
+<div id="leaderboardBox"></div>
 <h2>🔔 الإشعارات</h2>
 <div id="studentNotifications"></div>
 
@@ -304,6 +304,7 @@ document.getElementById("subjectsBox").innerHTML = `
 showStudentLessons();
 showStudentQuizzes();
 showResults();
+showLeaderboard();
 showStudentNotices();
 showReplies();
 }
@@ -817,7 +818,49 @@ teacherQuestions.innerHTML=get("questions").map((q,i)=>
 `<div class="card"><h3>${q.name}</h3><p>${q.text}</p><p>الرد: ${q.reply||"لا يوجد"}</p><button onclick="replyQuestion(${i})">رد</button></div>`
 ).join("");
 }
+function showLeaderboard(){
 
+let box = document.getElementById("leaderboardBox");
+
+if(!box){
+return;
+}
+
+let students = get("students").slice();
+
+students.sort(function(a,b){
+return Number(b.points || 0) - Number(a.points || 0);
+});
+
+if(students.length === 0){
+box.innerHTML = "<div class='card'>لا يوجد طلاب بعد</div>";
+return;
+}
+
+let html = "";
+
+students.forEach(function(s,index){
+
+let medal = "⭐";
+
+if(index === 0) medal = "🥇";
+if(index === 1) medal = "🥈";
+if(index === 2) medal = "🥉";
+
+html += `
+<div class="card">
+<h3>${medal} ${index + 1} - ${s.name}</h3>
+<p>المرحلة: ${s.stage}</p>
+<p>النقاط: ${s.points}</p>
+<p>المستوى: ${level(s.points)}</p>
+</div>
+`;
+
+});
+
+box.innerHTML = html;
+
+}
 function openSubject(subject){
 currentSubject = subject;
 showStudentLessons();

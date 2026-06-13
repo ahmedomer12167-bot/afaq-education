@@ -144,16 +144,16 @@ onchange="showLeaderboard()">
 <button onclick="toggleTeacherLeaderboard()">
 🏆 عرض لوحة المتفوقين
 </button>
-<select id="leaderboardStageTeacher"
-onchange="showLeaderboard()">
 
+<select id="leaderboardStageTeacher" onchange="showLeaderboard()">
 <option value="all">كل المراحل</option>
 <option>الثالث متوسط</option>
 <option>الرابع العلمي</option>
 <option>الخامس العلمي</option>
 <option>السادس العلمي</option>
-
 </select>
+
+<div id="teacherLeaderboardBox" style="display:none"></div>
 <h2>👨‍🎓 الطلاب المسجلون</h2>
 <select id="studentStageFilter" onchange="renderTeacherStudents()">
 <option value="">كل المراحل</option>
@@ -929,11 +929,17 @@ function toggleTeacherLeaderboard(){
 
 let box = document.getElementById("teacherLeaderboardBox");
 
-if(box.style.display === "none"){
-showLeaderboard();
+if(!box) return;
+
+if(box.style.display === "none" || box.style.display === ""){
+
 box.style.display = "block";
+showLeaderboard();
+
 }else{
+
 box.style.display = "none";
+
 }
 
 }

@@ -817,14 +817,82 @@ teacherQuestions.innerHTML=get("questions").map((q,i)=>
 `<div class="card"><h3>${q.name}</h3><p>${q.text}</p><p>الرد: ${q.reply||"لا يوجد"}</p><button onclick="replyQuestion(${i})">رد</button></div>`
 ).join("");
 }
+...
 
-function openSubject(subject){
-currentSubject=subject;
-showStudentLessons();
-showStudentQuizzes();
-document.getElementById("studentLessons").scrollIntoView({behavior:"smooth"});
+updateStats();
+
+function renderLeaderboard(){
+
+let students = get("students").slice();
+
+students.sort(function(a,b){
+return Number(b.points || 0) - Number(a.points || 0);
+});
+
+let html = "";
+
+if(students.length===0){
+
+html = `<div class="card">لا يوجد طلاب بعد</div>`;
+
+}else{
+
+html = `
+<table style="width:100%;border-collapse:collapse;text-align:center">
+<tr>
+<th>الترتيب</th>
+<th>الاسم</th>
+<th>المرحلة</th>
+<th>النقاط</th>
+<th>المستوى</th>
+</tr>
+`;
+
+students.forEach(function(s,index){
+
+let medal="⭐";
+
+if(index===0) medal="🥇";
+if(index===1) medal="🥈";
+if(index===2) medal="🥉";
+
+html += `
+<tr>
+<td>${medal} ${index+1}</td>
+<td>${s.name}</td>
+<td>${s.stage}</td>
+<td>${s.points}</td>
+<td>${level(s.points)}</td>
+</tr>
+`;
+
+});
+
+html += `</table>`;
+
 }
 
+if(document.getElementById("teacherLeaderboard")){
+document.getElementById("teacherLeaderboard").innerHTML = html;
+}
+
+if(document.getElementById("studentLeaderboard")){
+document.getElementById("studentLeaderboard").innerHTML = html;
+
+}
+function openSubject(subject){
+currentSubject = subject;
+
+showStudentLessons();
+showStudentQuizzes();
+
+renderLeaderboard();
+
+document.getElementById("studentLessons").scrollIntoView({
+behavior:"smooth"
+});
+}
+renderLeaderboard();  
 updateStats();
 </script>
 

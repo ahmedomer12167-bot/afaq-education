@@ -3,735 +3,288 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>آفاق التعليمية</title>
+<title>منصة آفاق التعليمية</title>
 <style>
-*{box-sizing:border-box}
-body{margin:0;font-family:Tahoma,Arial,sans-serif;background:#020617;color:white}
-button,input,select,textarea{width:100%;padding:14px;margin:7px 0;border-radius:16px;font-size:16px;border:0}
-button{background:linear-gradient(135deg,#2563eb,#06b6d4);color:white;font-weight:bold;cursor:pointer}
-button:disabled{opacity:.55;cursor:not-allowed}
-input,select,textarea{background:rgba(255,255,255,.13);color:white;border:1px solid rgba(255,255,255,.25)}
-option{color:#111}
-textarea{min-height:90px}
-.page{min-height:100vh;padding:30px 18px;background:radial-gradient(circle at top,#0ea5e9,#0f172a 55%,#020617)}
-.box{max-width:980px;margin:auto;padding:25px;border-radius:32px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);backdrop-filter:blur(15px);box-shadow:0 25px 70px #0008}
-h1{text-align:center;font-size:40px}
-p{color:#dbeafe}
-.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
-.card{background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.22);border-radius:22px;padding:18px;margin:10px 0;text-align:center}
-.hidden{display:none}
-a{color:#bae6fd;font-weight:bold}
-.danger{background:linear-gradient(135deg,#dc2626,#ef4444)}
-.success{background:linear-gradient(135deg,#16a34a,#22c55e)}
-.subject-card{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);border-radius:25px;padding:30px;text-align:center;font-size:24px;font-weight:bold;cursor:pointer;transition:.3s}
-.subject-card:hover{transform:translateY(-6px);background:linear-gradient(135deg,#2563eb,#06b6d4);box-shadow:0 15px 30px rgba(0,0,0,.3)}
-.small{font-size:14px;color:#cbd5e1}
-.table{width:100%;border-collapse:collapse;margin-top:10px;background:rgba(255,255,255,.08);border-radius:16px;overflow:hidden}
-.table th,.table td{padding:10px;border:1px solid rgba(255,255,255,.22);text-align:center}
-@media(max-width:700px){.grid{grid-template-columns:1fr}h1{font-size:32px}.table{font-size:13px}}
+*{box-sizing:border-box}body{margin:0;font-family:Tahoma,Arial,sans-serif;background:#f4f7fb;color:#10213f}button,input,select,textarea{font-family:inherit}button{cursor:pointer;border:0;border-radius:14px;padding:11px 18px;font-weight:bold;background:#0b63ce;color:white;transition:.25s}button:hover{transform:translateY(-2px);box-shadow:0 10px 22px #0002}.gold{background:#d9a520;color:#111}.danger{background:#d33}.gray{background:#5c6878}.header{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:15px 5%;background:rgba(255,255,255,.94);backdrop-filter:blur(10px);box-shadow:0 4px 25px #0001}.logo{font-size:22px;font-weight:900;color:#0b3c88}nav a{margin:0 8px;color:#10213f;text-decoration:none;font-weight:bold}.hero{min-height:86vh;background:linear-gradient(135deg,#071b49,#0b63ce,#67b7ff);display:flex;align-items:center;justify-content:center;text-align:center;position:relative;overflow:hidden;color:white}.hero h1{font-size:58px;margin:0 0 14px}.hero p{font-size:24px}.shape{position:absolute;border:1px solid rgba(255,255,255,.35);border-radius:30px;animation:float 6s ease-in-out infinite}.s1{width:220px;height:220px;right:10%;top:16%;transform:rotate(25deg)}.s2{width:160px;height:160px;left:12%;bottom:15%;transform:rotate(55deg)}@keyframes float{50%{transform:translateY(-20px) rotate(45deg)}}.section,.dashboard{padding:60px 5%}.section h2,.dashboard h2{text-align:center;font-size:34px;color:#092e72}.hidden{display:none!important}.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;margin-top:22px}.card{background:white;border-radius:24px;padding:24px;box-shadow:0 12px 35px #0b3c881c;border:1px solid #e4ecff}.card h3{margin-top:0}.stage-card{text-align:center}.stage-card span{font-size:46px}.meta{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}.meta span{background:#eef5ff;padding:7px 10px;border-radius:12px;font-size:13px}.login-modal{position:fixed;inset:0;background:#0008;z-index:50;display:flex;align-items:center;justify-content:center;padding:20px}.login-box{width:min(460px,100%);background:white;border-radius:28px;padding:28px;box-shadow:0 25px 80px #0005}.login-box h2{text-align:center;color:#0b3c88}.field{margin:12px 0}.field label{display:block;font-weight:bold;margin-bottom:6px}.field input,.field select,.field textarea{width:100%;padding:13px;border:1px solid #cfdaf0;border-radius:14px;background:#f8fbff}.row{display:flex;gap:10px;flex-wrap:wrap}.row>*{flex:1}.quote{text-align:center;color:#0b63ce;font-size:20px}.today-box{background:white;border-radius:24px;padding:20px;text-align:center;box-shadow:0 10px 30px #0001}.today-box span{display:inline-block;background:#eaf2ff;margin:6px;padding:10px 16px;border-radius:14px}.quick-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin:25px 0}.quick-cards button{background:white;color:#0b3c88;box-shadow:0 8px 20px #0001}.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px}.stats div{background:linear-gradient(135deg,#0b3c88,#0b63ce);color:white;padding:22px;border-radius:22px;text-align:center}.stats b{display:block;font-size:30px}.tabs{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:20px 0}.tabs button{background:#d9a520;color:#111}.panel{background:white;border-radius:22px;padding:24px;box-shadow:0 10px 30px #0001;margin-top:18px}.teacher{display:grid;grid-template-columns:260px 1fr;min-height:80vh}.teacher aside{background:#071b49;color:white;padding:24px}.teacher aside button{display:block;width:100%;margin:9px 0;text-align:right;background:#123f83}.teacher main{padding:35px}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;margin-top:15px;background:white;border-radius:14px;overflow:hidden}th,td{padding:12px;border-bottom:1px solid #edf1f7;text-align:right;white-space:nowrap}th{background:#0b3c88;color:white}.exam-area{margin-top:22px}.timer{font-size:30px;color:#d9a520;font-weight:bold}.progress{height:12px;background:#e3ecff;border-radius:30px;overflow:hidden;margin:13px 0}.progress div{height:100%;background:#0b63ce;width:0}.question{padding:16px;border:1px solid #e1e9f8;border-radius:18px;margin:14px 0}.question label{display:block;margin:8px 0}.leaderboard{background:linear-gradient(135deg,#071b49,#123e86);color:white;text-align:center}.leaderboard h2{color:white}.winner{max-width:620px;margin:14px auto;background:white;color:#10213f;padding:17px;border-radius:18px;font-size:21px;font-weight:bold}.badge{display:inline-block;padding:6px 10px;border-radius:12px;background:#eaf2ff;color:#0b3c88}.file-item{display:flex;justify-content:space-between;gap:10px;align-items:center;border:1px solid #e7edf9;border-radius:16px;padding:12px;margin:8px 0}.notice{background:#fff8df;border:1px solid #ffe08a;padding:12px;border-radius:16px}.success{background:#e8fff1;border:1px solid #a9e8be;padding:12px;border-radius:16px}.search{max-width:480px;padding:12px;border:1px solid #cfdaf0;border-radius:14px;width:100%;margin:10px 0}footer{text-align:center;padding:28px;background:#071b49;color:white}@media(max-width:850px){.header{flex-direction:column}.hero h1{font-size:38px}.teacher{grid-template-columns:1fr}.teacher aside{position:static}nav{display:flex;flex-wrap:wrap;justify-content:center}.row{display:block}}
 </style>
 </head>
 <body>
 
-<section id="home" class="page">
-<div class="box">
-<h1>🎓 آفاق التعليمية</h1>
-<p style="text-align:center">منصة تعليمية متكاملة للدروس والاختبارات الإلكترونية</p>
-<p style="text-align:center">إشراف الأستاذ أحمد عمر</p>
-<div class="grid">
-<button onclick="showPage('studentLogin')">دخول الطالب</button>
-<button onclick="showPage('teacherLogin')">دخول المدرس</button>
-</div>
-<h2>📊 إحصائيات المنصة</h2>
-<div class="grid">
-<div class="card">📚 عدد الدروس<h2 id="statLessons">0</h2></div>
-<div class="card">📝 عدد الاختبارات<h2 id="statQuizzes">0</h2></div>
-<div class="card">👨‍🎓 عدد الطلاب<h2 id="statStudents">0</h2></div>
-</div>
-<h2>🌟 مميزات المنصة</h2>
-<div class="grid">
-<div class="card">📚 دروس منظمة</div>
-<div class="card">📝 اختبارات إلكترونية</div>
-<div class="card">📊 نتائج فورية</div>
-<div class="card">📱 تعمل على الهاتف</div>
-<div class="card">🔒 نظام آمن</div>
-<div class="card">⚡ سرعة عالية</div>
-</div>
-</div>
+<header class="header">
+  <div class="logo">📖✦ منصة آفاق التعليمية</div>
+  <nav>
+    <a onclick="showSection('home')">الرئيسية</a>
+    <a onclick="showSection('stages')">المراحل</a>
+    <a onclick="showSection('subjects')">المواد</a>
+    <a onclick="showSection('library')">المكتبة</a>
+    <a onclick="showSection('contact')">تواصل معنا</a>
+  </nav>
+  <div>
+    <button onclick="openLogin()">تسجيل الدخول</button>
+    <button class="gray" onclick="logout()">خروج</button>
+  </div>
+</header>
+
+<section id="home" class="hero page">
+  <div class="shape s1"></div><div class="shape s2"></div>
+  <div>
+    <h1>منصة آفاق التعليمية</h1>
+    <p>نفتح آفاقاً جديدة للتعلم والتفوق</p>
+    <button class="gold" onclick="showSection('stages')">ابدأ التعلم</button>
+    <button onclick="openLogin()">تسجيل الدخول</button>
+  </div>
 </section>
 
-<section id="studentLogin" class="page hidden">
-<div class="box">
-<h1>تسجيل دخول الطالب</h1>
-<input id="studentName" placeholder="الاسم الثلاثي">
-<select id="studentStage">
-<option>الثالث متوسط</option>
-<option>الرابع العلمي</option>
-<option>الخامس العلمي</option>
-<option>السادس العلمي</option>
-</select>
-<input id="studentCode" type="password" placeholder="رمز المرحلة">
-<button onclick="studentLogin()">دخول</button>
-<button onclick="showPage('home')">رجوع</button>
-</div>
+<section id="stages" class="section page hidden">
+  <h2>المراحل الدراسية</h2>
+  <div class="cards">
+    <div class="card stage-card" onclick="filterSubjects('المتوسطة')"><span>🎓</span><h3>المتوسطة</h3><p>مواد المرحلة المتوسطة</p></div>
+    <div class="card stage-card" onclick="filterSubjects('الإعدادية')"><span>🧪</span><h3>الإعدادية</h3><p>مواد المرحلة الإعدادية</p></div>
+  </div>
 </section>
 
-<section id="teacherLogin" class="page hidden">
-<div class="box">
-<h1>دخول المدرس</h1>
-<input id="teacherCode" type="password" placeholder="كود المدرس">
-<button onclick="teacherLogin()">دخول</button>
-<button onclick="showPage('home')">رجوع</button>
-<p>الكود التجريبي: 444</p>
-</div>
+<section id="subjects" class="section page hidden">
+  <h2 id="subjectsTitle">قسم المواد</h2>
+  <input class="search" placeholder="ابحث عن مادة..." oninput="searchSubjects(this.value)">
+  <div class="cards" id="subjectsGrid"></div>
 </section>
 
-<section id="studentPage" class="page hidden">
-<div class="box">
-<h1 id="welcomeStudent">مرحباً</h1>
-<p id="studentStageText"></p>
-<div class="grid">
-<div class="card">⭐ النقاط<h2 id="studentPoints">0</h2></div>
-<div class="card">🎖️ المستوى<h2 id="studentLevel">مبتدئ</h2></div>
-<div class="card">📝 الاختبارات<h2 id="studentTests">0</h2></div>
-<div class="card">✅ الصحيحة<h2 id="studentCorrect">0</h2></div>
-</div>
-<h2>📚 المواد الدراسية</h2>
-<div class="grid" id="subjectsBox"></div>
-<h2>📚 الدروس والملفات</h2>
-<input id="lessonSearch" placeholder="ابحث عن درس" oninput="showStudentLessons()">
-<div id="studentLessons"></div>
-<h2>📝 الاختبارات</h2>
-<div id="studentQuizzes"></div>
-<h2>📊 النتائج</h2>
-<div id="studentResults"></div>
-<button onclick="toggleStudentLeaderboard()">🏆 عرض لوحة المتفوقين</button>
-<select id="leaderboardStageStudent" onchange="showLeaderboard()" style="display:none">
-<option value="all">كل المراحل</option>
-<option>الثالث متوسط</option>
-<option>الرابع العلمي</option>
-<option>الخامس العلمي</option>
-<option>السادس العلمي</option>
-</select>
-<div id="leaderboardBox" style="display:none"></div>
-<h2>🔔 الإشعارات</h2>
-<div id="studentNotifications"></div>
-<h2>📥 اسأل المدرس</h2>
-<textarea id="studentQuestion" placeholder="اكتب سؤالك هنا"></textarea>
-<button onclick="sendQuestion()">إرسال السؤال</button>
-<div id="studentReplies"></div>
-<button onclick="logout()">تسجيل الخروج</button>
-</div>
+<section id="student" class="dashboard page hidden">
+  <h2 id="studentWelcome">مرحباً أحمد 👋</h2>
+  <p class="quote">استمر بالتعلم… فكل درس جديد يفتح لك آفاقاً جديدة.</p>
+  <div class="today-box"><h3>اليوم لديك:</h3><span id="hwCount">2 واجبات</span><span id="examCount">1 اختبار</span><span>3 دروس جديدة</span></div>
+  <div class="quick-cards">
+    <button onclick="showSection('subjects')">📚 موادي</button>
+    <button onclick="showSection('exams')">📝 اختباراتي</button>
+    <button onclick="showMyGrades()">🏅 درجاتي</button>
+    <button onclick="showSection('library')">📁 ملفاتي</button>
+    <button onclick="showNotifications()">🔔 الإشعارات</button>
+  </div>
+  <div class="stats">
+    <div><b id="progressRate">78%</b><span>نسبة الإنجاز</span></div>
+    <div><b>24</b><span>الدروس المكتملة</span></div>
+    <div><b id="avgGrade">0%</b><span>معدل الدرجات</span></div>
+  </div>
+  <div class="panel" id="studentPanel"></div>
 </section>
 
-<section id="teacherPage" class="page hidden">
-<div class="box">
-<h1>لوحة تحكم المدرس</h1>
-<h2>📚 المواد الدراسية</h2>
-
-<div class="grid">
-
-<button onclick="openSubjectPage('الأحياء')">🧬 الأحياء</button>
-
-<button onclick="openSubjectPage('الكيمياء')">⚗️ الكيمياء</button>
-
-<button onclick="openSubjectPage('الفيزياء')">🌌 الفيزياء</button>
-
-<button onclick="openSubjectPage('الرياضيات')">📐 الرياضيات</button>
-
-<button onclick="openSubjectPage('الإنكليزي')">🔤 الإنكليزي</button>
-
-<button onclick="openSubjectPage('العربي')">📖 العربي</button>
-
-<button onclick="openSubjectPage('الإسلامية')">🕌 الإسلامية</button>
-
-<button onclick="openSubjectPage('الاجتماعيات')">🌍 الاجتماعيات</button>
-
-</div> 
-<button onclick="toggleTeacherLeaderboard()">🏆 عرض لوحة المتفوقين</button>
-<select id="leaderboardStageTeacher" onchange="showLeaderboard()" style="display:none">
-<option value="all">كل المراحل</option>
-<option>الثالث متوسط</option>
-<option>الرابع العلمي</option>
-<option>الخامس العلمي</option>
-<option>السادس العلمي</option>
-</select>
-<div id="teacherLeaderboardBox" style="display:none"></div>
-<h2>👨‍🎓 الطلاب المسجلون</h2>
- <input
-id="studentSearch"
-placeholder="🔍 ابحث عن طالب بالاسم"
-onkeyup="searchStudentSafe()"> 
-<select id="studentStageFilter" onchange="renderTeacherStudents()">
-<option value="">كل المراحل</option>
-<option>الثالث متوسط</option>
-<option>الرابع العلمي</option>
-<option>الخامس العلمي</option>
-<option>السادس العلمي</option>
-</select>
-<div id="teacherStudents"></div>
-<div id="teacherStudentDetails"></div>
-<h2>📚 إضافة درس</h2>
-<select id="lessonStage"></select>
-<select id="lessonSubject"></select>
-<input id="lessonTitle" placeholder="عنوان الدرس">
-<input id="lessonLink" placeholder="رابط PDF أو فيديو">
-<button onclick="saveLesson()">حفظ الدرس</button>
-<div id="teacherLessons"></div>
-<h2>📝 إضافة اختبار</h2>
-<select id="quizStage"></select>
-<select id="quizSubject"></select>
-<select id="quizType" onchange="changeQuizType()">
-<option value="mcq">اختيار من متعدد</option>
-<option value="tf">صح أو خطأ</option>
-<option value="blank">املأ الفراغ</option>
-<option value="essay">مقالي</option>
-</select>
-<input id="quizQuestion" placeholder="نص السؤال">
-<div id="choicesBox">
-<input id="choice1" placeholder="اختيار 1">
-<input id="choice2" placeholder="اختيار 2">
-<input id="choice3" placeholder="اختيار 3">
-</div>
-<input id="quizAnswer" placeholder="الإجابة الصحيحة">
-<input id="quizDegree" type="number" value="1" placeholder="درجة السؤال">
-<label>وقت بداية الاختبار</label>
-<input id="quizStart" type="datetime-local">
-<label>وقت نهاية الاختبار</label>
-<input id="quizEnd" type="datetime-local">
-<select id="quizStatus">
-<option value="hidden">مخفي</option>
-<option value="published">منشور</option>
-</select>
-<button onclick="saveQuiz()">حفظ السؤال</button>
-<div id="teacherQuizzes"></div>
-<h2>📊 إجابات المقالية</h2>
-<div id="essayAnswers"></div>
-<h2>📢 الإشعارات</h2>
-<select id="noticeStage"></select>
-<textarea id="noticeText" placeholder="اكتب الإشعار"></textarea>
-<button onclick="saveNotice()">إرسال إشعار</button>
-<div id="teacherNotices"></div>
-<h2>📥 أسئلة الطلاب</h2>
-<div id="teacherQuestions"></div>
-<button onclick="logout()">تسجيل الخروج</button>
-</div>
+<section id="subjectPage" class="section page hidden">
+  <h2 id="subjectPageTitle">🧬 مادة الأحياء</h2>
+  <div class="tabs">
+    <button onclick="openSubjectTab('lessons')">الدروس</button>
+    <button onclick="openSubjectTab('files')">الملفات</button>
+    <button onclick="openSubjectTab('subjectExams')">الاختبارات</button>
+    <button onclick="openSubjectTab('homework')">الواجبات</button>
+    <button onclick="openSubjectTab('studentsList')">الطلاب</button>
+    <button onclick="openSubjectTab('announcements')">الإعلانات</button>
+  </div>
+  <div class="panel" id="tabContent"></div>
 </section>
+
+<section id="teacher" class="teacher page hidden">
+  <aside>
+    <h3>لوحة المدرس</h3>
+    <button onclick="teacherHome()">🏠 الرئيسية</button>
+    <button onclick="teacherSubjects()">📚 المواد</button>
+    <button onclick="teacherStudents()">👨‍🎓 الطلاب</button>
+    <button onclick="teacherExams()">📝 الاختبارات</button>
+    <button onclick="teacherFiles()">📁 الملفات</button>
+    <button onclick="teacherAnnouncements()">📢 الإعلانات</button>
+    <button onclick="teacherStats()">📊 الإحصائيات</button>
+    <button onclick="teacherSettings()">⚙️ الإعدادات</button>
+  </aside>
+  <main id="teacherMain"></main>
+</section>
+
+<section id="exams" class="section page hidden">
+  <h2>📝 قسم الاختبارات - منصة آفاق</h2>
+  <div id="examList" class="cards"></div>
+  <div id="examArea" class="panel exam-area"></div>
+</section>
+
+<section id="leaderboard" class="section page hidden leaderboard">
+  <h2>🏆 لوحة المتفوقين</h2>
+  <div id="leaderboardList"></div>
+</section>
+
+<section id="library" class="section page hidden">
+  <h2>📚 المكتبة التعليمية</h2>
+  <div class="cards">
+    <div class="card" onclick="libraryCategory('كتب')">📕 كتب</div>
+    <div class="card" onclick="libraryCategory('ملخصات')">📗 ملخصات</div>
+    <div class="card" onclick="libraryCategory('أسئلة وزارية')">📘 أسئلة وزارية</div>
+    <div class="card" onclick="libraryCategory('عروض تقديمية')">📙 عروض تقديمية</div>
+    <div class="card" onclick="libraryCategory('بحوث')">📒 بحوث</div>
+  </div>
+  <div class="panel" id="libraryPanel"></div>
+</section>
+
+<section id="contact" class="section page hidden">
+  <h2>تواصل معنا</h2>
+  <div class="panel">
+    <p>مرحباً بك في منصة آفاق التعليمية.</p>
+    <p>يمكنك تعديل معلومات التواصل داخل الكود لاحقاً.</p>
+  </div>
+</section>
+
+<footer>
+  <p>© منصة آفاق التعليمية - جميع الحقوق محفوظة</p>
+  <button class="gold" onclick="showSection('leaderboard');renderLeaderboard()">لوحة المتفوقين</button>
+</footer>
+
+<div id="loginModal" class="login-modal hidden">
+  <div class="login-box">
+    <h2>تسجيل الدخول</h2>
+    <div class="field"><label>نوع الحساب</label><select id="role"><option value="student">طالب</option><option value="teacher">مدرس</option><option value="admin">مدير</option></select></div>
+    <div class="field"><label>الاسم الثلاثي</label><input id="loginName" placeholder="مثال: أحمد عمر الراوي"></div>
+    <div class="field"><label>الرمز السري</label><input id="loginCode" placeholder="رمز الدخول"></div>
+    <p class="notice">رمز الطالب: 1234 | رمز المدرس: 2026 | رمز المدير: admin</p>
+    <button onclick="login()">دخول</button>
+    <button class="gray" onclick="closeLogin()">إلغاء</button>
+  </div>
+</div>
 
 <script>
-const stages=["الثالث متوسط","الرابع العلمي","الخامس العلمي","السادس العلمي"];
-const subjects=["الأحياء","الكيمياء","الفيزياء","الرياضيات","الإنكليزي","الاجتماعيات","العربي","الإسلامية"];
-const stageCodes={"الثالث متوسط":"333","الرابع العلمي":"444","الخامس العلمي":"555","السادس العلمي":"666"};
-let currentStudent=null;
-let currentSubject="الأحياء";
+const STORE="AFAQ_PLATFORM_V2";
+let state = JSON.parse(localStorage.getItem(STORE) || "null");
+let currentUser = JSON.parse(localStorage.getItem("AFAQ_CURRENT_USER") || "null");
+let currentSubject = null;
+let timerInterval = null;
 
-function get(k){return JSON.parse(localStorage.getItem(k)||"[]")}
-function set(k,v){localStorage.setItem(k,JSON.stringify(v))}
-
-function showPage(id){
-["home","studentLogin","teacherLogin","studentPage","teacherPage","subjectPage"].forEach(function(x){
-document.getElementById(x).classList.add("hidden");
-});
-document.getElementById(id).classList.remove("hidden");
+if(!state){
+  state = {
+    settings:{studentCode:"1234",teacherCode:"2026",adminCode:"admin"},
+    subjects:[
+      {icon:"🧬", name:"الأحياء", stage:"الإعدادية", students:120, lessons:34, exams:2},
+      {icon:"⚗️", name:"الكيمياء", stage:"الإعدادية", students:95, lessons:28, exams:1},
+      {icon:"📐", name:"الرياضيات", stage:"المتوسطة", students:140, lessons:42, exams:1},
+      {icon:"🌍", name:"الجغرافية", stage:"المتوسطة", students:80, lessons:22, exams:0},
+      {icon:"📖", name:"اللغة العربية", stage:"المتوسطة", students:160, lessons:38, exams:1},
+      {icon:"🇬🇧", name:"اللغة الإنجليزية", stage:"الإعدادية", students:110, lessons:30, exams:1}
+    ],
+    students:[
+      {name:"أحمد علي محمد",stage:"الإعدادية",subject:"الأحياء",lastLogin:"اليوم 09:00",status:"نشط"},
+      {name:"سارة حسن كريم",stage:"الإعدادية",subject:"الأحياء",lastLogin:"اليوم 10:20",status:"نشط"},
+      {name:"محمد قاسم علي",stage:"المتوسطة",subject:"الرياضيات",lastLogin:"أمس 08:30",status:"نشط"},
+      {name:"زهراء خالد عمر",stage:"الإعدادية",subject:"الكيمياء",lastLogin:"اليوم 11:10",status:"نشط"}
+    ],
+    files:[
+      {title:"ملزمة الأحياء الفصل الأول",subject:"الأحياء",category:"ملخصات",type:"PDF"},
+      {title:"أسئلة وزارية أحياء",subject:"الأحياء",category:"أسئلة وزارية",type:"PDF"},
+      {title:"عرض كيمياء الروابط",subject:"الكيمياء",category:"عروض تقديمية",type:"PPT"}
+    ],
+    announcements:[
+      {title:"اختبار أحياء جديد",body:"يوجد اختبار للفصل الأول متاح اليوم.",subject:"الأحياء",date:new Date().toLocaleDateString("ar-IQ")}
+    ],
+    homework:[
+      {title:"واجب الرسم الخلوي",subject:"الأحياء",stage:"الإعدادية",date:"هذا الأسبوع"}
+    ],
+    exams:[
+      {
+        id:"bio1",title:"اختبار الفصل الأول - الأحياء",subject:"الأحياء",stage:"الإعدادية",minutes:30,pass:50,available:"اليوم",grade:100,
+        questions:[
+          {type:"truefalse",q:"الخلايا هي الوحدة الأساسية في جسم الكائن الحي.",answer:"صح",points:25},
+          {type:"mcq",q:"أي العضيات مسؤولة عن إنتاج الطاقة؟",options:["النواة","الرايبوسومات","المايتوكوندريا"],answer:"المايتوكوندريا",points:25},
+          {type:"fill",q:"تحتوي الخلية النباتية على _______.",answer:"جدار",points:25},
+          {type:"essay",q:"اشرح عملية البناء الضوئي بإيجاز.",answer:"",points:25}
+        ]
+      }
+    ],
+    results:[]
+  };
+  save();
 }
 
-function fill(id,arr){
-document.getElementById(id).innerHTML=arr.map(function(x){return `<option>${x}</option>`}).join("");
+function save(){localStorage.setItem(STORE, JSON.stringify(state));}
+function showSection(id){document.querySelectorAll(".page").forEach(p=>p.classList.add("hidden"));document.getElementById(id).classList.remove("hidden");scrollTo({top:0,behavior:"smooth"});}
+function openLogin(){document.getElementById("loginModal").classList.remove("hidden")}
+function closeLogin(){document.getElementById("loginModal").classList.add("hidden")}
+function login(){
+  const role=document.getElementById("role").value;
+  const name=document.getElementById("loginName").value.trim() || "أحمد";
+  const code=document.getElementById("loginCode").value.trim();
+  const ok = (role==="student"&&code===state.settings.studentCode)||(role==="teacher"&&code===state.settings.teacherCode)||(role==="admin"&&code===state.settings.adminCode);
+  if(!ok){alert("الرمز غير صحيح");return;}
+  currentUser={role,name}; localStorage.setItem("AFAQ_CURRENT_USER",JSON.stringify(currentUser)); closeLogin();
+  if(role==="student"){
+    state.students.push({name,stage:"الإعدادية",subject:"الأحياء",lastLogin:new Date().toLocaleString("ar-IQ"),status:"مسجل الدخول"}); save();
+    document.getElementById("studentWelcome").textContent="مرحباً "+name.split(" ")[0]+" 👋"; updateStudentStats(); showSection("student");
+  } else {showSection("teacher"); teacherHome();}
 }
-["lessonStage","quizStage","noticeStage"].forEach(function(id){fill(id,stages)});
-["lessonSubject","quizSubject"].forEach(function(id){fill(id,subjects)});
+function logout(){currentUser=null;localStorage.removeItem("AFAQ_CURRENT_USER");showSection("home");alert("تم تسجيل الخروج");}
 
-function level(p){
-p=Number(p||0);
-if(p>=100)return"أسطورة";
-if(p>=50)return"خبير";
-if(p>=30)return"متفوق";
-if(p>=15)return"مجتهد";
-return"مبتدئ";
+function renderSubjects(list=state.subjects){
+  const grid=document.getElementById("subjectsGrid"); grid.innerHTML="";
+  list.forEach(s=>grid.innerHTML+=`<div class="card" onclick="openSubject('${s.name}')"><h3>${s.icon} ${s.name}</h3><p>${s.stage}</p><div class="meta"><span>👨‍🎓 ${s.students} طالب</span><span>📚 ${s.lessons} درس</span><span>📝 ${s.exams} اختبار</span></div></div>`);
 }
-
-function studentKey(n,s){return s+"_"+n.replaceAll(" ","_")}
-
-function updateStats(){
-document.getElementById("statLessons").innerText=get("lessons").length;
-document.getElementById("statQuizzes").innerText=get("quizzes").length;
-document.getElementById("statStudents").innerText=get("students").length;
+function searchSubjects(q){renderSubjects(state.subjects.filter(s=>s.name.includes(q)||s.stage.includes(q)))}
+function filterSubjects(stage){document.getElementById("subjectsTitle").textContent="مواد المرحلة "+stage;renderSubjects(state.subjects.filter(s=>s.stage===stage));showSection("subjects")}
+function openSubject(name){currentSubject=state.subjects.find(s=>s.name===name);document.getElementById("subjectPageTitle").textContent=currentSubject.icon+" مادة "+currentSubject.name;showSection("subjectPage");openSubjectTab("lessons")}
+function openSubjectTab(tab){
+  const c=document.getElementById("tabContent"), sub=currentSubject?.name||"الأحياء";
+  if(tab==="lessons") c.innerHTML=`<h3>الدروس</h3><p>دروس ${sub} مرتبة حسب الفصول.</p><ul><li>الفصل الأول</li><li>الفصل الثاني</li><li>الفصل الثالث</li></ul>`;
+  if(tab==="files") c.innerHTML=`<h3>الملفات</h3>${renderFiles(sub)}`;
+  if(tab==="subjectExams") c.innerHTML=`<h3>الاختبارات</h3>${state.exams.filter(e=>e.subject===sub).map(e=>`<div class='file-item'><b>${e.title}</b><button onclick="showSection('exams')">فتح</button></div>`).join("")||"لا توجد اختبارات"}`;
+  if(tab==="homework") c.innerHTML=`<h3>الواجبات</h3>${state.homework.filter(h=>h.subject===sub).map(h=>`<div class='file-item'><b>${h.title}</b><span>${h.date}</span></div>`).join("")||"لا توجد واجبات"}`;
+  if(tab==="studentsList") c.innerHTML=`<h3>الطلاب المسجلون في ${sub}</h3><input class='search' placeholder='ابحث عن طالب' oninput='renderMiniStudents(this.value)'><ul id='miniStudents'></ul>`, renderMiniStudents("");
+  if(tab==="announcements") c.innerHTML=`<h3>الإعلانات</h3>${state.announcements.filter(a=>a.subject===sub).map(a=>`<div class='notice'><b>${a.title}</b><p>${a.body}</p><small>${a.date}</small></div>`).join("")||"لا توجد إعلانات"}`;
 }
+function renderFiles(subject){return state.files.filter(f=>f.subject===subject).map(f=>`<div class="file-item"><b>${f.title}</b><span class="badge">${f.type}</span></div>`).join("")||"لا توجد ملفات";}
+function renderMiniStudents(q){const ul=document.getElementById("miniStudents"); if(!ul)return; ul.innerHTML=state.students.filter(s=>(!currentSubject||s.subject===currentSubject.name)&&s.name.includes(q)).map(s=>`<li>${s.name} - ${s.status}</li>`).join("")}
 
-function refreshCurrentStudent(){
-let students=get("students");
-let saved=JSON.parse(localStorage.getItem("currentStudent")||"null");
-if(saved){
-let fresh=students.find(function(s){return s.id===saved.id});
-if(fresh){
-currentStudent=fresh;
-localStorage.setItem("currentStudent",JSON.stringify(fresh));
+function renderExams(){
+  const list=document.getElementById("examList"); list.innerHTML="";
+  state.exams.forEach(e=>list.innerHTML+=`<div class="card"><h3>📝 ${e.title}</h3><p>المادة: ${e.subject}</p><p>⏱️ ${e.minutes} دقيقة</p><p>📋 ${e.questions.length} سؤال</p><p>🎯 درجة النجاح: ${e.pass}%</p><p>📅 ${e.available}</p><button onclick="openExamIntro('${e.id}')">بدء الاختبار</button></div>`);
 }
+function openExamIntro(id){
+  showSection("exams"); const e=state.exams.find(x=>x.id===id);
+  document.getElementById("examArea").innerHTML=`<h3>قبل بدء الاختبار</h3><p><b>اسم الطالب:</b> ${currentUser?.name||"طالب تجريبي"}</p><p><b>اسم المادة:</b> ${e.subject}</p><p><b>عدد الأسئلة:</b> ${e.questions.length}</p><p><b>الوقت:</b> ${e.minutes} دقيقة</p><p><b>الدرجة:</b> ${e.grade}</p><p class="notice">تعليمات: لا تغادر الصفحة أثناء الاختبار. يتم حفظ إجاباتك تلقائياً.</p><button onclick="startExam('${id}')">✅ بدء الاختبار</button>`;
 }
+function startExam(id){
+  const e=state.exams.find(x=>x.id===id); let seconds=e.minutes*60;
+  const qs=[...e.questions].sort(()=>Math.random()-.5);
+  document.getElementById("examArea").innerHTML=`<div class="timer" id="timer"></div><div class="progress"><div id="progressBar"></div></div><form id="examForm">${qs.map((q,i)=>renderQuestion(q,i)).join("")}<button type="button" onclick="submitExam('${id}')">إرسال الاختبار</button></form>`;
+  clearInterval(timerInterval);
+  timerInterval=setInterval(()=>{seconds--;document.getElementById("timer").textContent=`${String(Math.floor(seconds/60)).padStart(2,"0")}:${String(seconds%60).padStart(2,"0")}`;document.getElementById("progressBar").style.width=`${100-(seconds/(e.minutes*60))*100}%`;localStorage.setItem("AFAQ_AUTOSAVE",JSON.stringify(Object.fromEntries(new FormData(document.getElementById("examForm")))));if(seconds<=0){clearInterval(timerInterval);submitExam(id)}},1000);
 }
-
-function studentLogin(){
-let name=document.getElementById("studentName").value.trim();
-let stage=document.getElementById("studentStage").value;
-let code=document.getElementById("studentCode").value.trim();
-if(!name)return alert("اكتب الاسم");
-if(code!==stageCodes[stage])return alert("رمز المرحلة غير صحيح");
-let students=get("students");
-let id=studentKey(name,stage);
-let st=students.find(function(x){return x.id===id});
-if(!st){
-st={id,name,stage,points:0,tests:0,correct:0,wrong:0};
-students.push(st);
-set("students",students);
+function renderQuestion(q,i){
+  if(q.type==="truefalse")return `<div class="question"><h3>✔ صح وخطأ</h3><p>${q.q}</p><label><input type="radio" name="q${i}" value="صح"> صح</label><label><input type="radio" name="q${i}" value="خطأ"> خطأ</label><input type="hidden" name="a${i}" value="${q.answer}"><input type="hidden" name="p${i}" value="${q.points}"></div>`;
+  if(q.type==="mcq"){let opts=[...q.options].sort(()=>Math.random()-.5);return `<div class="question"><h3>🌀 اختيار من متعدد</h3><p>${q.q}</p>${opts.map(o=>`<label><input type="radio" name="q${i}" value="${o}"> ${o}</label>`).join("")}<input type="hidden" name="a${i}" value="${q.answer}"><input type="hidden" name="p${i}" value="${q.points}"></div>`}
+  if(q.type==="fill")return `<div class="question"><h3>✏️ أكمل الفراغ</h3><p>${q.q}</p><input name="q${i}" placeholder="اكتب الإجابة"><input type="hidden" name="a${i}" value="${q.answer}"><input type="hidden" name="p${i}" value="${q.points}"></div>`;
+  return `<div class="question"><h3>📝 سؤال مقالي</h3><p>${q.q}</p><textarea name="q${i}" rows="5" style="width:100%;border-radius:12px;padding:12px"></textarea><input type="hidden" name="a${i}" value=""><input type="hidden" name="p${i}" value="${q.points}"></div>`;
 }
-currentStudent=st;
-localStorage.setItem("currentStudent",JSON.stringify(st));
-showStudentPage();
-updateStats();
+window.addEventListener("blur",()=>{if(document.getElementById("examForm")){let n=+localStorage.getItem("AFAQ_CHEAT_WARNINGS")||0;localStorage.setItem("AFAQ_CHEAT_WARNINGS",n+1);}});
+function submitExam(id){
+  clearInterval(timerInterval); const e=state.exams.find(x=>x.id===id), form=document.getElementById("examForm"), data=new FormData(form); let score=0, correct=0;
+  e.questions.forEach((_,i)=>{const ans=data.get("a"+i)||"", val=(data.get("q"+i)||"").trim(), pts=+data.get("p"+i)||0; if(!ans){if(val.length>20){score+=pts;correct++}} else if(val.includes(ans)||ans.includes(val)){score+=pts;correct++}});
+  const percent=Math.round(score/e.grade*100), result={student:currentUser?.name||"طالب تجريبي",exam:e.title,subject:e.subject,score,percent,date:new Date().toLocaleString("ar-IQ")}; state.results.push(result); save(); updateStudentStats();
+  document.getElementById("examArea").innerHTML=`<h2>🏆 النتيجة النهائية</h2><h1>${score} / ${e.grade}</h1><h3>${percent>=e.pass?"✅ ناجح":"❌ راسب"}</h3><p>عدد الأسئلة الصحيحة: ${correct}</p><p>عدد الأسئلة الخاطئة: ${e.questions.length-correct}</p><p>النسبة: ${percent}%</p><p>الترتيب: الخامس من أصل 120 طالباً</p>`;
 }
+function updateStudentStats(){const mine=state.results.filter(r=>r.student===currentUser?.name);const avg=mine.length?Math.round(mine.reduce((a,b)=>a+b.percent,0)/mine.length):0;document.getElementById("avgGrade").textContent=avg+"%";}
+function showMyGrades(){const mine=state.results.filter(r=>r.student===currentUser?.name);document.getElementById("studentPanel").innerHTML=`<h3>درجاتي</h3>${mine.map(r=>`<div class='file-item'><b>${r.exam}</b><span>${r.percent}%</span></div>`).join("")||"لا توجد درجات بعد"}`;}
+function showNotifications(){document.getElementById("studentPanel").innerHTML=`<h3>الإشعارات</h3>${state.announcements.map(a=>`<div class='notice'><b>${a.title}</b><p>${a.body}</p></div>`).join("")}`;}
 
-function showStudentPage(){
-refreshCurrentStudent();
-if(!currentStudent){showPage("studentLogin");return;}
-showPage("studentPage");
-document.getElementById("welcomeStudent").innerText="مرحباً "+currentStudent.name;
-document.getElementById("studentStageText").innerText="المرحلة: "+currentStudent.stage;
-document.getElementById("studentPoints").innerText=currentStudent.points;
-document.getElementById("studentLevel").innerText=level(currentStudent.points);
-document.getElementById("studentTests").innerText=currentStudent.tests;
-document.getElementById("studentCorrect").innerText=currentStudent.correct;
-document.getElementById("subjectsBox").innerHTML=`
-<div class="subject-card" onclick="openSubject('الأحياء')">🧬<br>الأحياء</div>
-<div class="subject-card" onclick="openSubject('الكيمياء')">⚗️<br>الكيمياء</div>
-<div class="subject-card" onclick="openSubject('الفيزياء')">🌌<br>الفيزياء</div>
-<div class="subject-card" onclick="openSubject('الرياضيات')">📐<br>الرياضيات</div>
-<div class="subject-card" onclick="openSubject('الإنكليزي')">🔤<br>الإنكليزي</div>
-<div class="subject-card" onclick="openSubject('الاجتماعيات')">🌍<br>الاجتماعيات</div>
-<div class="subject-card" onclick="openSubject('العربي')">📖<br>العربي</div>
-<div class="subject-card" onclick="openSubject('الإسلامية')">🕌<br>الإسلامية</div>`;
-showStudentLessons();
-showStudentQuizzes();
-showResults();
-showStudentNotices();
-showReplies();
-}
+function teacherHome(){document.getElementById("teacherMain").innerHTML=`<h2>الصفحة الرئيسية</h2><div class="stats"><div><b>${state.students.length}</b><span>عدد الطلاب</span></div><div><b>${state.subjects.length}</b><span>عدد المواد</span></div><div><b>${state.files.length}</b><span>عدد الملفات</span></div><div><b>${state.exams.length}</b><span>عدد الاختبارات</span></div></div><div class="panel"><h3>مرحباً بك في لوحة المدرس</h3><p>من هنا يمكنك إدارة المواد والطلاب والاختبارات والملفات والإعلانات.</p></div>`}
+function teacherSubjects(){document.getElementById("teacherMain").innerHTML=`<h2>إدارة المواد</h2><div class="panel row"><input id="newSubName" placeholder="اسم المادة"><select id="newSubStage"><option>المتوسطة</option><option>الإعدادية</option></select><input id="newSubIcon" placeholder="رمز مثل 🧬"><button onclick="addSubject()">إضافة مادة</button></div><div class="cards">${state.subjects.map((s,i)=>`<div class="card"><h3>${s.icon} ${s.name}</h3><p>${s.stage}</p><button class="danger" onclick="deleteSubject(${i})">حذف</button></div>`).join("")}</div>`}
+function addSubject(){state.subjects.push({name:newSubName.value,stage:newSubStage.value,icon:newSubIcon.value||"📚",students:0,lessons:0,exams:0});save();renderSubjects();teacherSubjects()}
+function deleteSubject(i){state.subjects.splice(i,1);save();renderSubjects();teacherSubjects()}
+function teacherStudents(){document.getElementById("teacherMain").innerHTML=`<h2>سجل الطلاب</h2><div class="panel row"><select id="filterStage" onchange="renderStudentTable()"><option value="">كل المراحل</option><option>المتوسطة</option><option>الإعدادية</option></select><select id="filterSubject" onchange="renderStudentTable()"><option value="">كل المواد</option>${state.subjects.map(s=>`<option>${s.name}</option>`).join("")}</select><input id="studentSearch" placeholder="بحث" oninput="renderStudentTable()"></div><div class="panel table-wrap"><table><thead><tr><th>الطالب</th><th>المرحلة</th><th>المادة</th><th>آخر دخول</th><th>الحالة</th></tr></thead><tbody id="studentTable"></tbody></table></div>`;renderStudentTable()}
+function renderStudentTable(){const st=filterStage.value, su=filterSubject.value, q=studentSearch.value||"";studentTable.innerHTML=state.students.filter(s=>(!st||s.stage===st)&&(!su||s.subject===su)&&s.name.includes(q)).map(s=>`<tr><td>${s.name}</td><td>${s.stage}</td><td>${s.subject}</td><td>${s.lastLogin}</td><td>${s.status}</td></tr>`).join("")}
+function teacherExams(){document.getElementById("teacherMain").innerHTML=`<h2>إنشاء اختبار</h2><div class="panel"><div class="row"><input id="examTitle" placeholder="اسم الاختبار"><select id="examSubject">${state.subjects.map(s=>`<option>${s.name}</option>`).join("")}</select><select id="examStage"><option>المتوسطة</option><option>الإعدادية</option></select></div><div class="row"><input id="examMinutes" type="number" placeholder="المدة بالدقائق"><input id="examGrade" type="number" placeholder="الدرجة"><input id="examPass" type="number" placeholder="درجة النجاح %"></div><textarea id="examQuestions" rows="8" placeholder="اكتب الأسئلة كل سؤال بسطر بهذا الشكل:&#10;اختيار|السؤال|خيار1,خيار2,خيار3|الإجابة|25&#10;صحخطأ|السؤال|صح|25&#10;فراغ|السؤال|الإجابة|25&#10;مقالي|السؤال|25"></textarea><button onclick="addExam()">إضافة الاختبار</button></div><div class="panel"><h3>الاختبارات الحالية</h3>${state.exams.map(e=>`<div class='file-item'><b>${e.title}</b><span>${e.subject}</span></div>`).join("")}</div>`}
+function addExam(){const lines=examQuestions.value.split("\n").filter(Boolean);const questions=lines.map(line=>{const p=line.split("|");if(p[0]==="اختيار")return{type:"mcq",q:p[1],options:p[2].split(","),answer:p[3],points:+p[4]};if(p[0]==="صحخطأ")return{type:"truefalse",q:p[1],answer:p[2],points:+p[3]};if(p[0]==="فراغ")return{type:"fill",q:p[1],answer:p[2],points:+p[3]};return{type:"essay",q:p[1],answer:"",points:+p[2]};});state.exams.push({id:"ex"+Date.now(),title:examTitle.value,subject:examSubject.value,stage:examStage.value,minutes:+examMinutes.value||20,pass:+examPass.value||50,available:"متاح",grade:+examGrade.value||100,questions});save();renderExams();teacherExams()}
+function teacherFiles(){document.getElementById("teacherMain").innerHTML=`<h2>إدارة الملفات</h2><div class="panel row"><input id="fileTitle" placeholder="عنوان الملف"><select id="fileSubject">${state.subjects.map(s=>`<option>${s.name}</option>`).join("")}</select><select id="fileCategory"><option>كتب</option><option>ملخصات</option><option>أسئلة وزارية</option><option>عروض تقديمية</option><option>بحوث</option></select><select id="fileType"><option>PDF</option><option>Word</option><option>PowerPoint</option></select><button onclick="addFile()">إضافة ملف</button></div><div class="panel">${state.files.map(f=>`<div class='file-item'><b>${f.title}</b><span>${f.subject} - ${f.category}</span></div>`).join("")}</div>`}
+function addFile(){state.files.push({title:fileTitle.value,subject:fileSubject.value,category:fileCategory.value,type:fileType.value});save();teacherFiles()}
+function teacherAnnouncements(){document.getElementById("teacherMain").innerHTML=`<h2>الإعلانات</h2><div class="panel"><input id="annTitle" placeholder="عنوان الإعلان"><textarea id="annBody" placeholder="نص الإعلان"></textarea><select id="annSubject">${state.subjects.map(s=>`<option>${s.name}</option>`).join("")}</select><button onclick="addAnnouncement()">نشر إعلان</button></div><div class="panel">${state.announcements.map(a=>`<div class='notice'><b>${a.title}</b><p>${a.body}</p><small>${a.subject}</small></div>`).join("")}</div>`}
+function addAnnouncement(){state.announcements.push({title:annTitle.value,body:annBody.value,subject:annSubject.value,date:new Date().toLocaleDateString("ar-IQ")});save();teacherAnnouncements()}
+function teacherStats(){document.getElementById("teacherMain").innerHTML=`<h2>الإحصائيات</h2><div class="stats"><div><b>${state.results.length}</b><span>اختبارات منجزة</span></div><div><b>${Math.round((state.results.reduce((a,b)=>a+b.percent,0)/(state.results.length||1)))||0}%</b><span>متوسط الدرجات</span></div><div><b>${state.files.length}</b><span>ملفات</span></div><div><b>${state.announcements.length}</b><span>إعلانات</span></div></div><div class='panel table-wrap'><table><thead><tr><th>الطالب</th><th>الاختبار</th><th>الدرجة</th><th>التاريخ</th></tr></thead><tbody>${state.results.map(r=>`<tr><td>${r.student}</td><td>${r.exam}</td><td>${r.percent}%</td><td>${r.date}</td></tr>`).join("")}</tbody></table></div>`}
+function teacherSettings(){document.getElementById("teacherMain").innerHTML=`<h2>الإعدادات</h2><div class="panel"><div class='field'><label>رمز الطالب</label><input id='studentCode' value='${state.settings.studentCode}'></div><div class='field'><label>رمز المدرس</label><input id='teacherCode' value='${state.settings.teacherCode}'></div><button onclick='saveSettings()'>حفظ الرموز</button><button class='danger' onclick='resetPlatform()'>إعادة ضبط المنصة</button></div>`}
+function saveSettings(){state.settings.studentCode=studentCode.value;state.settings.teacherCode=teacherCode.value;save();alert("تم الحفظ")}
+function resetPlatform(){if(confirm("سيتم حذف كل البيانات التجريبية")){localStorage.removeItem(STORE);location.reload()}}
 
-function teacherLogin(){
-if(document.getElementById("teacherCode").value==="444"){
-showPage("teacherPage");
-renderTeacher();
-}else{alert("الكود خطأ")}
-}
+function libraryCategory(cat){document.getElementById("libraryPanel").innerHTML=`<h3>${cat}</h3>${state.files.filter(f=>f.category===cat).map(f=>`<div class='file-item'><b>${f.title}</b><span>${f.type}</span></div>`).join("")||"لا توجد ملفات في هذا القسم"}`}
+function renderLeaderboard(){let sorted=[...state.results].sort((a,b)=>b.percent-a.percent); if(!sorted.length) sorted=[{student:"علي محمد",percent:98},{student:"سارة أحمد",percent:95},{student:"عمر خالد",percent:92}];leaderboardList.innerHTML=sorted.map((r,i)=>`<div class='winner'>${i==0?"🥇":i==1?"🥈":i==2?"🥉":i+1+"-"} ${r.student} - ${r.percent}%</div>`).join("")}
 
-function logout(){
-currentStudent=null;
-localStorage.removeItem("currentStudent");
-showPage("home");
-updateStats();
-}
-
-function saveLesson(){
-let lessons=get("lessons");
-let l={stage:lessonStage.value,subject:lessonSubject.value,title:lessonTitle.value.trim(),link:lessonLink.value.trim()};
-if(!l.title||!l.link)return alert("أكمل البيانات");
-lessons.push(l);
-set("lessons",lessons);
-lessonTitle.value="";
-lessonLink.value="";
-renderTeacher();
-updateStats();
-alert("تم حفظ الدرس");
-}
-
-function showStudentLessons(){
-let q=lessonSearch.value.trim();
-let lessons=get("lessons").filter(function(l){
-return l.stage===currentStudent.stage && l.subject===currentSubject && l.title.includes(q);
-});
-studentLessons.innerHTML=lessons.length
-? lessons.map(function(l){return `<div class="card"><h3>${l.title}</h3><a href="${l.link}" target="_blank">فتح الدرس</a></div>`}).join("")
-:`<div class="card">لا توجد دروس لهذه المادة</div>`;
-}
-
-function deleteLesson(i){
-let a=get("lessons");
-a.splice(i,1);
-set("lessons",a);
-renderTeacher();
-updateStats();
-}
-
-function changeQuizType(){
-choicesBox.style.display=quizType.value==="mcq"?"block":"none";
-quizAnswer.style.display=quizType.value==="essay"?"none":"block";
-}
-
-function saveQuiz(){
-let qs=get("quizzes");
-let q={id:Date.now()+"_"+Math.floor(Math.random()*99999),stage:quizStage.value,subject:quizSubject.value,type:quizType.value,question:quizQuestion.value.trim(),c1:choice1.value.trim(),c2:choice2.value.trim(),c3:choice3.value.trim(),answer:quizAnswer.value.trim(),degree:Number(quizDegree.value||1),start:quizStart.value,end:quizEnd.value,status:quizStatus.value};
-if(!q.question)return alert("اكتب السؤال");
-if(q.type==="mcq" && (!q.c1||!q.c2||!q.c3))return alert("أكمل الاختيارات الثلاثة");
-if(q.type!=="essay" && !q.answer)return alert("اكتب الإجابة الصحيحة");
-qs.push(q);
-set("quizzes",qs);
-quizQuestion.value="";
-choice1.value="";
-choice2.value="";
-choice3.value="";
-quizAnswer.value="";
-quizStart.value="";
-quizEnd.value="";
-renderTeacher();
-updateStats();
-alert("تم حفظ السؤال");
-}
-
-function isQuizAvailable(q){
-let now=new Date();
-if(q.start && now < new Date(q.start)) return false;
-if(q.end && now > new Date(q.end)) return false;
-return true;
-}
-
-function showStudentQuizzes(){
-let qs=get("quizzes").filter(function(q){
-return q.stage===currentStudent.stage && q.subject===currentSubject && q.status==="published" && isQuizAvailable(q);
-});
-studentQuizzes.innerHTML=qs.length
-? qs.map(function(q){return quizHTML(q)}).join("")
-:`<div class="card">لا توجد اختبارات متاحة الآن</div>`;
-}
-
-function alreadyAnswered(quizId){
-return get("answers").some(function(a){return a.studentId===currentStudent.id && a.quizId===quizId});
-}
-
-function getStudentAnswer(quizId){
-return get("answers").find(function(a){return a.studentId===currentStudent.id && a.quizId===quizId});
-}
-
-function safeText(text){return String(text||"").replaceAll("'","&#39;").replaceAll('"',"&quot;")}
-
-function quizHTML(q){
-let disabled=alreadyAnswered(q.id);
-let oldAnswer=getStudentAnswer(q.id);
-let doneText="";
-if(oldAnswer){
-if(oldAnswer.correct==="essay"){
-let essay=get("essays").find(function(e){return e.studentId===currentStudent.id && e.quizId===q.id});
-doneText=`<p style="color:#facc15">تم إرسال إجابتك المقالية</p><p>درجتك: ${essay ? essay.grade : "لم تصحح"}</p>`;
-}else{
-doneText=`<p style="color:#facc15">تمت الإجابة على هذا السؤال مسبقاً</p><p>إجابتك: ${oldAnswer.answer}</p><p>الإجابة الصحيحة: ${oldAnswer.correctAnswer}</p><p>${oldAnswer.correct ? "✅ كانت إجابتك صحيحة" : "❌ كانت إجابتك خاطئة"}</p>`;
-}
-}
-let h=`<div class="card"><h3>${q.question}</h3>${doneText}`;
-if(q.type==="mcq"){
-["c1","c2","c3"].forEach(function(c){h+=`<button ${disabled?"disabled":""} onclick="answerQuiz('${q.id}','${safeText(q[c])}')">${q[c]}</button>`});
-}
-if(q.type==="tf"){
-h+=`<button ${disabled?"disabled":""} onclick="answerQuiz('${q.id}','صح')">صح</button>`;
-h+=`<button ${disabled?"disabled":""} onclick="answerQuiz('${q.id}','خطأ')">خطأ</button>`;
-}
-if(q.type==="blank"){
-h+=`<input id="blank_${q.id}" placeholder="اكتب الإجابة" ${disabled?"disabled":""}>`;
-h+=`<button ${disabled?"disabled":""} onclick="answerQuiz('${q.id}',document.getElementById('blank_${q.id}').value)">إرسال</button>`;
-}
-if(q.type==="essay"){
-h+=`<textarea id="essay_${q.id}" placeholder="اكتب إجابتك" ${disabled?"disabled":""}></textarea>`;
-h+=`<button ${disabled?"disabled":""} onclick="sendEssay('${q.id}')">إرسال للمدرس</button>`;
-}
-h+=`<p id="res_${q.id}"></p></div>`;
-return h;
-}
-
-function answerQuiz(quizId,ans){
-if(alreadyAnswered(quizId)){alert("لقد أجبت على هذا السؤال مسبقاً ولا يمكنك الإجابة مرة ثانية");return;}
-let q=get("quizzes").find(function(x){return x.id===quizId});
-if(!q)return;
-ans=String(ans||"").trim();
-if(!ans){alert("اكتب الإجابة");return;}
-let ok=ans===String(q.answer).trim();
-let students=get("students");
-let st=students.find(function(s){return s.id===currentStudent.id});
-st.tests++;
-if(ok){st.correct++;st.points+=q.degree}else{st.wrong++;st.points-=1;if(st.points<0)st.points=0}
-set("students",students);
-let answers=get("answers");
-answers.push({studentId:currentStudent.id,studentName:currentStudent.name,quizId:q.id,subject:q.subject,question:q.question,answer:ans,correct:ok,correctAnswer:q.answer});
-set("answers",answers);
-currentStudent=st;
-localStorage.setItem("currentStudent",JSON.stringify(st));
-if(ok){
-alert("Correct");
-}else{
-alert("Wrong");
-}
-showStudentPage();
-}
-
-function sendEssay(quizId){
-if(alreadyAnswered(quizId)){alert("لقد أرسلت إجابتك مسبقاً ولا يمكنك التعديل");return;}
-let q=get("quizzes").find(function(x){return x.id===quizId});
-if(!q)return;
-let ans=document.getElementById("essay_"+quizId).value.trim();
-if(!ans){alert("اكتب الإجابة أولاً");return;}
-let essays=get("essays");
-essays.push({id:Date.now()+"_"+Math.floor(Math.random()*99999),studentId:currentStudent.id,name:currentStudent.name,stage:currentStudent.stage,subject:currentSubject,quizId:q.id,question:q.question,answer:ans,grade:"لم تصحح"});
-set("essays",essays);
-let answers=get("answers");
-answers.push({studentId:currentStudent.id,studentName:currentStudent.name,quizId:q.id,subject:q.subject,question:q.question,answer:ans,correct:"essay",correctAnswer:"تصحيح يدوي"});
-set("answers",answers);
-alert("تم إرسال الإجابة للمدرس");
-showStudentPage();
-}
-
-function gradeEssay(i){
-let essays=get("essays");
-let students=get("students");
-let grade=prompt("اكتب درجة الطالب");
-if(grade===null)return;
-grade=Number(grade);
-if(isNaN(grade)){alert("اكتب رقم صحيح");return;}
-let essay=essays[i];
-let student=students.find(function(s){return s.id===essay.studentId});
-if(!student){alert("لم يتم العثور على الطالب");return;}
-let oldGrade=Number(essay.grade);
-if(!isNaN(oldGrade)){student.points-=oldGrade}else{student.tests++;student.correct++}
-essay.grade=grade;
-student.points+=grade;
-if(student.points<0)student.points=0;
-set("essays",essays);
-set("students",students);
-alert("تم حفظ الدرجة وإضافتها للطالب");
-renderTeacher();
-}
-
-function showResults(){
-studentResults.innerHTML=`<div class="card">النقاط: ${currentStudent.points}<br>الصحيحة: ${currentStudent.correct}<br>الخاطئة: ${currentStudent.wrong}<br>المستوى: ${level(currentStudent.points)}</div>`;
-}
-
-function showLeaderboard(){
-let box=document.getElementById("leaderboardBox");
-let teacherBox=document.getElementById("teacherLeaderboardBox");
-let stageFilter="all";
-let teacherFilter=document.getElementById("leaderboardStageTeacher");
-let studentFilter=document.getElementById("leaderboardStageStudent");
-if(teacherBox && teacherBox.style.display==="block" && teacherFilter){stageFilter=teacherFilter.value}
-else if(box && box.style.display==="block" && studentFilter){stageFilter=studentFilter.value}
-let students=get("students").slice();
-if(stageFilter!=="all"){students=students.filter(function(s){return s.stage===stageFilter})}
-students.sort(function(a,b){return Number(b.points||0)-Number(a.points||0)});
-let html="";
-if(students.length===0){
-html="<div class='card'>لا يوجد طلاب في هذه المرحلة</div>";
-}else{
-html=`<table class="table"><tr><th>الترتيب</th><th>الطالب</th><th>المرحلة</th><th>النقاط</th><th>المستوى</th></tr>`;
-students.forEach(function(s,index){
-let medal="⭐";
-if(index===0)medal="🥇";
-if(index===1)medal="🥈";
-if(index===2)medal="🥉";
-html+=`<tr><td>${medal} ${index+1}</td><td>${s.name}</td><td>${s.stage}</td><td>${s.points}</td><td>${level(s.points)}</td></tr>`;
-});
-html+="</table>";
-}
-if(box){box.innerHTML=html}
-if(teacherBox){teacherBox.innerHTML=html}
-}
-
-function toggleStudentLeaderboard(){
-let box=document.getElementById("leaderboardBox");
-let filter=document.getElementById("leaderboardStageStudent");
-if(!box)return;
-if(box.style.display==="none" || box.style.display===""){
-box.style.display="block";
-if(filter)filter.style.display="block";
-showLeaderboard();
-}else{
-box.style.display="none";
-if(filter)filter.style.display="none";
-}
-}
-
-function toggleTeacherLeaderboard(){
-let box=document.getElementById("teacherLeaderboardBox");
-let filter=document.getElementById("leaderboardStageTeacher");
-if(!box)return;
-if(box.style.display==="none" || box.style.display===""){
-box.style.display="block";
-if(filter)filter.style.display="block";
-showLeaderboard();
-}else{
-box.style.display="none";
-if(filter)filter.style.display="none";
-}
-}
-
-function saveNotice(){
-let n=get("notices");
-n.push({stage:noticeStage.value,text:noticeText.value});
-set("notices",n);
-noticeText.value="";
-renderTeacher();
-}
-
-function showStudentNotices(){
-let n=get("notices").filter(function(x){return x.stage===currentStudent.stage});
-studentNotifications.innerHTML=n.length?n.map(function(x){return `<div class="card">${x.text}</div>`}).join(""):"<div class='card'>لا توجد إشعارات</div>";
-}
-
-function sendQuestion(){
-let text=studentQuestion.value.trim();
-if(!text)return alert("اكتب السؤال");
-let q=get("questions");
-q.push({studentId:currentStudent.id,name:currentStudent.name,stage:currentStudent.stage,text:text,reply:""});
-set("questions",q);
-studentQuestion.value="";
-alert("تم الإرسال");
-showReplies();
-}
-
-function replyQuestion(i){
-let q=get("questions");
-q[i].reply=prompt("اكتب الرد",q[i].reply)||q[i].reply;
-set("questions",q);
-renderTeacher();
-}
-
-function showReplies(){
-let q=get("questions").filter(function(x){return x.studentId===currentStudent.id});
-studentReplies.innerHTML=q.map(function(x){return `<div class="card"><b>سؤالك:</b> ${x.text}<br><b>الرد:</b> ${x.reply||"لم يتم الرد"}</div>`}).join("");
-}
-
-function deleteQuiz(i){
-let quizzes=get("quizzes");
-if(!confirm("هل تريد حذف هذا الاختبار؟"))return;
-quizzes.splice(i,1);
-set("quizzes",quizzes);
-renderTeacher();
-updateStats();
-alert("تم حذف الاختبار");
-}
-
-function deleteStudent(id){
-if(!confirm("هل تريد حذف هذا الطالب وكل بياناته؟"))return;
-set("students",get("students").filter(function(s){return s.id!==id}));
-set("answers",get("answers").filter(function(a){return a.studentId!==id}));
-set("essays",get("essays").filter(function(e){return e.studentId!==id}));
-set("questions",get("questions").filter(function(q){return q.studentId!==id}));
-renderTeacher();
-updateStats();
-alert("تم حذف الطالب");
-}
-
-function renderTeacherStudents(){
-let selectedStage=document.getElementById("studentStageFilter").value;
-let students=get("students");
-if(selectedStage){students=students.filter(function(s){return s.stage===selectedStage})}
-teacherStudents.innerHTML=students.length?students.map(function(s){
-return `<div class="card"><h3>${s.name}</h3><p>المرحلة: ${s.stage}</p><p>النقاط: ${s.points}</p><p>الاختبارات: ${s.tests}</p><p>الصحيحة: ${s.correct}</p><p>الخاطئة: ${s.wrong}</p><p>المستوى: ${level(s.points)}</p><button onclick="showStudentDetails('${s.id}')">عرض التفاصيل</button><button class="danger" onclick="deleteStudent('${s.id}')">حذف الطالب</button></div>`;
-}).join(""):"<div class='card'>لا يوجد طلاب</div>";
-searchStudentSafe();
-}
-
-function searchStudentSafe(){
-let search=document.getElementById("studentSearch");
-if(!search)return;
-let value=search.value.toLowerCase();
-let cards=document.querySelectorAll("#teacherStudents .card");
-cards.forEach(function(card){
-let text=card.innerText.toLowerCase();
-card.style.display=text.includes(value)?"block":"none";
-});
-}
-
-function showStudentDetails(id){
-let student=get("students").find(function(s){return s.id===id});
-let answers=get("answers").filter(function(a){return a.studentId===id});
-let essays=get("essays").filter(function(e){return e.studentId===id});
-if(!student)return;
-let html=`<div class="card"><h2>تفاصيل الطالب: ${student.name}</h2><h3>إجابات الاختبارات</h3>`;
-if(answers.length){
-answers.forEach(function(a){
-html+=`<div class="card"><p><b>المادة:</b> ${a.subject}</p><p><b>السؤال:</b> ${a.question}</p><p><b>إجابة الطالب:</b> ${a.answer}</p><p><b>الإجابة الصحيحة:</b> ${a.correctAnswer}</p><p><b>الحالة:</b> ${a.correct==="essay" ? "مقالي" : (a.correct ? "صحيح" : "خطأ")}</p></div>`;
-});
-}else{html+=`<p>لا توجد إجابات.</p>`}
-html+=`<h3>الإجابات المقالية</h3>`;
-if(essays.length){
-essays.forEach(function(e){html+=`<div class="card"><p><b>السؤال:</b> ${e.question}</p><p><b>الإجابة:</b> ${e.answer}</p><p><b>الدرجة:</b> ${e.grade}</p></div>`});
-}else{html+=`<p>لا توجد مقالات.</p>`}
-html+=`</div>`;
-teacherStudentDetails.innerHTML=html;
-}
-
-function renderTeacher(){
-renderTeacherStudents();
-teacherLessons.innerHTML=get("lessons").map(function(l,i){
-return `<div class="card"><h3>${l.title}</h3><p>${l.stage} - ${l.subject}</p><a href="${l.link}" target="_blank">فتح</a><button class="danger" onclick="deleteLesson(${i})">حذف</button></div>`;
-}).join("");
-teacherQuizzes.innerHTML=get("quizzes").map(function(q,i){
-return `<div class="card"><h3>${q.question}</h3><p>${q.stage} - ${q.subject} - ${q.type} - ${q.status}</p><p>البداية: ${q.start || "غير محدد"}</p><p>النهاية: ${q.end || "غير محدد"}</p><button class="danger" onclick="deleteQuiz(${i})">🗑 حذف الاختبار</button></div>`;
-}).join("");
-essayAnswers.innerHTML=get("essays").map(function(e,i){
-return `<div class="card"><h3>${e.name}</h3><p>${e.stage} - ${e.subject}</p><p>${e.question}</p><p>${e.answer}</p><p>الدرجة: ${e.grade}</p><button onclick="gradeEssay(${i})">تصحيح</button></div>`;
-}).join("");
-teacherNotices.innerHTML=get("notices").map(function(n){return `<div class="card">${n.stage}: ${n.text}</div>`}).join("");
-teacherQuestions.innerHTML=get("questions").map(function(q,i){return `<div class="card"><h3>${q.name}</h3><p>${q.text}</p><p>الرد: ${q.reply||"لا يوجد"}</p><button onclick="replyQuestion(${i})">رد</button></div>`}).join("");
-}
-function searchStudentSafe(){
-
-let search = document.getElementById("studentSearch");
-
-if(!search) return;
-
-let value = search.value.toLowerCase();
-
-let cards = document.querySelectorAll("#teacherStudents .card");
-
-cards.forEach(function(card){
-
-let text = card.innerText.toLowerCase();
-
-if(text.includes(value)){
-card.style.display = "block";
-}else{
-card.style.display = "none";
-}
-
-});
-
-}
-function openSubjectPage(subject){
-
-document.getElementById("subjectTitle").innerText =
-"📚 قسم " + subject;
-
-showPage("subjectPage");
-
-} 
-function openSubject(subject){
-currentSubject=subject;
-showStudentLessons();
-showStudentQuizzes();
-document.getElementById("studentLessons").scrollIntoView({behavior:"smooth"});
-}
-
-updateStats();
-<section id="subjectPage" class="page hidden">
-
-<div class="box">
-
-<h1 id="subjectTitle">المادة</h1>
-
-<p>صفحة خاصة بالمادة</p>
-
-<button onclick="showPage('teacherPage')">
-⬅ الرجوع إلى لوحة المدرس
-</button>
-
-</div>
-
-</section> 
+renderSubjects();renderExams();if(currentUser){document.getElementById("studentWelcome").textContent="مرحباً "+currentUser.name.split(" ")[0]+" 👋";updateStudentStats();}
 </script>
 </body>
 </html>

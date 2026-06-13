@@ -230,30 +230,10 @@ function get(k){return JSON.parse(localStorage.getItem(k)||"[]")}
 function set(k,v){localStorage.setItem(k,JSON.stringify(v))}
 
 function showPage(id){
-
-[
-"home",
-"studentLogin",
-"teacherLogin",
-"studentPage",
-"teacherPage",
-"studentsPage"
-].forEach(function(x){
-
-let page = document.getElementById(x);
-
-if(page){
-page.classList.add("hidden");
-}
-
+["home","studentLogin","teacherLogin","studentPage","teacherPage"].forEach(x=>{
+document.getElementById(x).classList.add("hidden");
 });
-
-let activePage = document.getElementById(id);
-
-if(activePage){
-activePage.classList.remove("hidden");
-}
-
+document.getElementById(id).classList.remove("hidden");
 }
 
 function fill(id,arr){

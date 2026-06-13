@@ -925,15 +925,23 @@ teacherBox.innerHTML = html;
 }
 
 }
+
 function toggleStudentLeaderboard(){
 
 let box = document.getElementById("leaderboardBox");
 
-if(box.style.display === "none"){
+if(!box) return;
+
+if(box.style.display === "none" || box.style.display === ""){
+
 showLeaderboard();
+
 box.style.display = "block";
+
 }else{
+
 box.style.display = "none";
+
 }
 
 }
@@ -941,24 +949,6 @@ box.style.display = "none";
 function toggleTeacherLeaderboard(){
 
 let box = document.getElementById("teacherLeaderboardBox");
-
-if(!box) return;
-
-if(box.style.display === "none" || box.style.display === ""){
-
-box.style.display = "block";
-showLeaderboard();
-
-}else{
-
-box.style.display = "none";
-
-}
-
-}
-function toggleStudentLeaderboard(){
-
-let box = document.getElementById("leaderboardBox");
 
 if(!box) return;
 

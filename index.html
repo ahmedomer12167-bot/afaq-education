@@ -948,69 +948,6 @@ card.style.display = "none";
 });
 
 } 
-function showLeaderboard(){
-
-let box = document.getElementById("leaderboardBox");
-let teacherBox = document.getElementById("teacherLeaderboardBox");
-
-let students = get("students").slice();
-
-let stageFilter = "all";
-
-let teacherFilter = document.getElementById("leaderboardStageTeacher");
-let studentFilter = document.getElementById("leaderboardStageStudent");
-
-if(teacherFilter && teacherBox && teacherBox.style.display === "block"){
-stageFilter = teacherFilter.value;
-}else if(studentFilter && box && box.style.display === "block"){
-stageFilter = studentFilter.value;
-}
-
-if(stageFilter !== "all"){
-students = students.filter(function(s){
-return s.stage === stageFilter;
-});
-}
-
-students.sort(function(a,b){
-return Number(b.points  0) - Number(a.points  0);
-});
-
-let html = "";
-
-if(students.length === 0){
-html = "<div class='card'>لا يوجد طلاب في هذه المرحلة</div>";
-}else{
-
-students.forEach(function(s,index){
-
-let medal = "⭐";
-if(index === 0) medal = "🥇";
-if(index === 1) medal = "🥈";
-if(index === 2) medal = "🥉";
-
-html += `
-<div class="card">
-<h3>${medal} ${index + 1} - ${s.name}</h3>
-<p>المرحلة: ${s.stage}</p>
-<p>النقاط: ${s.points}</p>
-<p>المستوى: ${level(s.points)}</p>
-</div>
-`;
-
-});
-
-}
-
-if(box){
-box.innerHTML = html;
-}
-
-if(teacherBox){
-teacherBox.innerHTML = html;
-}
-
-} 
 function openSubject(subject){
 currentSubject = subject;
 showStudentLessons();

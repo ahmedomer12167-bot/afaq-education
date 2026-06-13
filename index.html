@@ -137,6 +137,10 @@ a{color:#bae6fd;font-weight:bold}
 </select>
 <div id="teacherLeaderboardBox" style="display:none"></div>
 <h2>👨‍🎓 الطلاب المسجلون</h2>
+ <input
+id="studentSearch"
+placeholder="🔍 ابحث عن طالب بالاسم"
+onkeyup="searchStudentSafe()"> 
 <input id="studentSearch" placeholder="🔍 ابحث عن طالب بالاسم" onkeyup="searchStudentSafe()">
 <select id="studentStageFilter" onchange="renderTeacherStudents()">
 <option value="">كل المراحل</option>
@@ -654,7 +658,29 @@ return `<div class="card"><h3>${e.name}</h3><p>${e.stage} - ${e.subject}</p><p>$
 teacherNotices.innerHTML=get("notices").map(function(n){return `<div class="card">${n.stage}: ${n.text}</div>`}).join("");
 teacherQuestions.innerHTML=get("questions").map(function(q,i){return `<div class="card"><h3>${q.name}</h3><p>${q.text}</p><p>الرد: ${q.reply||"لا يوجد"}</p><button onclick="replyQuestion(${i})">رد</button></div>`}).join("");
 }
+function searchStudentSafe(){
 
+let search = document.getElementById("studentSearch");
+
+if(!search) return;
+
+let value = search.value.toLowerCase();
+
+let cards = document.querySelectorAll("#teacherStudents .card");
+
+cards.forEach(function(card){
+
+let text = card.innerText.toLowerCase();
+
+if(text.includes(value)){
+card.style.display = "block";
+}else{
+card.style.display = "none";
+}
+
+});
+
+}
 function openSubject(subject){
 currentSubject=subject;
 showStudentLessons();

@@ -112,8 +112,12 @@ a{color:#bae6fd;font-weight:bold}
 
 <h2>📊 النتائج</h2>
 <div id="studentResults"></div>
-<h2>🏆 لوحة المتفوقين</h2>
-<div id="leaderboardBox"></div>
+<button onclick="toggleStudentLeaderboard()">
+🏆 عرض لوحة المتفوقين
+</button>
+<div id="leaderboardBox"
+style="display:none"></div>
+<div id="leaderboardBox" style="display:none;margin-top:15px;"></div>
 <h2>🔔 الإشعارات</h2>
 <div id="studentNotifications"></div>
 
@@ -129,8 +133,11 @@ a{color:#bae6fd;font-weight:bold}
 <section id="teacherPage" class="page hidden">
 <div class="box">
 <h1>لوحة تحكم المدرس</h1>
-<h2>🏆 لوحة المتفوقين</h2>
-<div id="teacherLeaderboard"></div>
+<button onclick="toggleTeacherLeaderboard()">
+🏆 عرض لوحة المتفوقين
+</button>
+<div id="teacherLeaderboardBox"
+style="display:none"></div>
 <h2>👨‍🎓 الطلاب المسجلون</h2>
 <select id="studentStageFilter" onchange="renderTeacherStudents()">
 <option value="">كل المراحل</option>
@@ -821,8 +828,9 @@ teacherQuestions.innerHTML=get("questions").map((q,i)=>
 function showLeaderboard(){
 
 let box = document.getElementById("leaderboardBox");
+let teacherBox = document.getElementById("teacherLeaderboardBox");
 
-if(!box){
+if(!box && !teacherBox){
 return;
 }
 
@@ -858,7 +866,76 @@ html += `
 
 });
 
+if(box){
 box.innerHTML = html;
+}
+
+if(teacherBox){
+teacherBox.innerHTML = html;
+}
+
+}
+function toggleStudentLeaderboard(){
+
+let box = document.getElementById("leaderboardBox");
+
+if(box.style.display === "none"){
+showLeaderboard();
+box.style.display = "block";
+}else{
+box.style.display = "none";
+}
+
+}
+
+function toggleTeacherLeaderboard(){
+
+let box = document.getElementById("teacherLeaderboardBox");
+
+if(box.style.display === "none"){
+showLeaderboard();
+box.style.display = "block";
+}else{
+box.style.display = "none";
+}
+
+}
+function toggleStudentLeaderboard(){
+
+let box = document.getElementById("leaderboardBox");
+
+if(!box) return;
+
+if(box.style.display === "none" || box.style.display === ""){
+
+showLeaderboard();
+
+box.style.display = "block";
+
+}else{
+
+box.style.display = "none";
+
+}
+
+}
+function toggleTeacherLeaderboard(){
+
+let box = document.getElementById("teacherLeaderboardBox");
+
+if(!box) return;
+
+if(box.style.display === "none" || box.style.display === ""){
+
+showLeaderboard();
+
+box.style.display = "block";
+
+}else{
+
+box.style.display = "none";
+
+}
 
 }
 function openSubject(subject){

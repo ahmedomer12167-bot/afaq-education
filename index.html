@@ -127,6 +127,27 @@ a{color:#bae6fd;font-weight:bold}
 <section id="teacherPage" class="page hidden">
 <div class="box">
 <h1>لوحة تحكم المدرس</h1>
+<h2>📚 المواد الدراسية</h2>
+
+<div class="grid">
+
+<button onclick="openSubjectPage('الأحياء')">🧬 الأحياء</button>
+
+<button onclick="openSubjectPage('الكيمياء')">⚗️ الكيمياء</button>
+
+<button onclick="openSubjectPage('الفيزياء')">🌌 الفيزياء</button>
+
+<button onclick="openSubjectPage('الرياضيات')">📐 الرياضيات</button>
+
+<button onclick="openSubjectPage('الإنكليزي')">🔤 الإنكليزي</button>
+
+<button onclick="openSubjectPage('العربي')">📖 العربي</button>
+
+<button onclick="openSubjectPage('الإسلامية')">🕌 الإسلامية</button>
+
+<button onclick="openSubjectPage('الاجتماعيات')">🌍 الاجتماعيات</button>
+
+</div> 
 <button onclick="toggleTeacherLeaderboard()">🏆 عرض لوحة المتفوقين</button>
 <select id="leaderboardStageTeacher" onchange="showLeaderboard()" style="display:none">
 <option value="all">كل المراحل</option>
@@ -208,7 +229,7 @@ function get(k){return JSON.parse(localStorage.getItem(k)||"[]")}
 function set(k,v){localStorage.setItem(k,JSON.stringify(v))}
 
 function showPage(id){
-["home","studentLogin","teacherLogin","studentPage","teacherPage"].forEach(function(x){
+["home","studentLogin","teacherLogin","studentPage","teacherPage","subjectPage"].forEach(function(x){
 document.getElementById(x).classList.add("hidden");
 });
 document.getElementById(id).classList.remove("hidden");
@@ -680,6 +701,14 @@ card.style.display = "none";
 });
 
 }
+function openSubjectPage(subject){
+
+document.getElementById("subjectTitle").innerText =
+"📚 قسم " + subject;
+
+showPage("subjectPage");
+
+} 
 function openSubject(subject){
 currentSubject=subject;
 showStudentLessons();
@@ -688,6 +717,21 @@ document.getElementById("studentLessons").scrollIntoView({behavior:"smooth"});
 }
 
 updateStats();
+<section id="subjectPage" class="page hidden">
+
+<div class="box">
+
+<h1 id="subjectTitle">المادة</h1>
+
+<p>صفحة خاصة بالمادة</p>
+
+<button onclick="showPage('teacherPage')">
+⬅ الرجوع إلى لوحة المدرس
+</button>
+
+</div>
+
+</section> 
 </script>
 </body>
 </html>

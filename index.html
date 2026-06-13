@@ -862,38 +862,26 @@ teacherQuestions.innerHTML=get("questions").map((q,i)=>
 function toggleStudentLeaderboard(){
 
 let box = document.getElementById("leaderboardBox");
-
 if(!box) return;
 
-if(box.style.display === "none" || box.style.display === ""){
+showLeaderboard();
 
-
-box.style.display = "block";
-
-}else{
-
-box.style.display = "none";
+box.style.display =
+box.style.display === "none" ? "block" : "none";
 
 }
 
 function toggleTeacherLeaderboard(){
 
 let box = document.getElementById("teacherLeaderboardBox");
-
 if(!box) return;
-
-if(box.style.display === "none" || box.style.display === ""){
 
 showLeaderboard();
 
-box.style.display = "block";
-
-}else{
-
-box.style.display = "none";
+box.style.display =
+box.style.display === "none" ? "block" : "none";
 
 }
-
 function toggleTeacherLeaderboard(){
 
 let box = document.getElementById("teacherLeaderboardBox");
@@ -940,6 +928,35 @@ card.style.display = "none";
 }
 
 });
+function showLeaderboard(){
+
+let box = document.getElementById("leaderboardBox");
+let teacherBox = document.getElementById("teacherLeaderboardBox");
+
+let students = get("students").slice();
+
+students.sort(function(a,b){
+return Number(b.points  0) - Number(a.points  0);
+});
+
+let html = "";
+
+if(students.length === 0){
+html = "<div class='card'>لا يوجد طلاب بعد</div>";
+}else{
+students.forEach(function(s,index){
+html += `
+<div class="card">
+<h3>${index + 1} - ${s.name}</h3>
+<p>${s.stage}</p>
+<p>النقاط: ${s.points}</p>
+</div>
+`;
+});
+}
+
+if(box){ box.innerHTML = html; }
+if(teacherBox){ teacherBox.innerHTML = html; }
 
 } 
 function openSubject(subject){

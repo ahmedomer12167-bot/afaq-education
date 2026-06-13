@@ -454,8 +454,13 @@ studentQuizzes.innerHTML=qs.length
 }
 
 function alreadyAnswered(quizId){
-let answers=get("answers");
-return answers.some(a=>a.studentId===currentStudent.id && a.quizId===quizId);
+
+let answers = get("answers");
+
+return answers.some(function(a){
+return a.studentId === currentStudent.id && a.quizId === quizId;
+});
+
 }
 
 function getStudentAnswer(quizId){
@@ -510,6 +515,10 @@ return h;
 
 function answerQuiz(quizId,ans){
 if(alreadyAnswered(quizId)){
+alert("لقد أجبت على هذا السؤال مسبقاً ولا يمكنك الإجابة مرة ثانية");
+return;
+} 
+if(alreadyAnswered(quizId)){
 alert("لا يمكنك الإجابة أكثر من مرة");
 return;
 }
@@ -563,6 +572,10 @@ showStudentPage();
 }
 
 function sendEssay(quizId){
+if(alreadyAnswered(quizId)){
+alert("لقد أرسلت إجابتك مسبقاً ولا يمكنك التعديل");
+return;
+} 
 if(alreadyAnswered(quizId)){
 alert("لا يمكنك إرسال الإجابة أكثر من مرة");
 return;

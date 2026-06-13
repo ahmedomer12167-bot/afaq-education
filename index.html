@@ -98,7 +98,6 @@ a{color:#bae6fd;font-weight:bold}
 <div class="card">🎖️ المستوى<h2 id="studentLevel">مبتدئ</h2></div>
 <div class="card">📝 الاختبارات<h2 id="studentTests">0</h2></div>
 <div class="card">✅ الصحيحة<h2 id="studentCorrect">0</h2></div>
-<div class="card">🏆 ترتيبك<h2 id="studentRankNumber">#0</h2></div>
 </div>
 
 <h2>📚 المواد الدراسية</h2>
@@ -297,7 +296,6 @@ showStudentPage();
 updateStats();
 }
 
-}
 function showStudentPage(){
 refreshCurrentStudent();
 
@@ -341,7 +339,7 @@ renderTeacher();
 }else{
 alert("الكود خطأ");
 }
-
+}
 
 function logout(){
 currentStudent=null;
@@ -848,17 +846,24 @@ function showLeaderboard(){
 let box = document.getElementById("leaderboardBox");
 let teacherBox = document.getElementById("teacherLeaderboardBox");
 
+if(!box && !teacherBox){
+return;
+}
+
 let students = get("students").slice();
 
 let stageFilter = "all";
 
+if(teacherBox && teacherBox.style.display !== "none"){
 let teacherFilter = document.getElementById("leaderboardStageTeacher");
-let studentFilter = document.getElementById("leaderboardStageStudent");
-
-if(teacherBox && teacherBox.style.display === "block" && teacherFilter){
+if(teacherFilter){
 stageFilter = teacherFilter.value;
-}else if(studentFilter){
+}
+}else{
+let studentFilter = document.getElementById("leaderboardStageStudent");
+if(studentFilter){
 stageFilter = studentFilter.value;
+}
 }
 
 if(stageFilter !== "all"){
@@ -880,6 +885,7 @@ html = "<div class='card'>لا يوجد طلاب في هذه المرحلة</div
 students.forEach(function(s,index){
 
 let medal = "⭐";
+
 if(index === 0) medal = "🥇";
 if(index === 1) medal = "🥈";
 if(index === 2) medal = "🥉";
@@ -964,8 +970,9 @@ if(!box) return;
 
 if(box.style.display === "none" || box.style.display === ""){
 
-box.style.display = "block";
 showLeaderboard();
+
+box.style.display = "block";
 
 }else{
 

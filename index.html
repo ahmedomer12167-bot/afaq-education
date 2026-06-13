@@ -296,25 +296,6 @@ localStorage.setItem("currentStudent",JSON.stringify(st));
 showStudentPage();
 updateStats();
 }
-function getStudentRank(){
-
-let students = get("students").filter(function(s){
-return s.stage === currentStudent.stage;
-});
-
-students.sort(function(a,b){
-return Number(b.points  0) - Number(a.points  0);
-});
-
-let index = students.findIndex(function(s){
-return s.id === currentStudent.id;
-});
-
-if(index === -1){
-return "#0";
-}
-
-return "#" + (index + 1);
 
 }
 function showStudentPage(){
@@ -333,7 +314,7 @@ document.getElementById("studentPoints").innerText=currentStudent.points;
 document.getElementById("studentLevel").innerText=level(currentStudent.points);
 document.getElementById("studentTests").innerText=currentStudent.tests;
 document.getElementById("studentCorrect").innerText=currentStudent.correct;
-document.getElementById("studentRankNumber").innerText = getStudentRank();
+
 document.getElementById("subjectsBox").innerHTML = `
 <div class="subject-card" onclick="openSubject('الأحياء')">🧬<br>الأحياء</div>
 <div class="subject-card" onclick="openSubject('الكيمياء')">⚗️<br>الكيمياء</div>

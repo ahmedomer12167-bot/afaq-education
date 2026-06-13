@@ -846,24 +846,17 @@ function showLeaderboard(){
 let box = document.getElementById("leaderboardBox");
 let teacherBox = document.getElementById("teacherLeaderboardBox");
 
-if(!box && !teacherBox){
-return;
-}
-
 let students = get("students").slice();
 
 let stageFilter = "all";
 
-if(teacherBox && teacherBox.style.display !== "none"){
 let teacherFilter = document.getElementById("leaderboardStageTeacher");
-if(teacherFilter){
-stageFilter = teacherFilter.value;
-}
-}else{
 let studentFilter = document.getElementById("leaderboardStageStudent");
-if(studentFilter){
+
+if(teacherBox && teacherBox.style.display === "block" && teacherFilter){
+stageFilter = teacherFilter.value;
+}else if(studentFilter){
 stageFilter = studentFilter.value;
-}
 }
 
 if(stageFilter !== "all"){
@@ -885,7 +878,6 @@ html = "<div class='card'>لا يوجد طلاب في هذه المرحلة</div
 students.forEach(function(s,index){
 
 let medal = "⭐";
-
 if(index === 0) medal = "🥇";
 if(index === 1) medal = "🥈";
 if(index === 2) medal = "🥉";
@@ -970,9 +962,8 @@ if(!box) return;
 
 if(box.style.display === "none" || box.style.display === ""){
 
-showLeaderboard();
-
 box.style.display = "block";
+showLeaderboard();
 
 }else{
 

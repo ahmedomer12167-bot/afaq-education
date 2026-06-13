@@ -115,8 +115,16 @@ a{color:#bae6fd;font-weight:bold}
 <button onclick="toggleStudentLeaderboard()">
 🏆 عرض لوحة المتفوقين
 </button>
-<div id="leaderboardBox"
-style="display:none"></div>
+<select id="leaderboardStageStudent"
+onchange="showLeaderboard()">
+
+<option value="all">كل المراحل</option>
+<option>الثالث متوسط</option>
+<option>الرابع العلمي</option>
+<option>الخامس العلمي</option>
+<option>السادس العلمي</option>
+
+</select>
 <div id="leaderboardBox" style="display:none;margin-top:15px;"></div>
 <h2>🔔 الإشعارات</h2>
 <div id="studentNotifications"></div>
@@ -136,8 +144,16 @@ style="display:none"></div>
 <button onclick="toggleTeacherLeaderboard()">
 🏆 عرض لوحة المتفوقين
 </button>
-<div id="teacherLeaderboardBox"
-style="display:none"></div>
+<select id="leaderboardStageTeacher"
+onchange="showLeaderboard()">
+
+<option value="all">كل المراحل</option>
+<option>الثالث متوسط</option>
+<option>الرابع العلمي</option>
+<option>الخامس العلمي</option>
+<option>السادس العلمي</option>
+
+</select>
 <h2>👨‍🎓 الطلاب المسجلون</h2>
 <select id="studentStageFilter" onchange="renderTeacherStudents()">
 <option value="">كل المراحل</option>
@@ -836,6 +852,31 @@ return;
 
 let students = get("students").slice();
 
+let stageFilter = "all";
+
+let studentFilter =
+document.getElementById("leaderboardStageStudent");
+
+let teacherFilter =
+document.getElementById("leaderboardStageTeacher");
+
+if(studentFilter && studentFilter.value){
+stageFilter = studentFilter.value;
+}
+
+if(teacherFilter && teacherFilter.value !== "all"){
+stageFilter = teacherFilter.value;
+}
+
+if(stageFilter !== "all"){
+
+students = students.filter(function(s){
+
+return s.stage === stageFilter;
+
+});
+
+}
 students.sort(function(a,b){
 return Number(b.points || 0) - Number(a.points || 0);
 });

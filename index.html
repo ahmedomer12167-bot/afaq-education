@@ -155,7 +155,6 @@ onchange="showLeaderboard()">
 
 <div id="teacherLeaderboardBox" style="display:none"></div>
 <h2>👨‍🎓 الطلاب المسجلون</h2>
-<input id="studentSearch" placeholder="ابحث عن طالب بالاسم" oninput="renderTeacherStudents()"> 
 <select id="studentStageFilter" onchange="renderTeacherStudents()">
 <option value="">كل المراحل</option>
 <option>الثالث متوسط</option>
@@ -756,17 +755,12 @@ alert("تم حذف الطالب");
 }
 
 function renderTeacherStudents(){
-let searchName = document.getElementById("studentSearch").value.trim(); 
 let selectedStage=document.getElementById("studentStageFilter").value;
 let students=get("students");
 
 if(selectedStage){
 students=students.filter(s=>s.stage===selectedStage);
-if(searchName){
-students = students.filter(function(s){
-return s.name.includes(searchName);
-});
-} 
+}
 
 teacherStudents.innerHTML=students.length
 ? students.map(s=>

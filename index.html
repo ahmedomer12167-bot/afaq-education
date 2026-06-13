@@ -216,9 +216,9 @@ footer{text-align:center;padding:28px;background:#071b49;color:white}
 </div>
 
 <script>
-const STORE="AFAQ_PLATFORM_FIXED_V1";
+const STORE="AFAQ_PLATFORM_CLEAN_V1";
 let state = JSON.parse(localStorage.getItem(STORE) || "null");
-let currentUser = JSON.parse(localStorage.getItem("AFAQ_CURRENT_USER_FIXED") || "null");
+let currentUser = JSON.parse(localStorage.getItem("AFAQ_CURRENT_USER_CLEAN") || "null");
 let currentSubject = null;
 let timerInterval = null;
 let pageHistory = ["home"];
@@ -226,36 +226,14 @@ let pageHistory = ["home"];
 if(!state){
   state = {
     settings:{studentCode:"1234",teacherCode:"2026",adminCode:"admin"},
-    subjects:[
-      {icon:"🧬", name:"الأحياء", stage:"الإعدادية", students:0, lessons:34, exams:1},
-      {icon:"⚗️", name:"الكيمياء", stage:"الإعدادية", students:0, lessons:28, exams:0},
-      {icon:"📐", name:"الرياضيات", stage:"المتوسطة", students:0, lessons:42, exams:0},
-      {icon:"🌍", name:"الجغرافية", stage:"المتوسطة", students:0, lessons:22, exams:0},
-      {icon:"📖", name:"اللغة العربية", stage:"المتوسطة", students:0, lessons:38, exams:0},
-      {icon:"🇬🇧", name:"اللغة الإنجليزية", stage:"الإعدادية", students:0, lessons:30, exams:0}
-    ],
+    subjects:[],
     students:[],
     teachers:[],
     teacherLogs:[],
-    files:[
-      {title:"ملزمة الأحياء الفصل الأول",subject:"الأحياء",category:"ملخصات",type:"PDF"},
-      {title:"أسئلة وزارية أحياء",subject:"الأحياء",category:"أسئلة وزارية",type:"PDF"}
-    ],
-    announcements:[
-      {id:"ann1",title:"مرحباً بكم في منصة آفاق",body:"سجل دخولك حتى تظهر لك المواد والتبليغات.",subject:"عام",stage:"عام",target:"all",urgent:false,date:new Date().toLocaleDateString("ar-IQ")}
-    ],
-    homework:[
-      {title:"واجب الرسم الخلوي",subject:"الأحياء",stage:"الإعدادية",date:"هذا الأسبوع"}
-    ],
-    exams:[
-      {id:"bio1",title:"اختبار الفصل الأول - الأحياء",subject:"الأحياء",stage:"الإعدادية",minutes:30,pass:50,available:"اليوم",grade:100,
-        questions:[
-          {type:"truefalse",q:"الخلايا هي الوحدة الأساسية في جسم الكائن الحي.",answer:"صح",points:25},
-          {type:"mcq",q:"أي العضيات مسؤولة عن إنتاج الطاقة؟",options:["النواة","الرايبوسومات","المايتوكوندريا"],answer:"المايتوكوندريا",points:25},
-          {type:"fill",q:"تحتوي الخلية النباتية على _______.",answer:"جدار",points:25},
-          {type:"essay",q:"اشرح عملية البناء الضوئي بإيجاز.",answer:"",points:25}
-        ]}
-    ],
+    files:[],
+    announcements:[],
+    homework:[],
+    exams:[],
     results:[]
   };
   save();
@@ -301,7 +279,7 @@ function login(){
   const ok=(role==="student"&&code===state.settings.studentCode)||(role==="teacher"&&!!teacherByName)||(role==="admin"&&code===state.settings.adminCode);
   if(!ok){alert("الرمز غير صحيح");return;}
   currentUser={role,name};
-  localStorage.setItem("AFAQ_CURRENT_USER_FIXED",JSON.stringify(currentUser));
+  localStorage.setItem("AFAQ_CURRENT_USER_CLEAN",JSON.stringify(currentUser));
   closeLogin();
   updateAuthUi();
   if(role==="student"){
@@ -310,7 +288,7 @@ function login(){
       existing.lastLogin = new Date().toLocaleString("ar-IQ");
       existing.status = "مسجل الدخول";
     } else {
-      state.students.push({name,stage:"الإعدادية",subject:"الأحياء",lastLogin:new Date().toLocaleString("ar-IQ"),status:"مسجل الدخول"});
+      state.students.push({name,stage:"غير محددة",subject:"غير محددة",lastLogin:new Date().toLocaleString("ar-IQ"),status:"مسجل الدخول"});
     }
     updateSubjectStudentCounts();
     save();
@@ -323,7 +301,7 @@ function login(){
     if(!teacher){
       alert("هذا المدرس غير مضاف من قبل المدير أو تم تعطيله.");
       currentUser=null;
-      localStorage.removeItem("AFAQ_CURRENT_USER_FIXED");
+      localStorage.removeItem("AFAQ_CURRENT_USER_CLEAN");
       updateAuthUi();
       return;
     }
@@ -338,7 +316,7 @@ function login(){
 }
 function logout(){
   currentUser=null;
-  localStorage.removeItem("AFAQ_CURRENT_USER_FIXED");
+  localStorage.removeItem("AFAQ_CURRENT_USER_CLEAN");
   document.getElementById("urgentBanner").classList.add("hidden");
   document.getElementById("popupNotice").classList.add("hidden");
   updateAuthUi();
@@ -355,6 +333,7 @@ function renderSubjects(list=state.subjects){
   grid.innerHTML="";
   if(!currentUser){grid.innerHTML="<div class='card'>سجل الدخول أولاً لعرض المواد.</div>";return;}
   updateSubjectStudentCounts();
+  if(!list.length){grid.innerHTML="<div class='card'>لا توجد مواد حالياً. يجب على المدير أو المدرس إضافة المواد أولاً.</div>";return;}
   list.forEach(s=>grid.innerHTML+=`<div class="card" onclick="openSubject('${s.name}')"><h3>${s.icon} ${s.name}</h3><p>${s.stage}</p><div class="meta"><span>👨‍🎓 ${s.students} طالب</span><span>📚 ${s.lessons} درس</span><span>📝 ${s.exams} اختبار</span></div></div>`);
 }
 function searchSubjects(q){renderSubjects(state.subjects.filter(s=>s.name.includes(q)||s.stage.includes(q)))}
@@ -390,6 +369,7 @@ function renderMiniStudents(q){
 function renderExams(){
   const list=document.getElementById("examList"); list.innerHTML="";
   if(!currentUser){list.innerHTML="<div class='card'>سجل الدخول أولاً لعرض الاختبارات.</div>";return;}
+  if(!state.exams.length){list.innerHTML="<div class='card'>لا توجد اختبارات حالياً.</div>";return;}
   state.exams.forEach(e=>list.innerHTML+=`<div class="card"><h3>📝 ${e.title}</h3><p>المادة: ${e.subject}</p><p>⏱️ ${e.minutes} دقيقة</p><p>📋 ${e.questions.length} سؤال</p><p>🎯 درجة النجاح: ${e.pass}%</p><button onclick="openExamIntro('${e.id}')">بدء الاختبار</button></div>`);
 }
 function openExamIntro(id){
@@ -424,11 +404,11 @@ function updateStudentStats(){const mine=state.results.filter(r=>r.student===cur
 function showMyGrades(){const mine=state.results.filter(r=>r.student===currentUser?.name);document.getElementById("studentPanel").innerHTML=`<h3>درجاتي</h3>${mine.map(r=>`<div class='file-item'><b>${r.exam}</b><span>${r.percent}%</span></div>`).join("")||"لا توجد درجات بعد"}`;}
 
 function getVisibleAnnouncements(){
-  const userStage="الإعدادية";
+  const userStage = state.students.find(s=>s.name===currentUser?.name)?.stage || "غير محددة";
   return state.announcements.filter(a=>a.target==="all" || a.stage===userStage || a.target==="subject");
 }
-function getReadNotices(){return JSON.parse(localStorage.getItem("AFAQ_READ_NOTICES_FIXED") || "[]")}
-function setReadNotice(id){const arr=getReadNotices(); if(!arr.includes(id))arr.push(id); localStorage.setItem("AFAQ_READ_NOTICES_FIXED",JSON.stringify(arr));}
+function getReadNotices(){return JSON.parse(localStorage.getItem("AFAQ_READ_NOTICES_CLEAN") || "[]")}
+function setReadNotice(id){const arr=getReadNotices(); if(!arr.includes(id))arr.push(id); localStorage.setItem("AFAQ_READ_NOTICES_CLEAN",JSON.stringify(arr));}
 function checkStudentNotices(){
   if(!currentUser||currentUser.role!=="student")return;
   const unread=getVisibleAnnouncements().filter(a=>!getReadNotices().includes(a.id));
@@ -453,17 +433,24 @@ function renderStudentTable(){
   const rows=state.students.filter(s=>(!st||s.stage===st)&&(!su||s.subject===su)&&s.name.includes(q));
   studentTable.innerHTML=rows.length?rows.map(s=>`<tr><td>${s.name}</td><td>${s.stage}</td><td>${s.subject}</td><td>${s.lastLogin}</td><td>${s.status}</td></tr>`).join(""):`<tr><td colspan="5">لا يوجد طلاب مسجلون حالياً</td></tr>`;
 }
-function teacherExams(){teacherMain.innerHTML=`<h2>إنشاء اختبار</h2><div class="panel"><div class="row"><input id="examTitle" placeholder="اسم الاختبار"><select id="examSubject">${state.subjects.map(s=>`<option>${s.name}</option>`).join("")}</select><select id="examStage"><option>المتوسطة</option><option>الإعدادية</option></select></div><div class="row"><input id="examMinutes" type="number" placeholder="المدة"><input id="examGrade" type="number" placeholder="الدرجة"><input id="examPass" type="number" placeholder="درجة النجاح %"></div><textarea id="examQuestions" rows="8" placeholder="اختيار|السؤال|خيار1,خيار2,خيار3|الإجابة|25&#10;صحخطأ|السؤال|صح|25&#10;فراغ|السؤال|الإجابة|25&#10;مقالي|السؤال|25"></textarea><button onclick="addExam()">إضافة الاختبار</button></div><div class="panel"><h3>الاختبارات الحالية</h3>${state.exams.map(e=>`<div class='file-item'><b>${e.title}</b><span>${e.subject}</span></div>`).join("")}</div>`}
+function teacherExams(){teacherMain.innerHTML=`<h2>إنشاء اختبار</h2><div class="panel"><div class="row"><input id="examTitle" placeholder="اسم الاختبار"><select id="examSubject">${state.subjects.length ? state.subjects.map(s=>`<option>${s.name}</option>`).join("") : `<option>لا توجد مواد</option>`}</select><select id="examStage"><option>المتوسطة</option><option>الإعدادية</option></select></div><div class="row"><input id="examMinutes" type="number" placeholder="المدة"><input id="examGrade" type="number" placeholder="الدرجة"><input id="examPass" type="number" placeholder="درجة النجاح %"></div><textarea id="examQuestions" rows="8" placeholder="اختيار|السؤال|خيار1,خيار2,خيار3|الإجابة|25&#10;صحخطأ|السؤال|صح|25&#10;فراغ|السؤال|الإجابة|25&#10;مقالي|السؤال|25"></textarea><button onclick="addExam()">إضافة الاختبار</button></div><div class="panel"><h3>الاختبارات الحالية</h3>${state.exams.map(e=>`<div class='file-item'><b>${e.title}</b><span>${e.subject}</span></div>`).join("")}</div>`}
 function addExam(){
+  if(!state.subjects.length){alert("أضف مادة أولاً قبل إنشاء الاختبار");return;}
+  if(!examTitle.value.trim()){alert("اكتب اسم الاختبار");return;}
   const lines=examQuestions.value.split("\n").filter(Boolean);
   const questions=lines.map(line=>{const p=line.split("|");if(p[0]==="اختيار")return{type:"mcq",q:p[1],options:p[2].split(","),answer:p[3],points:+p[4]};if(p[0]==="صحخطأ")return{type:"truefalse",q:p[1],answer:p[2],points:+p[3]};if(p[0]==="فراغ")return{type:"fill",q:p[1],answer:p[2],points:+p[3]};return{type:"essay",q:p[1],answer:"",points:+p[2]};});
   state.exams.push({id:"ex"+Date.now(),title:examTitle.value,subject:examSubject.value,stage:examStage.value,minutes:+examMinutes.value||20,pass:+examPass.value||50,available:"متاح",grade:+examGrade.value||100,questions});
   save(); renderExams(); teacherExams();
 }
-function teacherFiles(){teacherMain.innerHTML=`<h2>إدارة الملفات</h2><div class="panel row"><input id="fileTitle" placeholder="عنوان الملف"><select id="fileSubject">${state.subjects.map(s=>`<option>${s.name}</option>`).join("")}</select><select id="fileCategory"><option>كتب</option><option>ملخصات</option><option>أسئلة وزارية</option><option>عروض تقديمية</option><option>بحوث</option></select><select id="fileType"><option>PDF</option><option>Word</option><option>PowerPoint</option></select><button onclick="addFile()">إضافة ملف</button></div><div class="panel">${state.files.map(f=>`<div class='file-item'><b>${f.title}</b><span>${f.subject} - ${f.category}</span></div>`).join("")}</div>`}
-function addFile(){state.files.push({title:fileTitle.value,subject:fileSubject.value,category:fileCategory.value,type:fileType.value});save();teacherFiles()}
+function teacherFiles(){teacherMain.innerHTML=`<h2>إدارة الملفات</h2><div class="panel row"><input id="fileTitle" placeholder="عنوان الملف"><select id="fileSubject">${state.subjects.length ? state.subjects.map(s=>`<option>${s.name}</option>`).join("") : `<option>لا توجد مواد</option>`}</select><select id="fileCategory"><option>كتب</option><option>ملخصات</option><option>أسئلة وزارية</option><option>عروض تقديمية</option><option>بحوث</option></select><select id="fileType"><option>PDF</option><option>Word</option><option>PowerPoint</option></select><button onclick="addFile()">إضافة ملف</button></div><div class="panel">${state.files.map(f=>`<div class='file-item'><b>${f.title}</b><span>${f.subject} - ${f.category}</span></div>`).join("")}</div>`}
+function addFile(){
+  if(!state.subjects.length){alert("أضف مادة أولاً قبل إضافة الملفات");return;}
+  if(!fileTitle.value.trim()){alert("اكتب عنوان الملف");return;}
+  state.files.push({title:fileTitle.value,subject:fileSubject.value,category:fileCategory.value,type:fileType.value});
+  save();teacherFiles();
+}
 function teacherAnnouncements(){
-  teacherMain.innerHTML=`<h2>نشر التبليغات</h2><div class="panel"><div class="field"><label>عنوان التبليغ</label><input id="annTitle"></div><div class="field"><label>نص التبليغ</label><textarea id="annBody"></textarea></div><div class="row"><div class="field"><label>نوع التبليغ</label><select id="annTarget" onchange="toggleNoticeTarget()"><option value="all">إلى جميع الطلاب</option><option value="stage">إلى مرحلة محددة</option><option value="subject">إلى مادة محددة</option></select></div><div class="field" id="stageTargetBox"><label>المرحلة</label><select id="annStage"><option>المتوسطة</option><option>الإعدادية</option></select></div><div class="field" id="subjectTargetBox"><label>المادة</label><select id="annSubject">${state.subjects.map(s=>`<option>${s.name}</option>`).join("")}</select></div></div><label><input type="checkbox" id="annUrgent"> تبليغ عاجل</label><br><br><button onclick="addAnnouncement()">نشر التبليغ</button></div><div class="panel"><h3>التبليغات المنشورة</h3>${state.announcements.map(a=>`<div class='notice notice-row'><div><b>${a.urgent?"🚨 ":""}${a.title}</b><p>${a.body}</p><small>${a.date}</small></div><button class="danger" onclick="deleteAnnouncement('${a.id}')">حذف</button></div>`).join("")}</div>`;
+  teacherMain.innerHTML=`<h2>نشر التبليغات</h2><div class="panel"><div class="field"><label>عنوان التبليغ</label><input id="annTitle"></div><div class="field"><label>نص التبليغ</label><textarea id="annBody"></textarea></div><div class="row"><div class="field"><label>نوع التبليغ</label><select id="annTarget" onchange="toggleNoticeTarget()"><option value="all">إلى جميع الطلاب</option><option value="stage">إلى مرحلة محددة</option><option value="subject">إلى مادة محددة</option></select></div><div class="field" id="stageTargetBox"><label>المرحلة</label><select id="annStage"><option>المتوسطة</option><option>الإعدادية</option></select></div><div class="field" id="subjectTargetBox"><label>المادة</label><select id="annSubject">${state.subjects.length ? state.subjects.map(s=>`<option>${s.name}</option>`).join("") : `<option>لا توجد مواد</option>`}</select></div></div><label><input type="checkbox" id="annUrgent"> تبليغ عاجل</label><br><br><button onclick="addAnnouncement()">نشر التبليغ</button></div><div class="panel"><h3>التبليغات المنشورة</h3>${state.announcements.map(a=>`<div class='notice notice-row'><div><b>${a.urgent?"🚨 ":""}${a.title}</b><p>${a.body}</p><small>${a.date}</small></div><button class="danger" onclick="deleteAnnouncement('${a.id}')">حذف</button></div>`).join("")}</div>`;
   toggleNoticeTarget();
 }
 function toggleNoticeTarget(){
@@ -474,14 +461,15 @@ function toggleNoticeTarget(){
 }
 function addAnnouncement(){
   if(!annTitle.value.trim()||!annBody.value.trim()){alert("اكتب عنوان ونص التبليغ");return;}
+  if(annTarget.value==="subject" && !state.subjects.length){alert("أضف مادة أولاً أو اختر تبليغ عام");return;}
   state.announcements.unshift({id:"ann"+Date.now(),title:annTitle.value,body:annBody.value,target:annTarget.value,stage:annStage.value,subject:annSubject.value,urgent:annUrgent.checked,date:new Date().toLocaleDateString("ar-IQ")});
-  save(); localStorage.removeItem("AFAQ_READ_NOTICES_FIXED"); teacherAnnouncements();
+  save(); localStorage.removeItem("AFAQ_READ_NOTICES_CLEAN"); teacherAnnouncements();
 }
 function deleteAnnouncement(id){state.announcements=state.announcements.filter(a=>a.id!==id);save();teacherAnnouncements()}
 function teacherStats(){teacherMain.innerHTML=`<h2>الإحصائيات</h2><div class="stats"><div><b>${state.results.length}</b><span>اختبارات منجزة</span></div><div><b>${state.files.length}</b><span>ملفات</span></div><div><b>${state.announcements.length}</b><span>تبليغات</span></div><div><b>${state.students.length}</b><span>طلاب مسجلون</span></div></div>`}
 function teacherSettings(){teacherMain.innerHTML=`<h2>الإعدادات</h2><div class="panel"><div class='field'><label>رمز الطالب</label><input id='studentCode' value='${state.settings.studentCode}'></div><div class='field'><label>رمز المدرس</label><input id='teacherCode' value='${state.settings.teacherCode}'></div><button onclick='saveSettings()'>حفظ الرموز</button><button class='danger' onclick='resetPlatform()'>إعادة ضبط المنصة</button></div>`}
 function saveSettings(){state.settings.studentCode=studentCode.value;state.settings.teacherCode=teacherCode.value;save();alert("تم الحفظ")}
-function resetPlatform(){if(confirm("سيتم حذف كل البيانات")){localStorage.removeItem(STORE);localStorage.removeItem("AFAQ_CURRENT_USER_FIXED");location.reload()}}
+function resetPlatform(){if(confirm("سيتم حذف كل البيانات")){localStorage.removeItem(STORE);localStorage.removeItem("AFAQ_CURRENT_USER_CLEAN");location.reload()}}
 
 function libraryCategory(cat){
   if(!currentUser){openLogin();return;}

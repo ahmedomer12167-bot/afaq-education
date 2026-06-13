@@ -854,39 +854,33 @@ let students = get("students").slice();
 
 let stageFilter = "all";
 
-let studentFilter =
-document.getElementById("leaderboardStageStudent");
-
-let teacherFilter =
-document.getElementById("leaderboardStageTeacher");
-
-if(studentFilter && studentFilter.value){
+if(teacherBox && teacherBox.style.display !== "none"){
+let teacherFilter = document.getElementById("leaderboardStageTeacher");
+if(teacherFilter){
+stageFilter = teacherFilter.value;
+}
+}else{
+let studentFilter = document.getElementById("leaderboardStageStudent");
+if(studentFilter){
 stageFilter = studentFilter.value;
 }
-
-if(teacherFilter && teacherFilter.value !== "all"){
-stageFilter = teacherFilter.value;
 }
 
 if(stageFilter !== "all"){
-
 students = students.filter(function(s){
-
 return s.stage === stageFilter;
-
 });
-
 }
+
 students.sort(function(a,b){
 return Number(b.points || 0) - Number(a.points || 0);
 });
 
-if(students.length === 0){
-box.innerHTML = "<div class='card'>لا يوجد طلاب بعد</div>";
-return;
-}
-
 let html = "";
+
+if(students.length === 0){
+html = "<div class='card'>لا يوجد طلاب في هذه المرحلة</div>";
+}else{
 
 students.forEach(function(s,index){
 
@@ -906,6 +900,8 @@ html += `
 `;
 
 });
+
+}
 
 if(box){
 box.innerHTML = html;

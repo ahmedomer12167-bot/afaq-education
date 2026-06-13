@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>آفاق التعليمية</title>
-
 <style>
 *{box-sizing:border-box}
 body{margin:0;font-family:Tahoma,Arial,sans-serif;background:#020617;color:white}
@@ -15,7 +14,7 @@ input,select,textarea{background:rgba(255,255,255,.13);color:white;border:1px so
 option{color:#111}
 textarea{min-height:90px}
 .page{min-height:100vh;padding:30px 18px;background:radial-gradient(circle at top,#0ea5e9,#0f172a 55%,#020617)}
-.box{max-width:950px;margin:auto;padding:25px;border-radius:32px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);backdrop-filter:blur(15px);box-shadow:0 25px 70px #0008}
+.box{max-width:980px;margin:auto;padding:25px;border-radius:32px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);backdrop-filter:blur(15px);box-shadow:0 25px 70px #0008}
 h1{text-align:center;font-size:40px}
 p{color:#dbeafe}
 .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
@@ -26,10 +25,12 @@ a{color:#bae6fd;font-weight:bold}
 .success{background:linear-gradient(135deg,#16a34a,#22c55e)}
 .subject-card{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);border-radius:25px;padding:30px;text-align:center;font-size:24px;font-weight:bold;cursor:pointer;transition:.3s}
 .subject-card:hover{transform:translateY(-6px);background:linear-gradient(135deg,#2563eb,#06b6d4);box-shadow:0 15px 30px rgba(0,0,0,.3)}
-@media(max-width:700px){.grid{grid-template-columns:1fr}h1{font-size:32px}}
+.small{font-size:14px;color:#cbd5e1}
+.table{width:100%;border-collapse:collapse;margin-top:10px;background:rgba(255,255,255,.08);border-radius:16px;overflow:hidden}
+.table th,.table td{padding:10px;border:1px solid rgba(255,255,255,.22);text-align:center}
+@media(max-width:700px){.grid{grid-template-columns:1fr}h1{font-size:32px}.table{font-size:13px}}
 </style>
 </head>
-
 <body>
 
 <section id="home" class="page">
@@ -37,19 +38,16 @@ a{color:#bae6fd;font-weight:bold}
 <h1>🎓 آفاق التعليمية</h1>
 <p style="text-align:center">منصة تعليمية متكاملة للدروس والاختبارات الإلكترونية</p>
 <p style="text-align:center">إشراف الأستاذ أحمد عمر</p>
-
 <div class="grid">
 <button onclick="showPage('studentLogin')">دخول الطالب</button>
 <button onclick="showPage('teacherLogin')">دخول المدرس</button>
 </div>
-
 <h2>📊 إحصائيات المنصة</h2>
 <div class="grid">
 <div class="card">📚 عدد الدروس<h2 id="statLessons">0</h2></div>
 <div class="card">📝 عدد الاختبارات<h2 id="statQuizzes">0</h2></div>
 <div class="card">👨‍🎓 عدد الطلاب<h2 id="statStudents">0</h2></div>
 </div>
-
 <h2>🌟 مميزات المنصة</h2>
 <div class="grid">
 <div class="card">📚 دروس منظمة</div>
@@ -92,38 +90,36 @@ a{color:#bae6fd;font-weight:bold}
 <div class="box">
 <h1 id="welcomeStudent">مرحباً</h1>
 <p id="studentStageText"></p>
-
 <div class="grid">
 <div class="card">⭐ النقاط<h2 id="studentPoints">0</h2></div>
 <div class="card">🎖️ المستوى<h2 id="studentLevel">مبتدئ</h2></div>
 <div class="card">📝 الاختبارات<h2 id="studentTests">0</h2></div>
 <div class="card">✅ الصحيحة<h2 id="studentCorrect">0</h2></div>
 </div>
-
 <h2>📚 المواد الدراسية</h2>
 <div class="grid" id="subjectsBox"></div>
-
 <h2>📚 الدروس والملفات</h2>
 <input id="lessonSearch" placeholder="ابحث عن درس" oninput="showStudentLessons()">
 <div id="studentLessons"></div>
-
 <h2>📝 الاختبارات</h2>
 <div id="studentQuizzes"></div>
-
 <h2>📊 النتائج</h2>
 <div id="studentResults"></div>
-<button onclick="toggleStudentLeaderboard()">
-
+<button onclick="toggleStudentLeaderboard()">🏆 عرض لوحة المتفوقين</button>
+<select id="leaderboardStageStudent" onchange="showLeaderboard()" style="display:none">
+<option value="all">كل المراحل</option>
+<option>الثالث متوسط</option>
+<option>الرابع العلمي</option>
+<option>الخامس العلمي</option>
+<option>السادس العلمي</option>
 </select>
-<div id="leaderboardBox" style="display:none;margin-top:15px;"></div>
+<div id="leaderboardBox" style="display:none"></div>
 <h2>🔔 الإشعارات</h2>
 <div id="studentNotifications"></div>
-
 <h2>📥 اسأل المدرس</h2>
 <textarea id="studentQuestion" placeholder="اكتب سؤالك هنا"></textarea>
 <button onclick="sendQuestion()">إرسال السؤال</button>
 <div id="studentReplies"></div>
-
 <button onclick="logout()">تسجيل الخروج</button>
 </div>
 </section>
@@ -131,24 +127,17 @@ a{color:#bae6fd;font-weight:bold}
 <section id="teacherPage" class="page hidden">
 <div class="box">
 <h1>لوحة تحكم المدرس</h1>
-<button onclick="toggleTeacherLeaderboard()">
-🏆 عرض لوحة المتفوقين
-</button>
-
-<select id="leaderboardStageTeacher" onchange="showLeaderboard()">
+<button onclick="toggleTeacherLeaderboard()">🏆 عرض لوحة المتفوقين</button>
+<select id="leaderboardStageTeacher" onchange="showLeaderboard()" style="display:none">
 <option value="all">كل المراحل</option>
 <option>الثالث متوسط</option>
 <option>الرابع العلمي</option>
 <option>الخامس العلمي</option>
 <option>السادس العلمي</option>
 </select>
-
 <div id="teacherLeaderboardBox" style="display:none"></div>
 <h2>👨‍🎓 الطلاب المسجلون</h2>
-<input
-id="studentSearch"
-placeholder="🔍 ابحث عن طالب بالاسم"
-onkeyup="searchStudentSafe()">
+<input id="studentSearch" placeholder="🔍 ابحث عن طالب بالاسم" onkeyup="searchStudentSafe()">
 <select id="studentStageFilter" onchange="renderTeacherStudents()">
 <option value="">كل المراحل</option>
 <option>الثالث متوسط</option>
@@ -158,7 +147,6 @@ onkeyup="searchStudentSafe()">
 </select>
 <div id="teacherStudents"></div>
 <div id="teacherStudentDetails"></div>
-
 <h2>📚 إضافة درس</h2>
 <select id="lessonStage"></select>
 <select id="lessonSubject"></select>
@@ -166,7 +154,6 @@ onkeyup="searchStudentSafe()">
 <input id="lessonLink" placeholder="رابط PDF أو فيديو">
 <button onclick="saveLesson()">حفظ الدرس</button>
 <div id="teacherLessons"></div>
-
 <h2>📝 إضافة اختبار</h2>
 <select id="quizStage"></select>
 <select id="quizSubject"></select>
@@ -194,19 +181,15 @@ onkeyup="searchStudentSafe()">
 </select>
 <button onclick="saveQuiz()">حفظ السؤال</button>
 <div id="teacherQuizzes"></div>
-
 <h2>📊 إجابات المقالية</h2>
 <div id="essayAnswers"></div>
-
 <h2>📢 الإشعارات</h2>
 <select id="noticeStage"></select>
 <textarea id="noticeText" placeholder="اكتب الإشعار"></textarea>
 <button onclick="saveNotice()">إرسال إشعار</button>
 <div id="teacherNotices"></div>
-
 <h2>📥 أسئلة الطلاب</h2>
 <div id="teacherQuestions"></div>
-
 <button onclick="logout()">تسجيل الخروج</button>
 </div>
 </section>
@@ -215,7 +198,6 @@ onkeyup="searchStudentSafe()">
 const stages=["الثالث متوسط","الرابع العلمي","الخامس العلمي","السادس العلمي"];
 const subjects=["الأحياء","الكيمياء","الفيزياء","الرياضيات","الإنكليزي","الاجتماعيات","العربي","الإسلامية"];
 const stageCodes={"الثالث متوسط":"333","الرابع العلمي":"444","الخامس العلمي":"555","السادس العلمي":"666"};
-
 let currentStudent=null;
 let currentSubject="الأحياء";
 
@@ -223,20 +205,20 @@ function get(k){return JSON.parse(localStorage.getItem(k)||"[]")}
 function set(k,v){localStorage.setItem(k,JSON.stringify(v))}
 
 function showPage(id){
-["home","studentLogin","teacherLogin","studentPage","teacherPage"].forEach(x=>{
+["home","studentLogin","teacherLogin","studentPage","teacherPage"].forEach(function(x){
 document.getElementById(x).classList.add("hidden");
 });
 document.getElementById(id).classList.remove("hidden");
 }
 
 function fill(id,arr){
-document.getElementById(id).innerHTML=arr.map(x=>`<option>${x}</option>`).join("");
+document.getElementById(id).innerHTML=arr.map(function(x){return `<option>${x}</option>`}).join("");
 }
-
-["lessonStage","quizStage","noticeStage"].forEach(id=>fill(id,stages));
-["lessonSubject","quizSubject"].forEach(id=>fill(id,subjects));
+["lessonStage","quizStage","noticeStage"].forEach(function(id){fill(id,stages)});
+["lessonSubject","quizSubject"].forEach(function(id){fill(id,subjects)});
 
 function level(p){
+p=Number(p||0);
 if(p>=100)return"أسطورة";
 if(p>=50)return"خبير";
 if(p>=30)return"متفوق";
@@ -244,9 +226,7 @@ if(p>=15)return"مجتهد";
 return"مبتدئ";
 }
 
-function studentKey(n,s){
-return s+"_"+n.replaceAll(" ","_");
-}
+function studentKey(n,s){return s+"_"+n.replaceAll(" ","_")}
 
 function updateStats(){
 document.getElementById("statLessons").innerText=get("lessons").length;
@@ -258,7 +238,7 @@ function refreshCurrentStudent(){
 let students=get("students");
 let saved=JSON.parse(localStorage.getItem("currentStudent")||"null");
 if(saved){
-let fresh=students.find(s=>s.id===saved.id);
+let fresh=students.find(function(s){return s.id===saved.id});
 if(fresh){
 currentStudent=fresh;
 localStorage.setItem("currentStudent",JSON.stringify(fresh));
@@ -270,20 +250,16 @@ function studentLogin(){
 let name=document.getElementById("studentName").value.trim();
 let stage=document.getElementById("studentStage").value;
 let code=document.getElementById("studentCode").value.trim();
-
 if(!name)return alert("اكتب الاسم");
 if(code!==stageCodes[stage])return alert("رمز المرحلة غير صحيح");
-
 let students=get("students");
 let id=studentKey(name,stage);
-let st=students.find(x=>x.id===id);
-
+let st=students.find(function(x){return x.id===id});
 if(!st){
 st={id,name,stage,points:0,tests:0,correct:0,wrong:0};
 students.push(st);
 set("students",students);
 }
-
 currentStudent=st;
 localStorage.setItem("currentStudent",JSON.stringify(st));
 showStudentPage();
@@ -292,22 +268,15 @@ updateStats();
 
 function showStudentPage(){
 refreshCurrentStudent();
-
-if(!currentStudent){
-showPage("studentLogin");
-return;
-}
-
+if(!currentStudent){showPage("studentLogin");return;}
 showPage("studentPage");
-
 document.getElementById("welcomeStudent").innerText="مرحباً "+currentStudent.name;
 document.getElementById("studentStageText").innerText="المرحلة: "+currentStudent.stage;
 document.getElementById("studentPoints").innerText=currentStudent.points;
 document.getElementById("studentLevel").innerText=level(currentStudent.points);
 document.getElementById("studentTests").innerText=currentStudent.tests;
 document.getElementById("studentCorrect").innerText=currentStudent.correct;
-
-document.getElementById("subjectsBox").innerHTML = `
+document.getElementById("subjectsBox").innerHTML=`
 <div class="subject-card" onclick="openSubject('الأحياء')">🧬<br>الأحياء</div>
 <div class="subject-card" onclick="openSubject('الكيمياء')">⚗️<br>الكيمياء</div>
 <div class="subject-card" onclick="openSubject('الفيزياء')">🌌<br>الفيزياء</div>
@@ -315,13 +284,10 @@ document.getElementById("subjectsBox").innerHTML = `
 <div class="subject-card" onclick="openSubject('الإنكليزي')">🔤<br>الإنكليزي</div>
 <div class="subject-card" onclick="openSubject('الاجتماعيات')">🌍<br>الاجتماعيات</div>
 <div class="subject-card" onclick="openSubject('العربي')">📖<br>العربي</div>
-<div class="subject-card" onclick="openSubject('الإسلامية')">🕌<br>الإسلامية</div>
-`;
-
+<div class="subject-card" onclick="openSubject('الإسلامية')">🕌<br>الإسلامية</div>`;
 showStudentLessons();
 showStudentQuizzes();
 showResults();
-showLeaderboard();
 showStudentNotices();
 showReplies();
 }
@@ -330,9 +296,7 @@ function teacherLogin(){
 if(document.getElementById("teacherCode").value==="444"){
 showPage("teacherPage");
 renderTeacher();
-}else{
-alert("الكود خطأ");
-}
+}else{alert("الكود خطأ")}
 }
 
 function logout(){
@@ -344,21 +308,12 @@ updateStats();
 
 function saveLesson(){
 let lessons=get("lessons");
-let l={
-stage:lessonStage.value,
-subject:lessonSubject.value,
-title:lessonTitle.value.trim(),
-link:lessonLink.value.trim()
-};
-
+let l={stage:lessonStage.value,subject:lessonSubject.value,title:lessonTitle.value.trim(),link:lessonLink.value.trim()};
 if(!l.title||!l.link)return alert("أكمل البيانات");
-
 lessons.push(l);
 set("lessons",lessons);
-
 lessonTitle.value="";
 lessonLink.value="";
-
 renderTeacher();
 updateStats();
 alert("تم حفظ الدرس");
@@ -366,14 +321,11 @@ alert("تم حفظ الدرس");
 
 function showStudentLessons(){
 let q=lessonSearch.value.trim();
-let lessons=get("lessons").filter(l=>
-l.stage===currentStudent.stage &&
-l.subject===currentSubject &&
-l.title.includes(q)
-);
-
+let lessons=get("lessons").filter(function(l){
+return l.stage===currentStudent.stage && l.subject===currentSubject && l.title.includes(q);
+});
 studentLessons.innerHTML=lessons.length
-? lessons.map(l=>`<div class="card"><h3>${l.title}</h3><a href="${l.link}" target="_blank">فتح الدرس</a></div>`).join("")
+? lessons.map(function(l){return `<div class="card"><h3>${l.title}</h3><a href="${l.link}" target="_blank">فتح الدرس</a></div>`}).join("")
 :`<div class="card">لا توجد دروس لهذه المادة</div>`;
 }
 
@@ -392,28 +344,12 @@ quizAnswer.style.display=quizType.value==="essay"?"none":"block";
 
 function saveQuiz(){
 let qs=get("quizzes");
-
-let q={
-id:Date.now()+"_"+Math.floor(Math.random()*99999),
-stage:quizStage.value,
-subject:quizSubject.value,
-type:quizType.value,
-question:quizQuestion.value.trim(),
-c1:choice1.value.trim(),
-c2:choice2.value.trim(),
-c3:choice3.value.trim(),
-answer:quizAnswer.value.trim(),
-degree:Number(quizDegree.value||1),
-start:quizStart.value,
-end:quizEnd.value,
-status:quizStatus.value
-};
-
+let q={id:Date.now()+"_"+Math.floor(Math.random()*99999),stage:quizStage.value,subject:quizSubject.value,type:quizType.value,question:quizQuestion.value.trim(),c1:choice1.value.trim(),c2:choice2.value.trim(),c3:choice3.value.trim(),answer:quizAnswer.value.trim(),degree:Number(quizDegree.value||1),start:quizStart.value,end:quizEnd.value,status:quizStatus.value};
 if(!q.question)return alert("اكتب السؤال");
-
+if(q.type==="mcq" && (!q.c1||!q.c2||!q.c3))return alert("أكمل الاختيارات الثلاثة");
+if(q.type!=="essay" && !q.answer)return alert("اكتب الإجابة الصحيحة");
 qs.push(q);
 set("quizzes",qs);
-
 quizQuestion.value="";
 choice1.value="";
 choice2.value="";
@@ -421,7 +357,6 @@ choice3.value="";
 quizAnswer.value="";
 quizStart.value="";
 quizEnd.value="";
-
 renderTeacher();
 updateStats();
 alert("تم حفظ السؤال");
@@ -435,185 +370,90 @@ return true;
 }
 
 function showStudentQuizzes(){
-let qs=get("quizzes").filter(q=>
-q.stage===currentStudent.stage &&
-q.subject===currentSubject &&
-q.status==="published" &&
-isQuizAvailable(q)
-);
-
+let qs=get("quizzes").filter(function(q){
+return q.stage===currentStudent.stage && q.subject===currentSubject && q.status==="published" && isQuizAvailable(q);
+});
 studentQuizzes.innerHTML=qs.length
-? qs.map(q=>quizHTML(q)).join("")
+? qs.map(function(q){return quizHTML(q)}).join("")
 :`<div class="card">لا توجد اختبارات متاحة الآن</div>`;
 }
 
 function alreadyAnswered(quizId){
-
-let answers = get("answers");
-
-return answers.some(function(a){
-return a.studentId === currentStudent.id && a.quizId === quizId;
-});
-
+return get("answers").some(function(a){return a.studentId===currentStudent.id && a.quizId===quizId});
 }
 
 function getStudentAnswer(quizId){
-let answers=get("answers");
-return answers.find(a=>a.studentId===currentStudent.id && a.quizId===quizId);
+return get("answers").find(function(a){return a.studentId===currentStudent.id && a.quizId===quizId});
 }
+
+function safeText(text){return String(text||"").replaceAll("'","&#39;").replaceAll('"',"&quot;")}
 
 function quizHTML(q){
 let disabled=alreadyAnswered(q.id);
 let oldAnswer=getStudentAnswer(q.id);
-
 let doneText="";
 if(oldAnswer){
 if(oldAnswer.correct==="essay"){
-let essay=get("essays").find(e=>e.studentId===currentStudent.id && e.quizId===q.id);
-doneText=`<p style="color:#facc15">تم إرسال إجابتك المقالية</p>
-<p>درجتك: ${essay ? essay.grade : "لم تصحح"}</p>`;
+let essay=get("essays").find(function(e){return e.studentId===currentStudent.id && e.quizId===q.id});
+doneText=`<p style="color:#facc15">تم إرسال إجابتك المقالية</p><p>درجتك: ${essay ? essay.grade : "لم تصحح"}</p>`;
 }else{
-doneText=`<p style="color:#facc15">تمت الإجابة على هذا السؤال مسبقاً</p>
-<p>إجابتك: ${oldAnswer.answer}</p>
-<p>الإجابة الصحيحة: ${oldAnswer.correctAnswer}</p>
-<p>${oldAnswer.correct ? "✅ كانت إجابتك صحيحة" : "❌ كانت إجابتك خاطئة"}</p>`;
+doneText=`<p style="color:#facc15">تمت الإجابة على هذا السؤال مسبقاً</p><p>إجابتك: ${oldAnswer.answer}</p><p>الإجابة الصحيحة: ${oldAnswer.correctAnswer}</p><p>${oldAnswer.correct ? "✅ كانت إجابتك صحيحة" : "❌ كانت إجابتك خاطئة"}</p>`;
 }
 }
-
 let h=`<div class="card"><h3>${q.question}</h3>${doneText}`;
-
 if(q.type==="mcq"){
-["c1","c2","c3"].forEach(c=>{
-h+=`<button ${disabled?"disabled":""} onclick="answerQuiz('${q.id}','${q[c].replaceAll("'","")}')">${q[c]}</button>`;
-});
+["c1","c2","c3"].forEach(function(c){h+=`<button ${disabled?"disabled":""} onclick="answerQuiz('${q.id}','${safeText(q[c])}')">${q[c]}</button>`});
 }
-
 if(q.type==="tf"){
 h+=`<button ${disabled?"disabled":""} onclick="answerQuiz('${q.id}','صح')">صح</button>`;
 h+=`<button ${disabled?"disabled":""} onclick="answerQuiz('${q.id}','خطأ')">خطأ</button>`;
 }
-
 if(q.type==="blank"){
 h+=`<input id="blank_${q.id}" placeholder="اكتب الإجابة" ${disabled?"disabled":""}>`;
 h+=`<button ${disabled?"disabled":""} onclick="answerQuiz('${q.id}',document.getElementById('blank_${q.id}').value)">إرسال</button>`;
 }
-
 if(q.type==="essay"){
 h+=`<textarea id="essay_${q.id}" placeholder="اكتب إجابتك" ${disabled?"disabled":""}></textarea>`;
 h+=`<button ${disabled?"disabled":""} onclick="sendEssay('${q.id}')">إرسال للمدرس</button>`;
 }
-
 h+=`<p id="res_${q.id}"></p></div>`;
 return h;
 }
 
 function answerQuiz(quizId,ans){
-if(alreadyAnswered(quizId)){
-alert("لقد أجبت على هذا السؤال مسبقاً ولا يمكنك الإجابة مرة ثانية");
-return;
-} 
-if(alreadyAnswered(quizId)){
-alert("لا يمكنك الإجابة أكثر من مرة");
-return;
-}
-
-let q=get("quizzes").find(x=>x.id===quizId);
+if(alreadyAnswered(quizId)){alert("لقد أجبت على هذا السؤال مسبقاً ولا يمكنك الإجابة مرة ثانية");return;}
+let q=get("quizzes").find(function(x){return x.id===quizId});
 if(!q)return;
-
 ans=String(ans||"").trim();
-
-if(!ans){
-alert("اكتب الإجابة");
-return;
-}
-
+if(!ans){alert("اكتب الإجابة");return;}
 let ok=ans===String(q.answer).trim();
-
 let students=get("students");
-let st=students.find(s=>s.id===currentStudent.id);
-
+let st=students.find(function(s){return s.id===currentStudent.id});
 st.tests++;
-if(ok){
-st.correct++;
-st.points+=q.degree;
-}else{
-st.wrong++;
-st.points-=1;
-if(st.points<0)st.points=0;
-}
-
+if(ok){st.correct++;st.points+=q.degree}else{st.wrong++;st.points-=1;if(st.points<0)st.points=0}
 set("students",students);
-
 let answers=get("answers");
-answers.push({
-studentId:currentStudent.id,
-studentName:currentStudent.name,
-quizId:q.id,
-subject:q.subject,
-question:q.question,
-answer:ans,
-correct:ok,
-correctAnswer:q.answer
-});
+answers.push({studentId:currentStudent.id,studentName:currentStudent.name,quizId:q.id,subject:q.subject,question:q.question,answer:ans,correct:ok,correctAnswer:q.answer});
 set("answers",answers);
-
 currentStudent=st;
 localStorage.setItem("currentStudent",JSON.stringify(st));
-
-alert(ok ? "✅ إجابة صحيحة" : "❌ إجابة خاطئة\nالإجابة الصحيحة: "+q.answer);
-
+alert(ok ? "✅ إجابة صحيحة" : "❌ إجابة خاطئة
+الإجابة الصحيحة: "+q.answer);
 showStudentPage();
 }
 
 function sendEssay(quizId){
-if(alreadyAnswered(quizId)){
-alert("لقد أرسلت إجابتك مسبقاً ولا يمكنك التعديل");
-return;
-} 
-if(alreadyAnswered(quizId)){
-alert("لا يمكنك إرسال الإجابة أكثر من مرة");
-return;
-}
-
-let q=get("quizzes").find(x=>x.id===quizId);
+if(alreadyAnswered(quizId)){alert("لقد أرسلت إجابتك مسبقاً ولا يمكنك التعديل");return;}
+let q=get("quizzes").find(function(x){return x.id===quizId});
 if(!q)return;
-
 let ans=document.getElementById("essay_"+quizId).value.trim();
-
-if(!ans){
-alert("اكتب الإجابة أولاً");
-return;
-}
-
+if(!ans){alert("اكتب الإجابة أولاً");return;}
 let essays=get("essays");
-
-essays.push({
-id:Date.now()+"_"+Math.floor(Math.random()*99999),
-studentId:currentStudent.id,
-name:currentStudent.name,
-stage:currentStudent.stage,
-subject:currentSubject,
-quizId:q.id,
-question:q.question,
-answer:ans,
-grade:"لم تصحح"
-});
-
+essays.push({id:Date.now()+"_"+Math.floor(Math.random()*99999),studentId:currentStudent.id,name:currentStudent.name,stage:currentStudent.stage,subject:currentSubject,quizId:q.id,question:q.question,answer:ans,grade:"لم تصحح"});
 set("essays",essays);
-
 let answers=get("answers");
-answers.push({
-studentId:currentStudent.id,
-studentName:currentStudent.name,
-quizId:q.id,
-subject:q.subject,
-question:q.question,
-answer:ans,
-correct:"essay",
-correctAnswer:"تصحيح يدوي"
-});
+answers.push({studentId:currentStudent.id,studentName:currentStudent.name,quizId:q.id,subject:q.subject,question:q.question,answer:ans,correct:"essay",correctAnswer:"تصحيح يدوي"});
 set("answers",answers);
-
 alert("تم إرسال الإجابة للمدرس");
 showStudentPage();
 }
@@ -621,56 +461,83 @@ showStudentPage();
 function gradeEssay(i){
 let essays=get("essays");
 let students=get("students");
-
 let grade=prompt("اكتب درجة الطالب");
-
 if(grade===null)return;
-
 grade=Number(grade);
-
-if(isNaN(grade)){
-alert("اكتب رقم صحيح");
-return;
-}
-
+if(isNaN(grade)){alert("اكتب رقم صحيح");return;}
 let essay=essays[i];
-let student=students.find(s=>s.id===essay.studentId);
-
-if(!student){
-alert("لم يتم العثور على الطالب");
-return;
-}
-
+let student=students.find(function(s){return s.id===essay.studentId});
+if(!student){alert("لم يتم العثور على الطالب");return;}
 let oldGrade=Number(essay.grade);
-
-if(!isNaN(oldGrade)){
-student.points-=oldGrade;
-}else{
-student.tests++;
-student.correct++;
-}
-
+if(!isNaN(oldGrade)){student.points-=oldGrade}else{student.tests++;student.correct++}
 essay.grade=grade;
 student.points+=grade;
-
 if(student.points<0)student.points=0;
-
 set("essays",essays);
 set("students",students);
-
 alert("تم حفظ الدرجة وإضافتها للطالب");
-
 renderTeacher();
 }
 
 function showResults(){
-studentResults.innerHTML=
-`<div class="card">
-النقاط: ${currentStudent.points}<br>
-الصحيحة: ${currentStudent.correct}<br>
-الخاطئة: ${currentStudent.wrong}<br>
-المستوى: ${level(currentStudent.points)}
-</div>`;
+studentResults.innerHTML=`<div class="card">النقاط: ${currentStudent.points}<br>الصحيحة: ${currentStudent.correct}<br>الخاطئة: ${currentStudent.wrong}<br>المستوى: ${level(currentStudent.points)}</div>`;
+}
+
+function showLeaderboard(){
+let box=document.getElementById("leaderboardBox");
+let teacherBox=document.getElementById("teacherLeaderboardBox");
+let stageFilter="all";
+let teacherFilter=document.getElementById("leaderboardStageTeacher");
+let studentFilter=document.getElementById("leaderboardStageStudent");
+if(teacherBox && teacherBox.style.display==="block" && teacherFilter){stageFilter=teacherFilter.value}
+else if(box && box.style.display==="block" && studentFilter){stageFilter=studentFilter.value}
+let students=get("students").slice();
+if(stageFilter!=="all"){students=students.filter(function(s){return s.stage===stageFilter})}
+students.sort(function(a,b){return Number(b.points||0)-Number(a.points||0)});
+let html="";
+if(students.length===0){
+html="<div class='card'>لا يوجد طلاب في هذه المرحلة</div>";
+}else{
+html=`<table class="table"><tr><th>الترتيب</th><th>الطالب</th><th>المرحلة</th><th>النقاط</th><th>المستوى</th></tr>`;
+students.forEach(function(s,index){
+let medal="⭐";
+if(index===0)medal="🥇";
+if(index===1)medal="🥈";
+if(index===2)medal="🥉";
+html+=`<tr><td>${medal} ${index+1}</td><td>${s.name}</td><td>${s.stage}</td><td>${s.points}</td><td>${level(s.points)}</td></tr>`;
+});
+html+="</table>";
+}
+if(box){box.innerHTML=html}
+if(teacherBox){teacherBox.innerHTML=html}
+}
+
+function toggleStudentLeaderboard(){
+let box=document.getElementById("leaderboardBox");
+let filter=document.getElementById("leaderboardStageStudent");
+if(!box)return;
+if(box.style.display==="none" || box.style.display===""){
+box.style.display="block";
+if(filter)filter.style.display="block";
+showLeaderboard();
+}else{
+box.style.display="none";
+if(filter)filter.style.display="none";
+}
+}
+
+function toggleTeacherLeaderboard(){
+let box=document.getElementById("teacherLeaderboardBox");
+let filter=document.getElementById("leaderboardStageTeacher");
+if(!box)return;
+if(box.style.display==="none" || box.style.display===""){
+box.style.display="block";
+if(filter)filter.style.display="block";
+showLeaderboard();
+}else{
+box.style.display="none";
+if(filter)filter.style.display="none";
+}
 }
 
 function saveNotice(){
@@ -682,20 +549,16 @@ renderTeacher();
 }
 
 function showStudentNotices(){
-let n=get("notices").filter(x=>x.stage===currentStudent.stage);
-studentNotifications.innerHTML=n.length
-?n.map(x=>`<div class="card">${x.text}</div>`).join("")
-:"<div class='card'>لا توجد إشعارات</div>";
+let n=get("notices").filter(function(x){return x.stage===currentStudent.stage});
+studentNotifications.innerHTML=n.length?n.map(function(x){return `<div class="card">${x.text}</div>`}).join(""):"<div class='card'>لا توجد إشعارات</div>";
 }
 
 function sendQuestion(){
 let text=studentQuestion.value.trim();
 if(!text)return alert("اكتب السؤال");
-
 let q=get("questions");
 q.push({studentId:currentStudent.id,name:currentStudent.name,stage:currentStudent.stage,text:text,reply:""});
 set("questions",q);
-
 studentQuestion.value="";
 alert("تم الإرسال");
 showReplies();
@@ -709,199 +572,94 @@ renderTeacher();
 }
 
 function showReplies(){
-let q=get("questions").filter(x=>x.studentId===currentStudent.id);
-studentReplies.innerHTML=q.map(x=>
-`<div class="card"><b>سؤالك:</b> ${x.text}<br><b>الرد:</b> ${x.reply||"لم يتم الرد"}</div>`
-).join("");
+let q=get("questions").filter(function(x){return x.studentId===currentStudent.id});
+studentReplies.innerHTML=q.map(function(x){return `<div class="card"><b>سؤالك:</b> ${x.text}<br><b>الرد:</b> ${x.reply||"لم يتم الرد"}</div>`}).join("");
 }
 
 function deleteQuiz(i){
 let quizzes=get("quizzes");
-
 if(!confirm("هل تريد حذف هذا الاختبار؟"))return;
-
 quizzes.splice(i,1);
 set("quizzes",quizzes);
-
 renderTeacher();
 updateStats();
-
 alert("تم حذف الاختبار");
 }
 
 function deleteStudent(id){
 if(!confirm("هل تريد حذف هذا الطالب وكل بياناته؟"))return;
-
-let students=get("students").filter(s=>s.id!==id);
-let answers=get("answers").filter(a=>a.studentId!==id);
-let essays=get("essays").filter(e=>e.studentId!==id);
-let questions=get("questions").filter(q=>q.studentId!==id);
-
-set("students",students);
-set("answers",answers);
-set("essays",essays);
-set("questions",questions);
-
+set("students",get("students").filter(function(s){return s.id!==id}));
+set("answers",get("answers").filter(function(a){return a.studentId!==id}));
+set("essays",get("essays").filter(function(e){return e.studentId!==id}));
+set("questions",get("questions").filter(function(q){return q.studentId!==id}));
 renderTeacher();
 updateStats();
-
 alert("تم حذف الطالب");
 }
 
 function renderTeacherStudents(){
 let selectedStage=document.getElementById("studentStageFilter").value;
 let students=get("students");
-
-if(selectedStage){
-students=students.filter(s=>s.stage===selectedStage);
+if(selectedStage){students=students.filter(function(s){return s.stage===selectedStage})}
+teacherStudents.innerHTML=students.length?students.map(function(s){
+return `<div class="card"><h3>${s.name}</h3><p>المرحلة: ${s.stage}</p><p>النقاط: ${s.points}</p><p>الاختبارات: ${s.tests}</p><p>الصحيحة: ${s.correct}</p><p>الخاطئة: ${s.wrong}</p><p>المستوى: ${level(s.points)}</p><button onclick="showStudentDetails('${s.id}')">عرض التفاصيل</button><button class="danger" onclick="deleteStudent('${s.id}')">حذف الطالب</button></div>`;
+}).join(""):"<div class='card'>لا يوجد طلاب</div>";
+searchStudentSafe();
 }
 
-teacherStudents.innerHTML=students.length
-? students.map(s=>
-`<div class="card">
-<h3>${s.name}</h3>
-<p>المرحلة: ${s.stage}</p>
-<p>النقاط: ${s.points}</p>
-<p>الاختبارات: ${s.tests}</p>
-<p>الصحيحة: ${s.correct}</p>
-<p>الخاطئة: ${s.wrong}</p>
-<p>المستوى: ${level(s.points)}</p>
-<button onclick="showStudentDetails('${s.id}')">عرض التفاصيل</button>
-<button class="danger" onclick="deleteStudent('${s.id}')">حذف الطالب</button>
-</div>`
-).join("")
-:"<div class='card'>لا يوجد طلاب</div>";
+function searchStudentSafe(){
+let search=document.getElementById("studentSearch");
+if(!search)return;
+let value=search.value.toLowerCase();
+let cards=document.querySelectorAll("#teacherStudents .card");
+cards.forEach(function(card){
+let text=card.innerText.toLowerCase();
+card.style.display=text.includes(value)?"block":"none";
+});
 }
 
 function showStudentDetails(id){
-let student=get("students").find(s=>s.id===id);
-let answers=get("answers").filter(a=>a.studentId===id);
-let essays=get("essays").filter(e=>e.studentId===id);
-
-let html=`<div class="card"><h2>تفاصيل الطالب: ${student.name}</h2>`;
-
-html+=`<h3>إجابات الاختبارات</h3>`;
-
+let student=get("students").find(function(s){return s.id===id});
+let answers=get("answers").filter(function(a){return a.studentId===id});
+let essays=get("essays").filter(function(e){return e.studentId===id});
+if(!student)return;
+let html=`<div class="card"><h2>تفاصيل الطالب: ${student.name}</h2><h3>إجابات الاختبارات</h3>`;
 if(answers.length){
-answers.forEach(a=>{
-html+=`
-<div class="card">
-<p><b>المادة:</b> ${a.subject}</p>
-<p><b>السؤال:</b> ${a.question}</p>
-<p><b>إجابة الطالب:</b> ${a.answer}</p>
-<p><b>الإجابة الصحيحة:</b> ${a.correctAnswer}</p>
-<p><b>الحالة:</b> ${a.correct==="essay" ? "مقالي" : (a.correct ? "صحيح" : "خطأ")}</p>
-</div>
-`;
+answers.forEach(function(a){
+html+=`<div class="card"><p><b>المادة:</b> ${a.subject}</p><p><b>السؤال:</b> ${a.question}</p><p><b>إجابة الطالب:</b> ${a.answer}</p><p><b>الإجابة الصحيحة:</b> ${a.correctAnswer}</p><p><b>الحالة:</b> ${a.correct==="essay" ? "مقالي" : (a.correct ? "صحيح" : "خطأ")}</p></div>`;
 });
-}else{
-html+=`<p>لا توجد إجابات.</p>`;
-}
-
+}else{html+=`<p>لا توجد إجابات.</p>`}
 html+=`<h3>الإجابات المقالية</h3>`;
-
 if(essays.length){
-essays.forEach(e=>{
-html+=`
-<div class="card">
-<p><b>السؤال:</b> ${e.question}</p>
-<p><b>الإجابة:</b> ${e.answer}</p>
-<p><b>الدرجة:</b> ${e.grade}</p>
-</div>
-`;
-});
-}else{
-html+=`<p>لا توجد مقالات.</p>`;
-}
-
+essays.forEach(function(e){html+=`<div class="card"><p><b>السؤال:</b> ${e.question}</p><p><b>الإجابة:</b> ${e.answer}</p><p><b>الدرجة:</b> ${e.grade}</p></div>`});
+}else{html+=`<p>لا توجد مقالات.</p>`}
 html+=`</div>`;
-
 teacherStudentDetails.innerHTML=html;
 }
 
 function renderTeacher(){
 renderTeacherStudents();
-
-teacherLessons.innerHTML=get("lessons").map((l,i)=>
-`<div class="card"><h3>${l.title}</h3><p>${l.stage} - ${l.subject}</p><a href="${l.link}" target="_blank">فتح</a><button class="danger" onclick="deleteLesson(${i})">حذف</button></div>`
-).join("");
-
-teacherQuizzes.innerHTML=get("quizzes").map((q,i)=>
-`<div class="card">
-<h3>${q.question}</h3>
-<p>${q.stage} - ${q.subject} - ${q.type} - ${q.status}</p>
-<p>البداية: ${q.start || "غير محدد"}</p>
-<p>النهاية: ${q.end || "غير محدد"}</p>
-<button class="danger" onclick="deleteQuiz(${i})">🗑 حذف الاختبار</button>
-</div>`
-).join("");
-
-essayAnswers.innerHTML=get("essays").map((e,i)=>
-`<div class="card"><h3>${e.name}</h3><p>${e.stage} - ${e.subject}</p><p>${e.question}</p><p>${e.answer}</p><p>الدرجة: ${e.grade}</p><button onclick="gradeEssay(${i})">تصحيح</button></div>`
-).join("");
-
-teacherNotices.innerHTML=get("notices").map(n=>
-`<div class="card">${n.stage}: ${n.text}</div>`
-).join("");
-
-teacherQuestions.innerHTML=get("questions").map((q,i)=>
-`<div class="card"><h3>${q.name}</h3><p>${q.text}</p><p>الرد: ${q.reply||"لا يوجد"}</p><button onclick="replyQuestion(${i})">رد</button></div>`
-).join("");
+teacherLessons.innerHTML=get("lessons").map(function(l,i){
+return `<div class="card"><h3>${l.title}</h3><p>${l.stage} - ${l.subject}</p><a href="${l.link}" target="_blank">فتح</a><button class="danger" onclick="deleteLesson(${i})">حذف</button></div>`;
+}).join("");
+teacherQuizzes.innerHTML=get("quizzes").map(function(q,i){
+return `<div class="card"><h3>${q.question}</h3><p>${q.stage} - ${q.subject} - ${q.type} - ${q.status}</p><p>البداية: ${q.start || "غير محدد"}</p><p>النهاية: ${q.end || "غير محدد"}</p><button class="danger" onclick="deleteQuiz(${i})">🗑 حذف الاختبار</button></div>`;
+}).join("");
+essayAnswers.innerHTML=get("essays").map(function(e,i){
+return `<div class="card"><h3>${e.name}</h3><p>${e.stage} - ${e.subject}</p><p>${e.question}</p><p>${e.answer}</p><p>الدرجة: ${e.grade}</p><button onclick="gradeEssay(${i})">تصحيح</button></div>`;
+}).join("");
+teacherNotices.innerHTML=get("notices").map(function(n){return `<div class="card">${n.stage}: ${n.text}</div>`}).join("");
+teacherQuestions.innerHTML=get("questions").map(function(q,i){return `<div class="card"><h3>${q.name}</h3><p>${q.text}</p><p>الرد: ${q.reply||"لا يوجد"}</p><button onclick="replyQuestion(${i})">رد</button></div>`}).join("");
 }
 
-function toggleStudentLeaderboard(){
-
-let box = document.getElementById("leaderboardBox");
-if(!box) return;
-
-showLeaderboard();
-
-box.style.display =
-box.style.display === "none" ? "block" : "none";
-}
-function searchStudentSafe(){
-
-let search =
-document.getElementById("studentSearch");
-
-if(!search) return;
-
-let value =
-search.value.toLowerCase();
-
-let cards =
-document.querySelectorAll("#teacherStudents .card");
-
-cards.forEach(function(card){
-
-let text =
-card.innerText.toLowerCase();
-
-if(text.includes(value)){
-
-card.style.display = "block";
-
-}else{
-
-card.style.display = "none";
-
-}
-
-});
-
-} 
 function openSubject(subject){
-currentSubject = subject;
+currentSubject=subject;
 showStudentLessons();
 showStudentQuizzes();
-
-document.getElementById("studentLessons").scrollIntoView({
-behavior:"smooth"
-});
+document.getElementById("studentLessons").scrollIntoView({behavior:"smooth"});
 }
- 
+
 updateStats();
 </script>
-
 </body>
 </html>

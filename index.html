@@ -437,8 +437,11 @@ answers.push({studentId:currentStudent.id,studentName:currentStudent.name,quizId
 set("answers",answers);
 currentStudent=st;
 localStorage.setItem("currentStudent",JSON.stringify(st));
-alert(ok ? "✅ إجابة صحيحة" : "❌ إجابة خاطئة
-الإجابة الصحيحة: "+q.answer);
+if(ok){
+alert("Correct");
+}else{
+alert("Wrong");
+}
 showStudentPage();
 }
 

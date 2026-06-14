@@ -23,6 +23,38 @@
 <div id="enrollModal" class="modal hidden"><div class="modal-box"><h2>تسجيل الدخول إلى المادة</h2><label>اسم الطالب الثلاثي</label><input id="enrollName"><label>المرحلة</label><select id="enrollStage"><option>المتوسطة</option><option>الإعدادية</option></select><label>رقم الهاتف</label><input id="enrollPhone"><label>كود المادة</label><input id="enrollCode" type="password"><button onclick="confirmEnroll()">دخول المادة</button><button class="gray" onclick="closeEnroll()">إلغاء</button></div></div>
 <script>
 const STORE="AFAQ_LOCAL_PARENT_REDESIGN_V2",USER_STORE="AFAQ_LOCAL_PARENT_USER_V2";let state=JSON.parse(localStorage.getItem(STORE)||"null"),user=JSON.parse(localStorage.getItem(USER_STORE)||"null"),historyStack=["home"],currentSubject=null,pendingSubject=null,timerInt=null,examBuild=[];if(!state){state={settings:{studentCode:"1234",adminCode:"admin",masterCard:"0000 0000 0000 0000",defaultSubscriptionDays:30},subjects:[],teachers:[],students:[],parents:[],access:[],lectures:[],files:[],exams:[],results:[],messages:[],contactMessages:[],paymentRequests:[],subscriptions:[]};save()}function save(){localStorage.setItem(STORE,JSON.stringify(state))}function uid(p){return p+Date.now()+Math.floor(Math.random()*999)}function todayISO(){return new Date().toISOString().slice(0,10)}function showPage(page){document.querySelectorAll(".page").forEach(x=>x.classList.add("hidden"));document.getElementById(page).classList.remove("hidden");if(historyStack[historyStack.length-1]!==page)historyStack.push(page);updateUI();scrollTo({top:0,behavior:"smooth"})}function guardPage(page){if(!user){openLogin();return}showPage(page);if(page==="subjects")renderSubjects();if(page==="library")renderLibrary()}function goBack(){if(historyStack.length>1){historyStack.pop();showPage(historyStack.pop()||"home")}else showPage("home")}function updateUI(){const logged=!!user;document.querySelectorAll(".auth").forEach(a=>a.classList.toggle("hidden",!logged));loginBtn.classList.toggle("hidden",logged);logoutBtn.classList.toggle("hidden",!logged)}function openLogin(){loginModal.classList.remove("hidden")}function closeLogin(){loginModal.classList.add("hidden")}function logout(){user=null;localStorage.removeItem(USER_STORE);updateUI();showPage("home")}function login(){const role=loginRole.value,name=loginName.value.trim(),code=loginCode.value.trim();if(!name||!code){alert("أكمل بيانات الدخول");return}const teacher=state.teachers.find(t=>t.name===name&&t.code===code&&t.active),parent=state.parents.find(p=>p.name===name&&p.code===code&&p.active),ok=(role==="student"&&code===state.settings.studentCode)||(role==="teacher"&&!!teacher)||(role==="parent"&&!!parent)||(role==="admin"&&code===state.settings.adminCode);if(!ok){alert("بيانات الدخول غير صحيحة");return}user={role,name};localStorage.setItem(USER_STORE,JSON.stringify(user));closeLogin();updateUI();if(role==="student"){let s=state.students.find(x=>x.name===name);if(!s)state.students.push({name,stage:"غير محددة",phone:"",lastLogin:new Date().toLocaleString("ar-IQ")});else s.lastLogin=new Date().toLocaleString("ar-IQ");save();studentWelcome.textContent="مرحباً "+name.split(" ")[0]+" 👋";updateStudentHome();showPage("student")}if(role==="teacher"){showPage("teacher");teacherHome()}if(role==="parent"){showPage("parentPanel");parentWelcome.textContent="مرحباً "+name+" 👋";updateParentHome();parentOverview()}if(role==="admin"){showPage("admin");adminHome()}}
+
+function cleanText(v){
+  return String(v||"").trim().replace(/\s+/g," ").toLowerCase();
+}
+function sameText(a,b){
+  return cleanText(a)===cleanText(b);
+}
+function sendMessage(to){
+  const box=document.getElementById("msgText");
+  if(!box || !box.value.trim()){
+    alert("اكتب الرسالة");
+    return;
+  }
+  if(!to){
+    alert("اختر المستلم");
+    return;
+  }
+  state.messages.push({
+    id:uid("msg"),
+    from:user.name,
+    to:to,
+    text:box.value.trim(),
+    read:false,
+    date:new Date().toLocaleString("ar-IQ")
+  });
+  save();
+  alert("تم إرسال الرسالة");
+  if(user.role==="student") studentMessages();
+  else if(user.role==="parent") parentMessages();
+  else if(user.role==="teacher") teacherMessages();
+}
+
 function sendContact(){const n=contactName.value.trim(),t=contactTitle.value.trim(),b=contactBody.value.trim();if(!n||!t||!b){alert("أكمل الرسالة");return}state.contactMessages.unshift({id:uid("c"),name:n,title:t,body:b,reply:"",date:new Date().toLocaleString("ar-IQ")});save();alert("تم إرسال الرسالة إلى المدير");contactName.value=contactTitle.value=contactBody.value=""}
 function getActiveSubscription(studentName){const sub=state.subscriptions.filter(s=>s.student===studentName&&s.status==="active").sort((a,b)=>new Date(b.endDate)-new Date(a.endDate))[0];if(!sub)return null;if(new Date(sub.endDate+"T23:59:59")<new Date())return null;return sub}function subscriptionDaysLeft(studentName){const sub=getActiveSubscription(studentName);if(!sub)return 0;return Math.max(0,Math.ceil((new Date(sub.endDate+"T23:59:59")-new Date())/(1000*60*60*24)))}function studentHasActiveSubscription(){if(!user||user.role!=="student")return true;return!!getActiveSubscription(user.name)}function requireSubscription(){if(studentHasActiveSubscription())return true;alert("يجب تفعيل الاشتراك أولاً");studentSubscription();return false}
 function studentSubscription(){const days=subscriptionDaysLeft(user.name),pending=state.paymentRequests.filter(r=>r.student===user.name&&r.status==="pending");studentPanel.innerHTML=`<h3>الاشتراك والتحويل</h3><div class="notice">رقم الماستر كارد الخاص بالمدير:<br><b>${state.settings.masterCard}</b></div><p>أيام الاشتراك المتبقية: <b>${days}</b></p><div class="panel"><h3>إرسال طلب تحويل</h3><input id="payName" value="${user.name}" placeholder="الاسم الثلاثي"><input id="payAmount" type="number" placeholder="مبلغ التحويل"><input id="payDate" type="date" value="${todayISO()}"><input id="payNote" placeholder="ملاحظة أو رقم العملية"><button class="gold" onclick="sendPaymentRequest()">إرسال طلب الاشتراك</button></div><h3>طلباتي</h3>${pending.length?pending.map(r=>`<div class="file-item"><b>${r.amount} دينار</b><span>${r.date} - قيد المراجعة</span></div>`).join(""):"<div class='empty'>لا توجد طلبات قيد المراجعة</div>"}`}function sendPaymentRequest(){const n=payName.value.trim(),a=payAmount.value.trim(),d=payDate.value,no=payNote.value.trim();if(!n||!a||!d){alert("أكمل الاسم والمبلغ والتاريخ");return}state.paymentRequests.unshift({id:uid("pay"),student:user.name,enteredName:n,amount:a,date:d,note:no,status:"pending",createdAt:new Date().toLocaleString("ar-IQ")});save();alert("تم إرسال الطلب إلى المدير");studentSubscription()}
@@ -222,9 +254,64 @@ function saveExamFromForms(){
   teacherExams();
 }
 function deleteExam(x){state.exams=state.exams.filter(e=>e.id!==x);save();teacherExams()}
-function teacherStudents(){const subs=teacherSubjectsList().map(x=>cleanText(x.name)),a=state.access.filter(x=>subs.includes(cleanText(x.subject)));teacherMain.innerHTML=`<h2>طلاب موادي</h2><div class="panel"><table><thead><tr><th>الطالب</th><th>المادة</th><th>المرحلة</th><th>الهاتف</th><th>الاشتراك</th></tr></thead><tbody>${a.length?a.map(x=>`<tr><td>${x.student}</td><td>${x.subject}</td><td>${x.stage}</td><td>${x.phone||""}</td><td>${subscriptionDaysLeft(x.student)} يوم</td></tr>`).join(""):"<tr><td colspan='5'>لا يوجد طلاب</td></tr>"}</tbody></table></div>`}function teacherMessages(){const subjects=teacherSubjectsList();const m=state.messages.filter(x=>sameText(x.to,user.name)||sameText(x.from,user.name));teacherMain.innerHTML=`<h2>الرسائل</h2><p class="notice">المدرس يرسل فقط إلى الطلاب المسجلين في مادته، والطالب يستطيع الرد من لوحة الطالب.</p>${subjects.length?`<label>اختر المادة</label><select id="teacherMsgSubject" onchange="refreshTeacherMessageStudents()">${subjects.map(s=>`<option value="${s.name}">${s.name}</option>`).join("")}</select><label>اختر الطالب المسجل في المادة</label><select id="msgTo"></select><textarea id="msgText" placeholder="اكتب رسالة إلى الطالب"></textarea><button onclick="sendMessage(msgTo.value)">إرسال</button>`:`<div class='empty'>لا توجد مادة مخصصة لك</div>`}<div class="chat">${m.length?m.map(renderMsg).join(""):"<div class='empty'>لا توجد رسائل</div>"}</div>`;refreshTeacherMessageStudents()}
-function refreshTeacherMessageStudents(){const subjectEl=document.getElementById("teacherMsgSubject"),toEl=document.getElementById("msgTo");if(!subjectEl||!toEl)return;const students=getStudentsForTeacherSubject(subjectEl.value);toEl.innerHTML=students.length?students.map(n=>`<option value="${n}">${n}</option>`).join(""):"<option value=''>لا يوجد طلاب مسجلون</option>"}
-function teacherResults(){const subs=teacherSubjectsList().map(x=>cleanText(x.name)),a=state.results.filter(r=>subs.includes(cleanText(r.subject)));teacherMain.innerHTML=`<h2>النتائج</h2><div class="panel"><table><thead><tr><th>الطالب</th><th>الاختبار</th><th>المادة</th><th>النسبة</th></tr></thead><tbody>${a.length?a.map(r=>`<tr><td>${r.student}</td><td>${r.exam}</td><td>${r.subject}</td><td>${r.percent}%</td></tr>`).join(""):"<tr><td colspan='4'>لا نتائج</td></tr>"}</tbody></table></div>`}
+function teacherStudents(){
+  const subs=teacherSubjectsList().map(x=>cleanText(x.name));
+  const a=state.access.filter(x=>subs.includes(cleanText(x.subject)));
+  teacherMain.innerHTML=`
+    <h2>طلاب موادي</h2>
+    <div class="panel">
+      <table>
+        <thead>
+          <tr><th>الطالب</th><th>المادة</th><th>المرحلة</th><th>الهاتف</th><th>الاشتراك</th></tr>
+        </thead>
+        <tbody>
+          ${a.length?a.map(x=>`<tr><td>${x.student}</td><td>${x.subject}</td><td>${x.stage}</td><td>${x.phone||""}</td><td>${subscriptionDaysLeft(x.student)} يوم</td></tr>`).join(""):"<tr><td colspan='5'>لا يوجد طلاب مسجلون في موادك</td></tr>"}
+        </tbody>
+      </table>
+    </div>`;
+}
+function teacherMessages(){
+  const subjects=teacherSubjectsList();
+  const m=state.messages.filter(x=>sameText(x.to,user.name)||sameText(x.from,user.name));
+  teacherMain.innerHTML=`
+    <h2>الرسائل</h2>
+    <p class="notice">المدرس يرسل فقط إلى الطلاب المسجلين في مادته، والطالب يستطيع الرد من لوحة الطالب.</p>
+    ${
+      subjects.length?`
+        <label>اختر المادة</label>
+        <select id="teacherMsgSubject" onchange="refreshTeacherMessageStudents()">
+          ${subjects.map(s=>`<option value="${s.name}">${s.name}</option>`).join("")}
+        </select>
+        <label>اختر الطالب المسجل في المادة</label>
+        <select id="msgTo"></select>
+        <textarea id="msgText" placeholder="اكتب رسالة إلى الطالب"></textarea>
+        <button onclick="sendMessage(msgTo.value)">إرسال</button>
+      `:`<div class='empty'>لا توجد مادة مخصصة لك</div>`
+    }
+    <div class="chat">${m.length?m.map(renderMsg).join(""):"<div class='empty'>لا توجد رسائل</div>"}</div>`;
+  refreshTeacherMessageStudents();
+}
+function refreshTeacherMessageStudents(){
+  const subjectEl=document.getElementById("teacherMsgSubject");
+  const toEl=document.getElementById("msgTo");
+  if(!subjectEl||!toEl)return;
+  const students=state.access.filter(a=>sameText(a.subject,subjectEl.value));
+  toEl.innerHTML=students.length?students.map(s=>`<option value="${s.student}">${s.student}</option>`).join(""):`<option value="">لا يوجد طلاب</option>`;
+}
+function teacherResults(){
+  const subs=teacherSubjectsList().map(x=>cleanText(x.name));
+  const a=state.results.filter(r=>subs.includes(cleanText(r.subject)));
+  teacherMain.innerHTML=`
+    <h2>النتائج</h2>
+    <div class="panel">
+      <table>
+        <thead><tr><th>الطالب</th><th>الاختبار</th><th>المادة</th><th>الدرجة</th><th>النسبة</th></tr></thead>
+        <tbody>
+          ${a.length?a.map(r=>`<tr><td>${r.student}</td><td>${r.exam}</td><td>${r.subject}</td><td>${r.score||0}</td><td>${r.percent}%</td></tr>`).join(""):"<tr><td colspan='5'>لا توجد نتائج بعد</td></tr>"}
+        </tbody>
+      </table>
+    </div>`;
+}
 function adminHome(){adminMain.innerHTML=`<h2>لوحة المدير</h2><div class="stats"><div><b>${state.subjects.length}</b><span>مواد</span></div><div><b>${state.teachers.length}</b><span>مدرسون</span></div><div><b>${state.students.length}</b><span>طلاب</span></div><div><b>${state.parents.length}</b><span>أولياء أمور</span></div><div><b>${state.paymentRequests.filter(r=>r.status==="pending").length}</b><span>طلبات اشتراك</span></div></div>`}function adminSubjects(){adminMain.innerHTML=`<h2>إدارة المواد</h2><div class="panel"><div class="row"><input id="subName" placeholder="اسم المادة"><input id="subIcon" placeholder="رمز المادة"><input id="subCode" type="password" placeholder="كود دخول المادة"><select id="subStage"><option>المتوسطة</option><option>الإعدادية</option></select></div><button onclick="addSubjectAdmin()">إضافة مادة</button></div><div class="cards">${state.subjects.length?state.subjects.map((s,i)=>`<div class="card"><h3>${s.icon||"📚"} ${s.name}</h3><p>${s.stage}</p><p>كود المادة: ******</p><button onclick="changeSubjectCode(${i})">تغيير الكود</button><button class="danger" onclick="deleteSubjectAdmin(${i})">حذف</button></div>`).join(""):"<div class='card'><div class='empty'>لا توجد مواد</div></div>"}</div>`}function addSubjectAdmin(){if(!subName.value.trim()||!subCode.value.trim()){alert("أكمل اسم المادة والكود");return}state.subjects.push({name:subName.value.trim(),icon:subIcon.value.trim()||"📚",code:subCode.value.trim(),stage:subStage.value});save();adminSubjects();renderSubjects()}function changeSubjectCode(i){const c=prompt("اكتب الكود الجديد");if(c){state.subjects[i].code=c;save();adminSubjects()}}function deleteSubjectAdmin(i){if(confirm("حذف المادة؟")){state.subjects.splice(i,1);save();adminSubjects()}}
 function adminTeachers(){adminMain.innerHTML=`<h2>إدارة المدرسين</h2><div class="panel"><h3>إضافة مدرس جديد</h3><div class="row"><input id="teacherName" placeholder="اسم المدرس الثلاثي"><input id="teacherCode" type="password" placeholder="كود المدرس"></div><label>المادة التي يدرسها</label><select id="teacherSubject">${state.subjects.map(s=>`<option>${s.name}</option>`).join("")}</select><button onclick="addTeacherAdmin()">إضافة المدرس</button></div><div class="panel"><table><thead><tr><th>اسم المدرس</th><th>المادة</th><th>الحالة</th><th>إجراءات</th></tr></thead><tbody>${state.teachers.length?state.teachers.map((t,i)=>`<tr><td>${t.name}</td><td>${t.subjects}</td><td>${t.active?'مفعل':'معطل'}</td><td><button onclick="toggleTeacher(${i})">${t.active?'تعطيل':'تفعيل'}</button><button onclick="changeTeacherCode(${i})">تغيير الكود</button><button class="danger" onclick="deleteTeacher(${i})">حذف</button></td></tr>`).join(""):"<tr><td colspan='4'>لا يوجد مدرسون</td></tr>"}</tbody></table></div>`}function addTeacherAdmin(){if(!teacherName.value.trim()||!teacherCode.value.trim()||!teacherSubject.value){alert("أكمل بيانات المدرس");return}state.teachers.push({name:teacherName.value.trim(),code:teacherCode.value.trim(),subjects:teacherSubject.value,active:true});save();adminTeachers()}function toggleTeacher(i){state.teachers[i].active=!state.teachers[i].active;save();adminTeachers()}function changeTeacherCode(i){const c=prompt("الكود الجديد للمدرس");if(c){state.teachers[i].code=c;save();adminTeachers()}}function deleteTeacher(i){if(confirm("حذف المدرس؟")){state.teachers.splice(i,1);save();adminTeachers()}}function adminStudents(){adminMain.innerHTML=`<h2>الطلاب</h2><div class="panel"><table><thead><tr><th>الاسم</th><th>المرحلة</th><th>الهاتف</th><th>آخر دخول</th><th>الاشتراك</th></tr></thead><tbody>${state.students.length?state.students.map(s=>`<tr><td>${s.name}</td><td>${s.stage}</td><td>${s.phone||""}</td><td>${s.lastLogin||""}</td><td>${subscriptionDaysLeft(s.name)} يوم</td></tr>`).join(""):"<tr><td colspan='5'>لا يوجد طلاب</td></tr>"}</tbody></table></div>`}
 function adminParents(){adminMain.innerHTML=`<h2>إدارة أولياء الأمور</h2><div class="panel"><h3>إضافة ولي أمر</h3><input id="parentNameInput" placeholder="اسم ولي الأمر"><input id="parentCodeInput" type="password" placeholder="كود ولي الأمر"><label>ربط ولي الأمر بالطلاب</label><select id="parentStudentsInput" multiple size="5">${state.students.map(s=>`<option value="${s.name}">${s.name}</option>`).join("")}</select><button onclick="addParentAdmin()">إضافة ولي أمر</button></div><div class="panel"><h3>قائمة أولياء الأمور</h3>${state.parents.length?state.parents.map((p,i)=>`<div class="file-item"><div><b>${p.name}</b><br>الأبناء: ${(p.students||[]).join("، ")||"لا يوجد"}</div><div><button onclick="changeParentCode(${i})">تغيير الكود</button><button onclick="toggleParent(${i})">${p.active?'تعطيل':'تفعيل'}</button><button class="danger" onclick="deleteParent(${i})">حذف</button></div></div>`).join(""):"<div class='empty'>لا يوجد أولياء أمور</div>"}</div>`}function addParentAdmin(){const name=parentNameInput.value.trim(),code=parentCodeInput.value.trim(),selected=Array.from(parentStudentsInput.selectedOptions).map(o=>o.value);if(!name||!code||!selected.length){alert("أكمل الاسم والكود واختر طالباً واحداً على الأقل");return}state.parents.push({name,code,students:selected,active:true});save();adminParents()}function changeParentCode(i){const c=prompt("الكود الجديد لولي الأمر");if(c){state.parents[i].code=c;save();adminParents()}}function toggleParent(i){state.parents[i].active=!state.parents[i].active;save();adminParents()}function deleteParent(i){if(confirm("حذف ولي الأمر؟")){state.parents.splice(i,1);save();adminParents()}}

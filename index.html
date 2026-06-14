@@ -73,6 +73,14 @@ th{background:var(--primary-dark);color:white}
 .notice{background:#fff8df;border:1px solid #ffe08a;padding:14px;border-radius:18px;margin:8px 0}.ok{background:#eafff3;border-color:#b7f7cf}
 .avatar{width:72px;height:72px;border-radius:22px;background:linear-gradient(135deg,var(--primary),#69b6ff);display:grid;place-items:center;color:#fff;font-size:30px;margin-bottom:10px}
 footer{text-align:center;padding:28px;background:#06183f;color:white}
+
+.choice-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px}
+.choice-card{display:inline-flex;align-items:center;justify-content:center;min-width:110px;padding:14px 20px;border-radius:18px;border:2px solid #dbeafe;background:#f8fbff;color:#0b2f76;font-weight:900;cursor:pointer;transition:.2s}
+.choice-card input{display:none}
+.choice-card:has(input:checked){background:linear-gradient(135deg,#2563eb,#60a5fa);color:white;border-color:#2563eb;box-shadow:0 10px 25px rgba(37,99,235,.25)}
+.profile-box{display:grid;grid-template-columns:110px 1fr;gap:18px;align-items:center}
+.profile-photo{width:110px;height:110px;border-radius:28px;object-fit:cover;background:#eaf2ff;border:1px solid #dbeafe}
+
 @media(max-width:900px){
  .header{flex-direction:column}.hero{grid-template-columns:1fr;text-align:center}.hero h1{font-size:38px}
  .shell{grid-template-columns:1fr}.shell aside{position:static;height:auto}.row{display:block}
@@ -179,6 +187,7 @@ footer{text-align:center;padding:28px;background:#06183f;color:white}
     <button onclick="subjectTab('files')">الملفات</button>
     <button onclick="subjectTab('exams')">الاختبارات</button>
     <button onclick="subjectTab('students')">طلاب المادة</button>
+    <button onclick="subjectTab('teacherProfile')">بروفايل الأستاذ</button>
   </div>
   <div id="subjectContent" class="panel"></div>
 </section>
@@ -187,6 +196,7 @@ footer{text-align:center;padding:28px;background:#06183f;color:white}
   <aside>
     <h3>لوحة المدرس</h3>
     <button onclick="safeRun(teacherHome)">🏠 الرئيسية</button>
+    <button onclick="safeRun(teacherProfile)">👤 بروفايلي</button>
     <button onclick="safeRun(teacherSubjects)">📚 موادي</button>
     <button onclick="safeRun(teacherLectures)">🎥 المحاضرات</button>
     <button onclick="safeRun(teacherFiles)">📁 الملفات</button>
@@ -251,7 +261,7 @@ footer{text-align:center;padding:28px;background:#06183f;color:white}
     <label>اسم الطالب الثلاثي</label>
     <input id="enrollName">
     <label>المرحلة</label>
-    <select id="enrollStage"><option>المتوسطة</option><option>الإعدادية</option></select>
+    <select id="enrollStage"></select>
     <label>رقم الهاتف</label>
     <input id="enrollPhone">
     <label>كود المادة</label>
@@ -281,6 +291,21 @@ function uid(p){return p+Date.now()+Math.floor(Math.random()*999)}
 function todayISO(){return new Date().toISOString().slice(0,10)}
 function clean(v){return String(v||"").trim().replace(/\s+/g," ").toLowerCase()}
 function same(a,b){return clean(a)===clean(b)}
+function gradesOptions(selected=""){
+  const grades=["الصف الثالث متوسط","الصف الرابع إعدادي","الصف الخامس إعدادي","الصف السادس إعدادي"];
+  return grades.map(g=>`<option value="${g}" ${g===selected?"selected":""}>${g}</option>`).join("");
+}
+function getStudentGrade(name){
+  const s=state.students.find(x=>same(x.name,name));
+  return s?.grade || s?.stage || "";
+}
+function getTeacher(){
+  return state.teachers.find(x=>same(x.name,user?.name));
+}
+function gradeMatchesSubject(subject, grade){
+  return !grade || same(subject.grade||subject.stage, grade);
+}
+
 function safeRun(fn){try{fn()}catch(e){console.error(e);alert("حدث خطأ في هذا القسم: "+e.message)}}
 
 function showPage(page){
@@ -397,12 +422,18 @@ function updateSubjectStats(){
 function isEnrolled(subject){return user?.role!=="student"||state.access.some(a=>same(a.student,user.name)&&same(a.subject,subject))}
 function renderSubjects(q=""){
   updateSubjectStats();
-  const arr=state.subjects.filter(s=>s.name.includes(q)||s.stage.includes(q));
+  const studentGrade = user?.role==="student" ? getStudentGrade(user.name) : "";
+  const arr=state.subjects.filter(s=>{
+    const subjectGrade=s.grade||s.stage||"";
+    const textOk=s.name.includes(q)||subjectGrade.includes(q);
+    const gradeOk=user?.role!=="student" || !studentGrade || same(subjectGrade,studentGrade);
+    return textOk && gradeOk;
+  });
   subjectsGrid.innerHTML=arr.length?arr.map(s=>`<div class="card">
-    <div class="avatar">${s.icon||"📚"}</div><h3>${s.name}</h3><p>${s.stage}</p>
+    <div class="avatar">${s.icon||"📚"}</div><h3>${s.name}</h3><p>${s.grade||s.stage}</p>
     <div class="meta"><span>طلاب ${s.students||0}</span><span>محاضرات ${s.lectures||0}</span><span>ملفات ${s.files||0}</span><span>اختبارات ${s.exams||0}</span></div>
     <button onclick="openSubject('${s.name}')">${isEnrolled(s.name)?"فتح المادة":"تسجيل دخول للمادة"}</button>
-  </div>`).join(""):"<div class='card'><div class='empty'>لا توجد مواد حالياً</div></div>";
+  </div>`).join(""):"<div class='card'><div class='empty'>لا توجد مواد مناسبة لمرحلتك حالياً</div></div>";
 }
 function openSubject(name){
   if(!user){openLogin();return}
@@ -410,7 +441,7 @@ function openSubject(name){
   if(!currentSubject)return;
   if(user.role==="student"&&!requireSubscription())return;
   if(user.role==="student"&&!isEnrolled(name)){
-    pendingSubject=currentSubject;enrollName.value=user.name;enrollCode.value="";enrollModal.classList.remove("hidden");return;
+    pendingSubject=currentSubject;enrollName.value=user.name;enrollStage.innerHTML=`<option value="${currentSubject.grade||currentSubject.stage}">${currentSubject.grade||currentSubject.stage}</option>`;enrollCode.value="";enrollModal.classList.remove("hidden");return;
   }
   subjectTitle.textContent=(currentSubject.icon||"📚")+" "+currentSubject.name;
   showPage("subjectPage");subjectTab("lectures");
@@ -422,9 +453,10 @@ function confirmEnroll(){
   if(!same(n,user.name)){alert("اكتب نفس اسم الطالب المسجل");return}
   if(c!==pendingSubject.code){alert("كود المادة غير صحيح");return}
   let s=state.students.find(x=>same(x.name,user.name));
-  if(s){s.stage=st;s.phone=ph}
+  if(s){s.stage=st;s.grade=st;s.phone=ph}
+  if(!same(st,pendingSubject.grade||pendingSubject.stage)){alert("هذه المادة ليست ضمن مرحلتك الدراسية");return}
   if(!state.access.some(a=>same(a.student,user.name)&&same(a.subject,pendingSubject.name))){
-    state.access.push({student:user.name,subject:pendingSubject.name,stage:st,phone:ph,date:new Date().toLocaleString("ar-IQ")});
+    state.access.push({student:user.name,subject:pendingSubject.name,stage:st,grade:st,phone:ph,date:new Date().toLocaleString("ar-IQ")});
   }
   save();closeEnroll();updateStudentHome();openSubject(pendingSubject.name);
 }
@@ -448,6 +480,23 @@ function subjectTab(tab){
     subjectContent.innerHTML=`<h3>طلاب المادة</h3>${arr.length?arr.map(x=>`<div class="file-item"><b>${x.student}</b><span>${x.stage} - ${x.phone||""}</span></div>`).join(""):"<div class='empty'>لا يوجد طلاب</div>"}`;
   }
 }
+
+  if(tab==="teacherProfile"){
+    const teacher=state.teachers.find(t=>same(t.subjects,sub) && same(t.grade||"",currentSubject.grade||currentSubject.stage||""));
+    if(!teacher){subjectContent.innerHTML="<div class='empty'>لا يوجد مدرس مرتبط بهذه المادة والمرحلة</div>";return}
+    subjectContent.innerHTML=`<h3>بروفايل الأستاذ</h3>
+      <div class="profile-box">
+        ${teacher.photo?`<img class="profile-photo" src="${teacher.photo}">`:`<div class="profile-photo" style="display:grid;place-items:center;font-size:34px">👨‍🏫</div>`}
+        <div>
+          <h2 style="text-align:right;margin:0;color:#0b2f76">${teacher.name}</h2>
+          <p><b>المادة:</b> ${teacher.subjects}</p>
+          <p><b>المرحلة:</b> ${teacher.grade||"غير محددة"}</p>
+          <p><b>النبذة:</b> ${teacher.bio||"لم يضف الأستاذ نبذة بعد"}</p>
+          <p><b>الخبرة:</b> ${teacher.experience||"غير محددة"}</p>
+        </div>
+      </div>`;
+  }
+
 function fileRow(f){return `<div class="file-item"><b>${f.title}</b><span>${f.subject} - ${f.category||""}</span><button onclick="openStored('${f.id}','file')">فتح</button></div>`}
 function openStored(itemId,type){
   if(user?.role==="student"&&!studentHasActiveSubscription()){alert("الاشتراك غير مفعل");return}
@@ -473,11 +522,11 @@ function updateStudentHome(){
 function showMySubjects(){
   const enrolled=state.access.filter(x=>same(x.student,user.name));
   const enrolledNames=enrolled.map(x=>clean(x.subject));
-  const available=state.subjects.filter(s=>!enrolledNames.includes(clean(s.name)));
+  const studentGrade=getStudentGrade(user.name); const available=state.subjects.filter(s=>!enrolledNames.includes(clean(s.name)) && (!studentGrade || same(s.grade||s.stage,studentGrade)));
   studentPanel.innerHTML=`<h3>موادي المسجل بها</h3>
   ${enrolled.length?enrolled.map(x=>`<div class="file-item"><b>${x.subject}</b><button onclick="openSubject('${x.subject}')">فتح لوحة المادة</button></div>`).join(""):"<div class='empty'>لم تسجل في أي مادة بعد</div>"}
   <h3 style="margin-top:25px">مواد متاحة للتسجيل</h3>
-  ${available.length?available.map(s=>`<div class="file-item"><div><b>${s.icon||"📚"} ${s.name}</b><br><span class="badge">${s.stage}</span></div><button onclick="openSubject('${s.name}')">تسجيل بالمادة</button></div>`).join(""):"<div class='empty'>لا توجد مواد جديدة</div>"}
+  ${available.length?available.map(s=>`<div class="file-item"><div><b>${s.icon||"📚"} ${s.name}</b><br><span class="badge">${s.grade||s.stage}</span></div><button onclick="openSubject('${s.name}')">تسجيل بالمادة</button></div>`).join(""):"<div class='empty'>لا توجد مواد جديدة</div>"}
   <div class="notice">عند الضغط على تسجيل بالمادة سيطلب منك كود المادة.</div>`;
 }
 function showStudentGrades(){
@@ -547,7 +596,7 @@ function startExam(examId){
 }
 function questionHtml(q,i){
   if(q.type==="mcq")return `<div class="question"><p><b>${i+1}- ${q.q}</b> <span class="badge">${q.points} درجة</span></p>${(q.options||[]).map(o=>`<label><input type="radio" name="q${i}" value="${o}"> ${o}</label><br>`).join("")}</div>`;
-  if(q.type==="tf")return `<div class="question"><p><b>${i+1}- ${q.q}</b> <span class="badge">${q.points} درجة</span></p><label><input type="radio" name="q${i}" value="صح"> صح</label><br><label><input type="radio" name="q${i}" value="خطأ"> خطأ</label></div>`;
+  if(q.type==="tf")return `<div class="question"><p><b>${i+1}- ${q.q}</b> <span class="badge">${q.points} درجة</span></p><div class="choice-row"><label class="choice-card"><input type="radio" name="q${i}" value="صح">صح</label><label class="choice-card"><input type="radio" name="q${i}" value="خطأ">خطأ</label></div></div>`;
   if(q.type==="list")return `<div class="question"><p><b>${i+1}- ${q.q}</b> <span class="badge">${q.points} درجة</span></p><textarea name="q${i}" rows="4" placeholder="اكتب الإجابات مفصولة بفواصل"></textarea></div>`;
   return `<div class="question"><p><b>${i+1}- ${q.q}</b> <span class="badge">${q.points} درجة</span></p><textarea name="q${i}" rows="5" placeholder="اكتب الإجابة المقالية"></textarea></div>`;
 }
@@ -578,13 +627,50 @@ function teacherSubjectsList(){
   const t=state.teachers.find(x=>same(x.name,user.name));
   if(!t)return[];
   const names=String(t.subjects||"").split(/[،,]/).map(x=>clean(x)).filter(Boolean);
-  return state.subjects.filter(s=>names.includes(clean(s.name)));
+  return state.subjects.filter(s=>names.includes(clean(s.name)) && same(s.grade||s.stage,t.grade||""));
 }
 function subjectOptions(){const subs=teacherSubjectsList();return subs.length?subs.map(s=>`<option>${s.name}</option>`).join(""):`<option value="">لا توجد مادة</option>`}
 function teacherHome(){
   const s=teacherSubjectsList();
   teacherMain.innerHTML=`<h2>لوحة المدرس</h2><div class="stats"><div><b>${s.length}</b><span>موادي</span></div><div><b>${state.lectures.filter(l=>s.some(x=>same(x.name,l.subject))).length}</b><span>محاضرات</span></div><div><b>${state.files.filter(f=>s.some(x=>same(x.name,f.subject))).length}</b><span>ملفات</span></div><div><b>${state.exams.filter(e=>s.some(x=>same(x.name,e.subject))).length}</b><span>اختبارات</span></div></div><div class="panel"><p>اختر أحد الأقسام من القائمة اليمنى.</p></div>`;
 }
+function teacherProfile(){
+  const t=getTeacher();
+  if(!t){teacherMain.innerHTML="<div class='empty'>لم يتم العثور على حساب المدرس</div>";return}
+  teacherMain.innerHTML=`<h2>بروفايلي</h2>
+    <div class="panel">
+      <div class="profile-box">
+        ${t.photo?`<img class="profile-photo" src="${t.photo}">`:`<div class="profile-photo" style="display:grid;place-items:center;font-size:34px">👨‍🏫</div>`}
+        <div>
+          <h3>${t.name}</h3>
+          <p>المادة: ${t.subjects}</p>
+          <p>المرحلة: ${t.grade||"غير محددة"}</p>
+        </div>
+      </div>
+      <label>الصورة الشخصية</label>
+      <input id="teacherPhotoInput" type="file" accept="image/*">
+      <label>نبذة تعريفية</label>
+      <textarea id="teacherBioInput" rows="4" placeholder="اكتب نبذة عنك">${t.bio||""}</textarea>
+      <label>الخبرة أو المؤهل</label>
+      <input id="teacherExperienceInput" value="${t.experience||""}" placeholder="مثال: مدرس أحياء منذ 5 سنوات">
+      <button onclick="saveTeacherProfile()">حفظ البروفايل</button>
+    </div>`;
+}
+function saveTeacherProfile(){
+  const t=getTeacher();
+  if(!t)return;
+  t.bio=teacherBioInput.value.trim();
+  t.experience=teacherExperienceInput.value.trim();
+  const file=teacherPhotoInput.files[0];
+  if(file){
+    const r=new FileReader();
+    r.onload=()=>{t.photo=r.result;save();alert("تم حفظ البروفايل");teacherProfile()};
+    r.readAsDataURL(file);
+  }else{
+    save();alert("تم حفظ البروفايل");teacherProfile();
+  }
+}
+
 function teacherSubjects(){
   const s=teacherSubjectsList();
   teacherMain.innerHTML=`<h2>موادي</h2>${s.length?s.map(x=>`<div class="card"><h3>${x.icon||"📚"} ${x.name}</h3><p>كود المادة: <b>${x.code}</b></p><button onclick="navigator.clipboard.writeText('${x.code}')">نسخ الكود</button></div>`).join(""):"<div class='empty'>لا توجد مواد مخصصة لك. أضف المدرس من لوحة المدير واربطه بمادة.</div>"}`;
@@ -703,7 +789,7 @@ function teacherMessages(){
 function refreshTeacherMessageStudents(){
   const s=document.getElementById("teacherMsgSubject"),to=document.getElementById("msgTo");
   if(!s||!to)return;
-  const students=state.access.filter(a=>same(a.subject,s.value));
+  const t=getTeacher(); const students=state.access.filter(a=>same(a.subject,s.value) && same(a.grade||a.stage,t?.grade||""));
   to.innerHTML=students.length?students.map(x=>`<option>${x.student}</option>`).join(""):`<option value="">لا يوجد طلاب</option>`;
 }
 function teacherResults(){
@@ -714,12 +800,21 @@ function teacherResults(){
 
 /* المدير */
 function adminHome(){adminMain.innerHTML=`<h2>لوحة المدير</h2><div class="stats"><div><b>${state.subjects.length}</b><span>مواد</span></div><div><b>${state.teachers.length}</b><span>مدرسون</span></div><div><b>${state.students.length}</b><span>طلاب</span></div><div><b>${state.parents.length}</b><span>أولياء أمور</span></div><div><b>${state.paymentRequests.filter(r=>r.status==="pending").length}</b><span>طلبات اشتراك</span></div></div>`}
-function adminSubjects(){adminMain.innerHTML=`<h2>إدارة المواد</h2><div class="panel"><div class="row"><input id="subName" placeholder="اسم المادة"><input id="subIcon" placeholder="رمز المادة"><input id="subCode" type="password" placeholder="كود دخول المادة"><select id="subStage"><option>المتوسطة</option><option>الإعدادية</option></select></div><button onclick="addSubjectAdmin()">إضافة مادة</button></div><div class="cards">${state.subjects.length?state.subjects.map((s,i)=>`<div class="card"><h3>${s.icon||"📚"} ${s.name}</h3><p>${s.stage}</p><p>كود المادة: ******</p><button onclick="changeSubjectCode(${i})">تغيير الكود</button><button class="danger" onclick="deleteSubjectAdmin(${i})">حذف</button></div>`).join(""):"<div class='card'><div class='empty'>لا توجد مواد</div></div>"}</div>`}
-function addSubjectAdmin(){if(!subName.value.trim()||!subCode.value.trim()){alert("أكمل اسم المادة والكود");return}state.subjects.push({name:subName.value.trim(),icon:subIcon.value.trim()||"📚",code:subCode.value.trim(),stage:subStage.value});save();adminSubjects();renderSubjects()}
+function adminSubjects(){adminMain.innerHTML=`<h2>إدارة المواد</h2><div class="panel"><div class="row"><input id="subName" placeholder="اسم المادة"><input id="subIcon" placeholder="رمز المادة"><input id="subCode" type="password" placeholder="كود دخول المادة"><select id="subStage">${gradesOptions()}</select></div><button onclick="addSubjectAdmin()">إضافة مادة</button></div><div class="cards">${state.subjects.length?state.subjects.map((s,i)=>`<div class="card"><h3>${s.icon||"📚"} ${s.name}</h3><p>${s.grade||s.stage}</p><p>كود المادة: ******</p><button onclick="changeSubjectCode(${i})">تغيير الكود</button><button class="danger" onclick="deleteSubjectAdmin(${i})">حذف</button></div>`).join(""):"<div class='card'><div class='empty'>لا توجد مواد</div></div>"}</div>`}
+function addSubjectAdmin(){if(!subName.value.trim()||!subCode.value.trim()){alert("أكمل اسم المادة والكود");return}state.subjects.push({name:subName.value.trim(),icon:subIcon.value.trim()||"📚",code:subCode.value.trim(),stage:subStage.value,grade:subStage.value});save();adminSubjects();renderSubjects()}
 function changeSubjectCode(i){const c=prompt("اكتب الكود الجديد");if(c){state.subjects[i].code=c;save();adminSubjects()}}
 function deleteSubjectAdmin(i){if(confirm("حذف المادة؟")){state.subjects.splice(i,1);save();adminSubjects()}}
-function adminTeachers(){adminMain.innerHTML=`<h2>إدارة المدرسين</h2><div class="panel"><h3>إضافة مدرس جديد</h3><div class="row"><input id="teacherName" placeholder="اسم المدرس الثلاثي"><input id="teacherCode" type="password" placeholder="كود المدرس"></div><label>المادة التي يدرسها</label><select id="teacherSubject">${state.subjects.map(s=>`<option>${s.name}</option>`).join("")}</select><button onclick="addTeacherAdmin()">إضافة المدرس</button></div><div class="panel"><table><thead><tr><th>اسم المدرس</th><th>المادة</th><th>الحالة</th><th>إجراءات</th></tr></thead><tbody>${state.teachers.length?state.teachers.map((t,i)=>`<tr><td>${t.name}</td><td>${t.subjects}</td><td>${t.active?'مفعل':'معطل'}</td><td><button onclick="toggleTeacher(${i})">${t.active?'تعطيل':'تفعيل'}</button><button onclick="changeTeacherCode(${i})">تغيير الكود</button><button class="danger" onclick="deleteTeacher(${i})">حذف</button></td></tr>`).join(""):"<tr><td colspan='4'>لا يوجد مدرسون</td></tr>"}</tbody></table></div>`}
-function addTeacherAdmin(){if(!teacherName.value.trim()||!teacherCode.value.trim()||!teacherSubject.value){alert("أكمل بيانات المدرس");return}state.teachers.push({name:teacherName.value.trim(),code:teacherCode.value.trim(),subjects:teacherSubject.value,active:true});save();adminTeachers()}
+function adminTeachers(){adminMain.innerHTML=`<h2>إدارة المدرسين</h2><div class="panel"><h3>إضافة مدرس جديد</h3><div class="row"><input id="teacherName" placeholder="اسم المدرس الثلاثي"><input id="teacherCode" type="password" placeholder="كود المدرس"></div><label>المرحلة التي يدرسها</label><select id="teacherGrade" onchange="filterTeacherSubjects()">${gradesOptions()}</select>
+<label>المادة التي يدرسها</label><select id="teacherSubject"></select><button onclick="addTeacherAdmin()">إضافة المدرس</button></div><div class="panel"><table><thead><tr><th>اسم المدرس</th><th>المادة</th><th>المرحلة</th><th>الحالة</th><th>إجراءات</th></tr></thead><tbody>${state.teachers.length?state.teachers.map((t,i)=>`<tr><td>${t.name}</td><td>${t.subjects}</td><td>${t.grade||""}</td><td>${t.active?'مفعل':'معطل'}</td><td><button onclick="toggleTeacher(${i})">${t.active?'تعطيل':'تفعيل'}</button><button onclick="changeTeacherCode(${i})">تغيير الكود</button><button class="danger" onclick="deleteTeacher(${i})">حذف</button></td></tr>`).join(""):"<tr><td colspan='5'>لا يوجد مدرسون</td></tr>"}</tbody></table></div>`;filterTeacherSubjects()}
+function filterTeacherSubjects(){
+  const grade=document.getElementById("teacherGrade")?.value||"";
+  const el=document.getElementById("teacherSubject");
+  if(!el)return;
+  const subs=state.subjects.filter(s=>same(s.grade||s.stage,grade));
+  el.innerHTML=subs.length?subs.map(s=>`<option>${s.name}</option>`).join(""):`<option value="">لا توجد مادة لهذه المرحلة</option>`;
+}
+
+function addTeacherAdmin(){if(!teacherName.value.trim()||!teacherCode.value.trim()||!teacherSubject.value||!teacherGrade.value){alert("أكمل بيانات المدرس");return}state.teachers.push({name:teacherName.value.trim(),code:teacherCode.value.trim(),subjects:teacherSubject.value,grade:teacherGrade.value,active:true,bio:"",experience:"",photo:""});save();adminTeachers()}
 function toggleTeacher(i){state.teachers[i].active=!state.teachers[i].active;save();adminTeachers()}
 function changeTeacherCode(i){const c=prompt("الكود الجديد للمدرس");if(c){state.teachers[i].code=c;save();adminTeachers()}}
 function deleteTeacher(i){if(confirm("حذف المدرس؟")){state.teachers.splice(i,1);save();adminTeachers()}}

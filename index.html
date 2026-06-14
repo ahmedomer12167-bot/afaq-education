@@ -479,8 +479,6 @@ function subjectTab(tab){
     const arr=state.access.filter(x=>same(x.subject,sub));
     subjectContent.innerHTML=`<h3>طلاب المادة</h3>${arr.length?arr.map(x=>`<div class="file-item"><b>${x.student}</b><span>${x.stage} - ${x.phone||""}</span></div>`).join(""):"<div class='empty'>لا يوجد طلاب</div>"}`;
   }
-}
-
   if(tab==="teacherProfile"){
     const teacher=state.teachers.find(t=>same(t.subjects,sub) && same(t.grade||"",currentSubject.grade||currentSubject.stage||""));
     if(!teacher){subjectContent.innerHTML="<div class='empty'>لا يوجد مدرس مرتبط بهذه المادة والمرحلة</div>";return}
@@ -497,6 +495,7 @@ function subjectTab(tab){
       </div>`;
   }
 
+}
 function fileRow(f){return `<div class="file-item"><b>${f.title}</b><span>${f.subject} - ${f.category||""}</span><button onclick="openStored('${f.id}','file')">فتح</button></div>`}
 function openStored(itemId,type){
   if(user?.role==="student"&&!studentHasActiveSubscription()){alert("الاشتراك غير مفعل");return}

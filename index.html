@@ -73,6 +73,15 @@ th{background:var(--primary-dark);color:white}
 .notice{background:#fff8df;border:1px solid #ffe08a;padding:14px;border-radius:18px;margin:8px 0}.ok{background:#eafff3;border-color:#b7f7cf}
 .avatar{width:72px;height:72px;border-radius:22px;background:linear-gradient(135deg,var(--primary),#69b6ff);display:grid;place-items:center;color:#fff;font-size:30px;margin-bottom:10px}
 footer{text-align:center;padding:28px;background:#06183f;color:white}
+.grade-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin:20px 0}
+.grade-card{background:linear-gradient(135deg,#ffffff,#eef5ff);border:1px solid #dbeafe;border-radius:24px;padding:22px;box-shadow:var(--shadow);cursor:pointer;transition:.2s}
+.grade-card:hover{transform:translateY(-3px);border-color:var(--primary)}
+.level-pill{display:inline-block;background:#fff7df;border:1px solid #ffe08a;color:#7c4a00;border-radius:999px;padding:7px 12px;margin:4px;font-weight:800}
+.teacher-tag{display:inline-block;background:#eafff3;border:1px solid #b7f7cf;color:#166534;border-radius:999px;padding:7px 12px;margin:4px;font-weight:800}
+.choice-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px}
+.choice-card{display:inline-flex;align-items:center;justify-content:center;min-width:110px;padding:14px 20px;border-radius:18px;border:2px solid #dbeafe;background:#f8fbff;color:#0b2f76;font-weight:900;cursor:pointer;transition:.2s}
+.choice-card input{display:none}
+.choice-card:has(input:checked){background:linear-gradient(135deg,#2563eb,#60a5fa);color:white;border-color:#2563eb;box-shadow:0 10px 25px rgba(37,99,235,.25)}
 
 .choice-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px}
 .choice-card{display:inline-flex;align-items:center;justify-content:center;min-width:110px;padding:14px 20px;border-radius:18px;border:2px solid #dbeafe;background:#f8fbff;color:#0b2f76;font-weight:900;cursor:pointer;transition:.2s}
@@ -151,7 +160,7 @@ footer{text-align:center;padding:28px;background:#06183f;color:white}
   </div>
   <div class="panel">
     <div class="row">
-      <button onclick="showMySubjects()">📚 موادي والتسجيل</button>
+      <button onclick="studentStageBrowser()">🎓 الصفوف والمواد</button><button onclick="showMySubjects()">📚 موادي المسجل بها</button>
       <button onclick="renderStudentExams()">📝 اختباراتي</button>
       <button onclick="showStudentGrades()">🏅 درجاتي</button>
       <button onclick="studentMessages()">💬 الرسائل</button>
@@ -186,7 +195,7 @@ footer{text-align:center;padding:28px;background:#06183f;color:white}
     <button onclick="subjectTab('lectures')">المحاضرات</button>
     <button onclick="subjectTab('files')">الملفات</button>
     <button onclick="subjectTab('exams')">الاختبارات</button>
-    <button onclick="subjectTab('students')">طلاب المادة</button>
+    <button onclick="subjectTab('students')">طلاب المادة</button><button onclick="subjectTab('levels')">مستويات المادة</button>
     <button onclick="subjectTab('teacherProfile')">بروفايل الأستاذ</button>
   </div>
   <div id="subjectContent" class="panel"></div>
@@ -291,6 +300,19 @@ function uid(p){return p+Date.now()+Math.floor(Math.random()*999)}
 function todayISO(){return new Date().toISOString().slice(0,10)}
 function clean(v){return String(v||"").trim().replace(/\s+/g," ").toLowerCase()}
 function same(a,b){return clean(a)===clean(b)}
+function gradesOptions(selected=""){
+  const grades=["الصف الثالث متوسط","الصف الرابع إعدادي","الصف الخامس إعدادي","الصف السادس إعدادي"];
+  return grades.map(g=>`<option value="${g}" ${g===selected?"selected":""}>${g}</option>`).join("");
+}
+function levelsOptions(selected=""){
+  const levels=["مبتدئ","متوسط","متقدم","مراجعة وزارية"];
+  return levels.map(l=>`<option value="${l}" ${l===selected?"selected":""}>${l}</option>`).join("");
+}
+function getStudentGrade(name){
+  const s=state.students.find(x=>same(x.name,name));
+  return s?.grade || s?.stage || "";
+}
+function getTeacher(){return state.teachers.find(x=>same(x.name,user?.name));}
 function gradesOptions(selected=""){
   const grades=["الصف الثالث متوسط","الصف الرابع إعدادي","الصف الخامس إعدادي","الصف السادس إعدادي"];
   return grades.map(g=>`<option value="${g}" ${g===selected?"selected":""}>${g}</option>`).join("");
@@ -419,21 +441,22 @@ function updateSubjectStats(){
     s.exams=state.exams.filter(e=>same(e.subject,s.name)).length;
   });
 }
-function isEnrolled(subject){return user?.role!=="student"||state.access.some(a=>same(a.student,user.name)&&same(a.subject,subject))}
+function isEnrolled(subject){
+  if(user?.role!=="student")return true;
+  const sub=state.subjects.find(s=>same(s.name,subject));
+  return state.access.some(a=>same(a.student,user.name)&&same(a.subject,subject)&&same(a.grade||a.stage,sub?.grade||sub?.stage||""));
+}
 function renderSubjects(q=""){
   updateSubjectStats();
-  const studentGrade = user?.role==="student" ? getStudentGrade(user.name) : "";
+  const studentGrade=user?.role==="student"?getStudentGrade(user.name):"";
   const arr=state.subjects.filter(s=>{
-    const subjectGrade=s.grade||s.stage||"";
-    const textOk=s.name.includes(q)||subjectGrade.includes(q);
-    const gradeOk=user?.role!=="student" || !studentGrade || same(subjectGrade,studentGrade);
-    return textOk && gradeOk;
+    const g=s.grade||s.stage||"";
+    return (s.name.includes(q)||g.includes(q)) && (user?.role!=="student"||!studentGrade||same(g,studentGrade));
   });
-  subjectsGrid.innerHTML=arr.length?arr.map(s=>`<div class="card">
-    <div class="avatar">${s.icon||"📚"}</div><h3>${s.name}</h3><p>${s.grade||s.stage}</p>
-    <div class="meta"><span>طلاب ${s.students||0}</span><span>محاضرات ${s.lectures||0}</span><span>ملفات ${s.files||0}</span><span>اختبارات ${s.exams||0}</span></div>
-    <button onclick="openSubject('${s.name}')">${isEnrolled(s.name)?"فتح المادة":"تسجيل دخول للمادة"}</button>
-  </div>`).join(""):"<div class='card'><div class='empty'>لا توجد مواد مناسبة لمرحلتك حالياً</div></div>";
+  subjectsGrid.innerHTML=arr.length?arr.map(s=>{
+    const teacher=state.teachers.find(t=>same(t.subjects,s.name)&&same(t.grade||"",s.grade||s.stage));
+    return `<div class="card"><div class="avatar">${s.icon||"📚"}</div><h3>${s.name}</h3><p>${s.grade||s.stage}</p>${teacher?`<span class="teacher-tag">الأستاذ: ${teacher.name}</span>`:""}<div class="meta"><span>طلاب ${s.students||0}</span><span>محاضرات ${s.lectures||0}</span><span>ملفات ${s.files||0}</span><span>اختبارات ${s.exams||0}</span></div><button onclick="openSubject('${s.name}')">${isEnrolled(s.name)?"فتح المادة":"تسجيل دخول للمادة"}</button></div>`;
+  }).join(""):"<div class='card'><div class='empty'>لا توجد مواد مناسبة لمرحلتك حالياً</div></div>";
 }
 function openSubject(name){
   if(!user){openLogin();return}
@@ -452,6 +475,7 @@ function confirmEnroll(){
   const n=enrollName.value.trim(),st=enrollStage.value,ph=enrollPhone.value.trim(),c=enrollCode.value.trim();
   if(!same(n,user.name)){alert("اكتب نفس اسم الطالب المسجل");return}
   if(c!==pendingSubject.code){alert("كود المادة غير صحيح");return}
+  if(!same(st,pendingSubject.grade||pendingSubject.stage)){alert("هذه المادة ليست ضمن مرحلتك الدراسية");return}
   let s=state.students.find(x=>same(x.name,user.name));
   if(s){s.stage=st;s.grade=st;s.phone=ph}
   if(!same(st,pendingSubject.grade||pendingSubject.stage)){alert("هذه المادة ليست ضمن مرحلتك الدراسية");return}
@@ -496,6 +520,28 @@ function subjectTab(tab){
   }
 
 }
+
+  if(tab==="levels"){
+    const levels=["مبتدئ","متوسط","متقدم","مراجعة وزارية"];
+    subjectContent.innerHTML=`<h3>مستويات ${sub}</h3>${levels.map(l=>{
+      const lecs=state.lectures.filter(x=>same(x.subject,sub)&&same(x.level||"مبتدئ",l)).length;
+      const files=state.files.filter(x=>same(x.subject,sub)&&same(x.level||"مبتدئ",l)).length;
+      const exs=state.exams.filter(x=>same(x.subject,sub)&&same(x.level||"مبتدئ",l)).length;
+      return `<div class="file-item"><div><b>${l}</b><br><span class="level-pill">محاضرات ${lecs}</span><span class="level-pill">ملفات ${files}</span><span class="level-pill">اختبارات ${exs}</span></div><button onclick="showSubjectLevel('${l}')">فتح المستوى</button></div>`;
+    }).join("")}`;
+  }
+
+function showSubjectLevel(level){
+  const sub=currentSubject.name;
+  const lecs=state.lectures.filter(x=>same(x.subject,sub)&&same(x.level||"مبتدئ",level));
+  const files=state.files.filter(x=>same(x.subject,sub)&&same(x.level||"مبتدئ",level));
+  const exs=state.exams.filter(x=>same(x.subject,sub)&&same(x.level||"مبتدئ",level));
+  subjectContent.innerHTML=`<h3>${sub} - مستوى ${level}</h3>
+    <h4>المحاضرات</h4>${lecs.length?lecs.map(l=>`<div class="file-item"><b>${l.title}</b><button onclick="openStored('${l.id}','lecture')">فتح</button></div>`).join(""):"<div class='empty'>لا توجد محاضرات</div>"}
+    <h4>الملفات</h4>${files.length?files.map(fileRow).join(""):"<div class='empty'>لا توجد ملفات</div>"}
+    <h4>الاختبارات</h4>${exs.length?exs.map(e=>`<div class="file-item"><b>${e.title}</b><span>${e.questions.length} سؤال</span><button onclick="openExam('${e.id}')">بدء</button></div>`).join(""):"<div class='empty'>لا توجد اختبارات</div>"}
+    <button class="gray" onclick="subjectTab('levels')">رجوع للمستويات</button>`;
+}
 function fileRow(f){return `<div class="file-item"><b>${f.title}</b><span>${f.subject} - ${f.category||""}</span><button onclick="openStored('${f.id}','file')">فتح</button></div>`}
 function openStored(itemId,type){
   if(user?.role==="student"&&!studentHasActiveSubscription()){alert("الاشتراك غير مفعل");return}
@@ -518,15 +564,36 @@ function updateStudentHome(){
   const days=subscriptionDaysLeft(user?.name);
   subscriptionAlert.innerHTML=days>0?`<div class="notice ok">اشتراكك مفعل، المتبقي ${days} يوم.</div>`:`<div class="notice">اشتراكك غير مفعل. أرسل طلب تحويل من خانة الاشتراك.</div>`;
 }
+
+function studentStageBrowser(){
+  const grades=["الصف الثالث متوسط","الصف الرابع إعدادي","الصف الخامس إعدادي","الصف السادس إعدادي"];
+  const current=getStudentGrade(user.name);
+  studentPanel.innerHTML=`<h3>اختر الصف الدراسي</h3>
+    ${current?`<div class="notice ok">صفك الحالي: <b>${current}</b></div>`:`<div class="notice">اختر الصف ثم سجل في مادة، وبعدها يصبح حسابك مرتبطاً بهذا الصف.</div>`}
+    <div class="grade-grid">${grades.map(g=>`<div class="grade-card" onclick="studentShowGradeSubjects('${g}')"><h3>🎓 ${g}</h3><p>عرض مواد هذا الصف ومدرسيه ومستوياته.</p></div>`).join("")}</div>`;
+}
+function studentShowGradeSubjects(grade){
+  const current=getStudentGrade(user.name);
+  if(current && !same(current,grade)){
+    studentPanel.innerHTML=`<h3>${grade}</h3><div class="empty">لا يمكنك عرض مواد هذا الصف، لأن حسابك مرتبط بـ ${current}</div><button onclick="studentStageBrowser()">رجوع</button>`;
+    return;
+  }
+  const subjects=state.subjects.filter(s=>same(s.grade||s.stage,grade));
+  const enrolled=state.access.filter(a=>same(a.student,user.name));
+  const keys=enrolled.map(a=>clean(a.subject+"__"+(a.grade||a.stage)));
+  studentPanel.innerHTML=`<h3>مواد ${grade}</h3>
+    ${subjects.length?subjects.map(s=>{
+      const key=clean(s.name+"__"+(s.grade||s.stage));
+      const teacher=state.teachers.find(t=>same(t.subjects,s.name)&&same(t.grade||"",grade));
+      return `<div class="file-item"><div><b>${s.icon||"📚"} ${s.name}</b><br><span class="badge">${grade}</span>${teacher?`<span class="teacher-tag">الأستاذ: ${teacher.name}</span>`:`<span class="badge">لا يوجد مدرس بعد</span>`}</div><button onclick="openSubject('${s.name}')">${keys.includes(key)?"فتح المادة":"تسجيل بالمادة"}</button></div>`;
+    }).join(""):"<div class='empty'>لا توجد مواد مضافة لهذا الصف بعد</div>"}
+    <button class="gray" onclick="studentStageBrowser()">رجوع للصفوف</button>`;
+}
+
 function showMySubjects(){
   const enrolled=state.access.filter(x=>same(x.student,user.name));
-  const enrolledNames=enrolled.map(x=>clean(x.subject));
-  const studentGrade=getStudentGrade(user.name); const available=state.subjects.filter(s=>!enrolledNames.includes(clean(s.name)) && (!studentGrade || same(s.grade||s.stage,studentGrade)));
   studentPanel.innerHTML=`<h3>موادي المسجل بها</h3>
-  ${enrolled.length?enrolled.map(x=>`<div class="file-item"><b>${x.subject}</b><button onclick="openSubject('${x.subject}')">فتح لوحة المادة</button></div>`).join(""):"<div class='empty'>لم تسجل في أي مادة بعد</div>"}
-  <h3 style="margin-top:25px">مواد متاحة للتسجيل</h3>
-  ${available.length?available.map(s=>`<div class="file-item"><div><b>${s.icon||"📚"} ${s.name}</b><br><span class="badge">${s.grade||s.stage}</span></div><button onclick="openSubject('${s.name}')">تسجيل بالمادة</button></div>`).join(""):"<div class='empty'>لا توجد مواد جديدة</div>"}
-  <div class="notice">عند الضغط على تسجيل بالمادة سيطلب منك كود المادة.</div>`;
+    ${enrolled.length?enrolled.map(x=>`<div class="file-item"><div><b>${x.subject}</b><br><span class="badge">${x.grade||x.stage}</span></div><button onclick="openSubject('${x.subject}')">فتح لوحة المادة</button></div>`).join(""):"<div class='empty'>لم تسجل في أي مادة بعد</div><button onclick='studentStageBrowser()'>عرض الصفوف والمواد</button>"}`;
 }
 function showStudentGrades(){
   const arr=state.results.filter(r=>same(r.student,user.name));
@@ -676,26 +743,26 @@ function teacherSubjects(){
 }
 function teacherLectures(){
   const s=teacherSubjectsList();
-  teacherMain.innerHTML=`<h2>المحاضرات</h2><div class="panel"><input id="lecTitle" placeholder="عنوان المحاضرة"><select id="lecSubject">${subjectOptions()}</select><input id="lecUrl" placeholder="رابط المحاضرة اختياري"><input id="lecFile" type="file" accept=".pdf,video/*"><button onclick="addLecture()">إضافة محاضرة</button></div><div class="panel">${state.lectures.filter(l=>s.some(x=>same(x.name,l.subject))).length?state.lectures.filter(l=>s.some(x=>same(x.name,l.subject))).map(l=>`<div class="file-item"><b>${l.title}</b><span>${l.subject}</span><button onclick="openStored('${l.id}','lecture')">فتح</button><button class="danger" onclick="deleteLecture('${l.id}')">حذف</button></div>`).join(""):"<div class='empty'>لا توجد محاضرات</div>"}</div>`;
+  teacherMain.innerHTML=`<h2>المحاضرات</h2><div class="panel"><input id="lecTitle" placeholder="عنوان المحاضرة"><select id="lecSubject">${subjectOptions()}</select><select id="lecLevel">${levelsOptions()}</select><input id="lecUrl" placeholder="رابط المحاضرة اختياري"><input id="lecFile" type="file" accept=".pdf,video/*"><button onclick="addLecture()">إضافة محاضرة</button></div><div class="panel">${state.lectures.filter(l=>s.some(x=>same(x.name,l.subject))).length?state.lectures.filter(l=>s.some(x=>same(x.name,l.subject))).map(l=>`<div class="file-item"><b>${l.title}</b><span>${l.subject}</span><button onclick="openStored('${l.id}','lecture')">فتح</button><button class="danger" onclick="deleteLecture('${l.id}')">حذف</button></div>`).join(""):"<div class='empty'>لا توجد محاضرات</div>"}</div>`;
 }
 function addLecture(){
   if(!lecTitle.value.trim()){alert("اكتب عنوان المحاضرة");return}
   if(!lecSubject.value){alert("لا توجد مادة مخصصة");return}
   const file=lecFile.files[0],url=lecUrl.value.trim();
-  const add=(data="",type="رابط")=>{state.lectures.push({id:uid("lec"),title:lecTitle.value,subject:lecSubject.value,url,data,type,date:new Date().toLocaleString("ar-IQ")});save();teacherLectures()};
+  const add=(data="",type="رابط")=>{state.lectures.push({id:uid("lec"),title:lecTitle.value,subject:lecSubject.value,level:lecLevel.value,url,data,type,date:new Date().toLocaleString("ar-IQ")});save();teacherLectures()};
   if(file){const r=new FileReader();r.onload=()=>add(r.result,file.type);r.readAsDataURL(file)}else add("",url?"رابط":"نص");
 }
 function deleteLecture(x){state.lectures=state.lectures.filter(l=>l.id!==x);save();teacherLectures()}
 function teacherFiles(){
   const s=teacherSubjectsList();
-  teacherMain.innerHTML=`<h2>الملفات</h2><div class="panel"><input id="fileTitle" placeholder="عنوان الملف"><select id="fileSubject">${subjectOptions()}</select><select id="fileCategory"><option>ملخصات</option><option>كتب</option><option>أسئلة وزارية</option><option>بحوث</option><option>عروض تقديمية</option></select><input id="fileUrl" placeholder="رابط خارجي اختياري"><input id="fileInput" type="file" accept=".pdf,video/*,.doc,.docx,.ppt,.pptx"><button onclick="addFile()">إضافة ملف</button></div><div class="panel">${state.files.filter(f=>s.some(x=>same(x.name,f.subject))).length?state.files.filter(f=>s.some(x=>same(x.name,f.subject))).map(f=>`<div class="file-item"><b>${f.title}</b><span>${f.subject} - ${f.category}</span><button onclick="openStored('${f.id}','file')">فتح</button><button class="danger" onclick="deleteFile('${f.id}')">حذف</button></div>`).join(""):"<div class='empty'>لا توجد ملفات</div>"}</div>`;
+  teacherMain.innerHTML=`<h2>الملفات</h2><div class="panel"><input id="fileTitle" placeholder="عنوان الملف"><select id="fileSubject">${subjectOptions()}</select><select id="fileLevel">${levelsOptions()}</select><select id="fileCategory"><option>ملخصات</option><option>كتب</option><option>أسئلة وزارية</option><option>بحوث</option><option>عروض تقديمية</option></select><input id="fileUrl" placeholder="رابط خارجي اختياري"><input id="fileInput" type="file" accept=".pdf,video/*,.doc,.docx,.ppt,.pptx"><button onclick="addFile()">إضافة ملف</button></div><div class="panel">${state.files.filter(f=>s.some(x=>same(x.name,f.subject))).length?state.files.filter(f=>s.some(x=>same(x.name,f.subject))).map(f=>`<div class="file-item"><b>${f.title}</b><span>${f.subject} - ${f.category}</span><button onclick="openStored('${f.id}','file')">فتح</button><button class="danger" onclick="deleteFile('${f.id}')">حذف</button></div>`).join(""):"<div class='empty'>لا توجد ملفات</div>"}</div>`;
 }
 function addFile(){
   if(!fileTitle.value.trim()){alert("اكتب عنوان الملف");return}
   if(!fileSubject.value){alert("لا توجد مادة مخصصة");return}
   const file=fileInput.files[0],url=fileUrl.value.trim();
   if(!file&&!url){alert("ارفع ملف أو ضع رابط");return}
-  const add=(data="",type="رابط")=>{state.files.push({id:uid("file"),title:fileTitle.value,subject:fileSubject.value,category:fileCategory.value,url,data,type,date:new Date().toLocaleString("ar-IQ")});save();teacherFiles()};
+  const add=(data="",type="رابط")=>{state.files.push({id:uid("file"),title:fileTitle.value,subject:fileSubject.value,level:fileLevel.value,category:fileCategory.value,url,data,type,date:new Date().toLocaleString("ar-IQ")});save();teacherFiles()};
   if(file){const r=new FileReader();r.onload=()=>add(r.result,file.type);r.readAsDataURL(file)}else add("",url?"رابط":"ملف");
 }
 function deleteFile(x){state.files=state.files.filter(f=>f.id!==x);save();teacherFiles()}
@@ -708,6 +775,7 @@ function teacherExams(){
     <h3>بيانات الاختبار</h3>
     <input id="examTitle" placeholder="اسم الاختبار">
     <select id="examSubject">${subjectOptions()}</select>
+    <select id="examLevel">${levelsOptions()}</select>
     <input id="examMinutes" type="number" placeholder="المدة بالدقائق">
   </div>
   <div class="panel">
@@ -766,7 +834,7 @@ function saveExamBuild(){
   if(!examSubject.value){alert("اختر مادة");return}
   if(!examBuild.length){alert("أضف سؤالاً واحداً على الأقل");return}
   const total=examBuild.reduce((a,b)=>a+(+b.points||0),0);
-  state.exams.push({id:uid("ex"),title:examTitle.value.trim(),subject:examSubject.value,minutes:+examMinutes.value||20,total,questions:[...examBuild],createdAt:new Date().toLocaleString("ar-IQ")});
+  state.exams.push({id:uid("ex"),title:examTitle.value.trim(),subject:examSubject.value,level:examLevel.value,minutes:+examMinutes.value||20,total,questions:[...examBuild],createdAt:new Date().toLocaleString("ar-IQ")});
   save();alert("تم حفظ الاختبار");teacherExams();
 }
 function deleteExam(x){state.exams=state.exams.filter(e=>e.id!==x);save();teacherExams()}

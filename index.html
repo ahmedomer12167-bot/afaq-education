@@ -273,71 +273,70 @@ nav a{
 .homework-answer{background:#f8fbff;border:1px solid #e7edf9;border-radius:16px;padding:12px;margin:8px 0}
 .ai-box{background:linear-gradient(135deg,#f8fbff,#eef5ff);border:1px solid #dbeafe;border-radius:22px;padding:18px;margin:12px 0}
 @media(max-width:600px){.feature-grid{grid-template-columns:1fr}.rank-card{display:block;text-align:center}.calendar-item{display:block}}
-/* تصغير الهيدر في الموبايل */
+
+
+/* ===== AFAQ FINAL ULTRA COMPACT MOBILE HEADER - DO NOT REMOVE ===== */
 @media (max-width: 768px){
-
-  .topbar{
-    position: sticky !important;
-    top: 0 !important;
-    z-index: 999 !important;
-    background: rgba(255,255,255,.96) !important;
-    backdrop-filter: blur(12px);
-    padding: 6px 8px !important;
+  html,body{overflow-x:hidden!important}
+  .topbar,header.topbar{
+    position:sticky!important;top:0!important;z-index:99999!important;
+    background:rgba(255,255,255,.98)!important;backdrop-filter:blur(14px)!important;
+    padding:2px 4px!important;margin:0!important;min-height:0!important;
+    box-shadow:0 6px 18px rgba(15,23,42,.06)!important;
   }
-
   .header{
-    padding: 4px 8px !important;
-    gap: 6px !important;
-    min-height: auto !important;
+    padding:2px 4px!important;margin:0!important;gap:3px!important;min-height:0!important;
+    display:grid!important;grid-template-columns:1fr!important;justify-items:center!important;
   }
-
   .logo{
-    font-size: 17px !important;
-    margin: 0 !important;
+    font-size:14px!important;line-height:1.1!important;margin:0!important;padding:0!important;
+    gap:5px!important;width:auto!important;
   }
-
   .logo-mark{
-    width: 32px !important;
-    height: 32px !important;
-    border-radius: 11px !important;
-    font-size: 16px !important;
+    width:26px!important;height:26px!important;min-width:26px!important;min-height:26px!important;
+    font-size:13px!important;border-radius:8px!important;
   }
-
   nav{
-    display: flex !important;
-    justify-content: center !important;
-    gap: 5px !important;
-    flex-wrap: wrap !important;
-    margin-top: 4px !important;
+    display:flex!important;justify-content:center!important;align-items:center!important;
+    flex-wrap:wrap!important;gap:3px!important;margin:1px 0!important;padding:0!important;width:100%!important;
   }
-
-  nav a{
-    font-size: 12px !important;
-    padding: 5px 9px !important;
-    border-radius: 999px !important;
+  nav a,nav button{
+    font-size:10.5px!important;line-height:1!important;padding:4px 7px!important;margin:0!important;
+    border-radius:999px!important;min-height:0!important;
   }
-
-  #smartBackTop,
-  #logoutBtn{
-    font-size: 12px !important;
-    padding: 7px 14px !important;
-    border-radius: 999px !important;
-    margin: 3px !important;
+  #smartBackTop,#logoutBtn{
+    font-size:10.5px!important;line-height:1!important;padding:5px 11px!important;margin:1px!important;
+    min-width:0!important;min-height:0!important;border-radius:999px!important;
   }
-
-  .smart-back{
-    display: none !important;
-  }
-
+  .smart-back,#smartBackFloat{display:none!important}
+  .page{padding-top:6px!important}
+  .shell{margin-top:0!important}
   .shell aside{
-    margin-top: 0 !important;
+    margin-top:0!important;padding-top:10px!important;border-radius:0 0 22px 22px!important;
   }
-
-  .page{
-    padding-top: 12px !important;
+  .shell aside h3{font-size:20px!important;margin:3px 0 8px!important}
+  .shell aside button{
+    min-height:44px!important;font-size:14px!important;margin:5px 0!important;border-radius:17px!important;
   }
+  .shell main{padding-top:18px!important}
 }
+@media (max-width:420px){
+  .logo{font-size:13px!important}
+  .logo-mark{width:24px!important;height:24px!important;font-size:12px!important}
+  nav a,nav button{font-size:10px!important;padding:3px 6px!important}
+  #smartBackTop,#logoutBtn{font-size:10px!important;padding:4px 10px!important}
+}
+
 </style>
+
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#071b49">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="آفاق">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="icon-192.png">
+
 </head>
 <body>
 <div class="topbar"><header class="header"><div class="logo"><div class="logo-mark">آ</div> منصة آفاق التعليمية</div><nav><a onclick="showPage('home')">الرئيسية</a><a class="auth hidden" onclick="showPublicSubjects()">المواد</a><a onclick="showPage('contact')">تواصل معنا</a></nav><button id="smartBackTop" class="gray hidden" onclick="smartBack()">⬅️ رجوع</button><button id="logoutBtn" class="gray hidden" onclick="logout()">خروج</button></header></div>
@@ -1199,5 +1198,16 @@ async function startApp(){
 }
 startApp();
 </script>
+
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", function () {
+    navigator.serviceWorker.register("./sw.js").catch(function(err){
+      console.log("Service Worker registration failed:", err);
+    });
+  });
+}
+</script>
+
 </body>
 </html>

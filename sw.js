@@ -1,4 +1,4 @@
-const CACHE_NAME = "afaq-pwa-ultra-compact-v10";
+const CACHE_NAME = "afaq-teacher-panels-fixed-v2";
 const APP_FILES = [
   "./",
   "./index.html",

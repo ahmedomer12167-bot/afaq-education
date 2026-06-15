@@ -363,6 +363,11 @@ nav a{
 }
 
 </style>
+<link rel="manifest" href="manifest.json">
+
+<meta name="theme-color" content="#0b1d5d">
+
+<link rel="apple-touch-icon" href="icon-192.png">  
 </head>
 <body>
 <div class="topbar"><header class="header"><div class="logo"><div class="logo-mark">آ</div> منصة آفاق التعليمية</div><nav><a onclick="showPage('home')">الرئيسية</a><a class="auth hidden" onclick="showPublicSubjects()">المواد</a><a onclick="showPage('contact')">تواصل معنا</a></nav><button id="smartBackTop" class="gray hidden" onclick="smartBack()">⬅️ رجوع</button><button id="logoutBtn" class="gray hidden" onclick="logout()">خروج</button></header></div>
@@ -991,5 +996,12 @@ async function startApp(){
 }
 startApp();
 </script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js');
+  });
+}
+</script>  
 </body>
 </html>

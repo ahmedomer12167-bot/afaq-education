@@ -79,7 +79,182 @@ body{overflow-x:hidden}
 }
 
 .sync-indicator{position:fixed;right:14px;bottom:14px;z-index:95;background:#16a34a;color:white;border-radius:999px;padding:9px 14px;font-size:13px;font-weight:900;box-shadow:0 12px 30px rgba(22,163,74,.25)}
-@media(max-width:950px){.sync-indicator{right:10px;bottom:72px;font-size:12px;padding:8px 12px}}
+@media(max-width:950px){.sync-indicator{right:10px;bottom:12px;font-size:12px;padding:8px 12px}}
+
+.notification-card{display:flex;gap:12px;align-items:flex-start;background:#fff;border:1px solid #e7edf9;border-radius:18px;padding:14px;margin:10px 0;box-shadow:0 8px 24px rgba(15,23,42,.06)}
+.notification-icon{width:44px;height:44px;min-width:44px;border-radius:16px;background:linear-gradient(135deg,#2563eb,#60a5fa);color:white;display:grid;place-items:center;font-size:21px}
+.notification-card h4{margin:0 0 6px;color:#071b49}
+.notification-card p{margin:3px 0;color:#334155}
+.notification-meta{font-size:12px;color:#64748b;font-weight:800}
+.notification-unread{border-color:#f5b72f;background:#fffaf0}
+.notif-count{display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:24px;border-radius:999px;background:#dc2626;color:white;font-size:12px;margin-right:6px;padding:0 7px}
+
+
+/* ===== Compact Header for All Devices ===== */
+.topbar{
+  position:sticky;
+  top:0;
+  z-index:70;
+  background:rgba(255,255,255,.94);
+  backdrop-filter:blur(18px);
+}
+.header{
+  padding:10px 5%;
+  gap:10px;
+}
+.logo{
+  font-size:19px;
+  gap:8px;
+}
+.logo-mark{
+  width:38px;
+  height:38px;
+  border-radius:14px;
+  font-size:18px;
+}
+nav{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  flex-wrap:wrap;
+  justify-content:center;
+}
+nav a{
+  background:#f3f7ff;
+  border:1px solid #e3ebfb;
+  padding:8px 12px;
+  border-radius:999px;
+  margin:0;
+  font-size:14px;
+}
+#smartBackTop,#logoutBtn{
+  padding:8px 14px;
+  font-size:14px;
+  border-radius:999px;
+  margin:2px;
+}
+#smartBackTop{
+  background:#0f172a;
+}
+#logoutBtn{
+  background:#64748b;
+}
+.smart-back{display:none!important}
+@media(max-width:950px){
+  .topbar{
+    border-bottom:1px solid #e7edf9;
+  }
+  .header{
+    padding:8px 10px;
+    display:grid;
+    grid-template-columns:1fr;
+    justify-items:center;
+  }
+  .logo{
+    font-size:18px;
+    width:auto;
+    justify-content:center;
+  }
+  .logo-mark{
+    width:34px;
+    height:34px;
+    border-radius:12px;
+  }
+  nav{
+    width:100%;
+    display:grid;
+    grid-template-columns:repeat(3,auto);
+    justify-content:center;
+    gap:6px;
+  }
+  nav a{
+    font-size:13px;
+    padding:7px 10px;
+  }
+  #smartBackTop,#logoutBtn{
+    width:auto;
+    min-width:92px;
+    padding:8px 12px;
+    font-size:13px;
+  }
+  .shell aside{
+    padding-top:14px!important;
+    border-radius:0 0 22px 22px!important;
+  }
+  .shell aside h3{
+    font-size:21px!important;
+    margin:4px 0 10px!important;
+  }
+  .shell aside button{
+    min-height:48px!important;
+    font-size:15px!important;
+    margin:6px 0!important;
+    border-radius:18px!important;
+  }
+  .page{
+    padding-top:22px!important;
+  }
+}
+@media(max-width:520px){
+  .header{
+    padding:7px 8px;
+  }
+  .logo{
+    font-size:17px;
+  }
+  .logo-mark{
+    width:32px;
+    height:32px;
+  }
+  nav a{
+    font-size:12px;
+    padding:6px 8px;
+  }
+  #smartBackTop,#logoutBtn{
+    min-width:82px;
+    padding:7px 10px;
+  }
+}
+
+
+/* ===== Better Mobile Sidebar ===== */
+@media(max-width:950px){
+  .shell aside{
+    background:linear-gradient(135deg,#06183f,#0f2e74);
+  }
+  .shell aside button{
+    background:rgba(255,255,255,.09)!important;
+    border:1px solid rgba(255,255,255,.18)!important;
+  }
+  .shell main{
+    padding-top:22px!important;
+  }
+}
+
+
+/* ===== Added Features: Subject Page, Stats, Activity, Upload ===== */
+.subject-hero{background:linear-gradient(135deg,#06183f,#2563eb);color:#fff;border-radius:28px;padding:24px;margin:12px 0 18px;box-shadow:var(--shadow)}
+.subject-hero h2,.subject-hero h3{color:#fff;margin:0 0 8px;text-align:right}
+.subject-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-top:16px}
+.subject-tile{background:#fff;border:1px solid #e7edf9;border-radius:22px;padding:18px;text-align:center;box-shadow:0 12px 28px rgba(15,23,42,.08);cursor:pointer;font-weight:900}
+.subject-tile b{display:block;font-size:28px;color:#2563eb;margin-bottom:8px}
+.dash-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px}
+.dash-card{background:linear-gradient(135deg,#071b49,#2563eb);color:white;border-radius:24px;padding:20px;box-shadow:var(--shadow);text-align:center}
+.dash-card b{display:block;font-size:34px;margin-bottom:6px}
+.activity-item{background:#fff;border:1px solid #e7edf9;border-radius:18px;padding:14px;margin:10px 0;display:flex;gap:12px;align-items:flex-start}
+.activity-icon{width:42px;height:42px;min-width:42px;border-radius:14px;background:#eef5ff;display:grid;place-items:center;font-size:21px}
+.upload-progress{height:12px;background:#e3ecff;border-radius:999px;overflow:hidden;margin:10px 0;display:none}
+.upload-progress div{height:100%;background:#16a34a;width:0%}
+@media(max-width:950px){
+  .subject-hero{padding:20px 16px;border-radius:24px}
+  .subject-grid{grid-template-columns:1fr 1fr}
+  .dash-grid{grid-template-columns:1fr 1fr}
+  .dash-card b{font-size:28px}
+}
+@media(max-width:520px){
+  .subject-grid,.dash-grid{grid-template-columns:1fr}
+}
+
 </style>
 </head>
 <body>
@@ -87,17 +262,17 @@ body{overflow-x:hidden}
 <section id="home" class="hero page"><div><h1>منصة آفاق التعليمية</h1><p>منصة منظمة للمواد، الاشتراكات، الاختبارات، الرسائل، ومتابعة ولي الأمر.</p><button class="gold" onclick="document.getElementById('loginArea').scrollIntoView({behavior:'smooth'})">ابدأ الآن</button></div><div id="loginArea" class="login-grid"><div class="login-card"><h3>👨‍🎓 دخول الطالب</h3><input id="studentName" placeholder="اسم الطالب الثلاثي"><select id="studentGrade"></select><input id="studentCode" type="password" placeholder="رمز الطالب العام"><button onclick="loginStudent()">دخول الطالب</button></div><div class="login-card"><h3>👨‍👩‍👦 دخول ولي الأمر</h3><input id="parentName" placeholder="اسم ولي الأمر الثلاثي"><input id="parentCode" type="password" placeholder="رمز ولي الأمر"><button onclick="loginParent()">دخول ولي الأمر</button></div><div class="login-card"><h3>👨‍🏫 دخول المدرس</h3><input id="teacherName" placeholder="اسم المدرس الثلاثي"><select id="teacherLoginGrade"></select><select id="teacherLoginSubject"></select><input id="teacherCode" type="password" placeholder="رمز المدرس"><button onclick="loginTeacher()">دخول المدرس</button></div><div class="login-card"><h3>👨‍💼 دخول المدير</h3><input id="adminCode" type="password" placeholder="رمز المدير فقط"><button onclick="loginAdmin()">دخول المدير</button></div></div></section>
 <section id="contact" class="section page hidden"><h2>تواصل معنا</h2><div class="panel"><input id="contactName" placeholder="اسمك"><input id="contactTitle" placeholder="عنوان الرسالة"><textarea id="contactBody" rows="5" placeholder="نص الرسالة"></textarea><button onclick="sendContact()">إرسال إلى المدير</button></div></section>
 <section id="subjects" class="section page hidden"><h2>المواد المتاحة</h2><div id="publicSubjects" class="cards"></div></section>
-<section id="admin" class="shell page hidden"><aside><h3>لوحة المدير</h3><button onclick="adminHome()">🏠 الرئيسية</button><button onclick="adminSubjects()">📚 المواد والمدرسون</button><button onclick="adminStudents()">👨‍🎓 الطلاب</button><button onclick="adminParents()">👨‍👩‍👦 أولياء الأمور</button><button onclick="adminPayments()">💳 الاشتراكات</button><button onclick="adminResults()">📊 النتائج</button><button onclick="adminTeacherNotices()">📢 تبليغات المدرسين</button><button onclick="adminContactMessages()">📩 رسائل التواصل</button><button onclick="adminBackup()">💾 النسخ الاحتياطي</button><button onclick="adminSettings()">⚙️ الإعدادات</button></aside><main id="adminMain"></main></section>
-<section id="teacher" class="shell page hidden"><aside><h3>لوحة المدرس</h3><button onclick="teacherHome()">🏠 الرئيسية</button><button onclick="teacherProfile()">👤 البروفايل</button><button onclick="teacherContent()">📁 المحاضرات والملفات</button><button onclick="teacherExams()">📝 الاختبارات</button><button onclick="teacherStudents()">👨‍🎓 الطلاب والمستويات</button><button onclick="teacherRequests()">✅ طلبات التسجيل</button><button onclick="teacherMessages()">💬 رسائل الطلاب</button><button onclick="teacherParentMessages()">👨‍👩‍👦 رسائل ولي الأمر</button><button onclick="teacherResults()">📊 النتائج</button><button onclick="teacherNotices()">📢 تبليغات المدير</button></aside><main id="teacherMain"></main></section>
-<section id="student" class="dashboard page hidden"><h2 id="studentWelcome">لوحة الطالب</h2><div id="studentTopNotice"></div><div class="stats"><div><b id="subDays">0</b><span>أيام الاشتراك</span></div><div><b id="subCount">0</b><span>مواد مشترك بها</span></div><div><b id="msgCount">0</b><span>الرسائل</span></div><div><b id="avgScore">0%</b><span>المعدل</span></div></div><div id="studentNav" class="panel hidden"><div class="row"><button onclick="studentMySubjects()">📚 موادي</button><button onclick="studentMyExams()">📝 اختباراتي</button><button onclick="studentLevel()">🏆 مستواي</button><button onclick="studentGrades()">📊 درجاتي</button><button onclick="studentMessages()">💬 الرسائل</button><button class="gold" onclick="studentSubscription()">💳 الاشتراك</button></div></div><div id="studentPanel" class="panel"></div></section>
-<section id="parentPanel" class="dashboard page hidden"><h2 id="parentWelcome">لوحة ولي الأمر</h2><div class="panel"><h3>بحث عن الطالب</h3><input id="parentSearchInput" placeholder="اكتب اسم الطالب الثلاثي"><button onclick="parentSearchStudent()">بحث</button></div><div id="parentContent" class="panel"><div class="empty">ابحث عن اسم الطالب لمتابعة مستواه ودرجاته.</div></div></section>
+<section id="admin" class="shell page hidden"><aside><h3>لوحة المدير</h3><button onclick="adminHome()">🏠 الرئيسية</button><button onclick="adminNotifications()">🔔 الإشعارات <span id="adminNotifCount" class="notif-count hidden">0</span></button><button onclick="adminSubjects()">📚 المواد والمدرسون</button><button onclick="adminStudents()">👨‍🎓 الطلاب</button><button onclick="adminParents()">👨‍👩‍👦 أولياء الأمور</button><button onclick="adminPayments()">💳 الاشتراكات</button><button onclick="adminResults()">📊 النتائج</button><button onclick="adminActivityLog()">🕒 سجل النشاط</button><button onclick="adminTeacherNotices()">📢 تبليغات المدرسين</button><button onclick="adminContactMessages()">📩 رسائل التواصل</button><button onclick="adminBackup()">💾 النسخ الاحتياطي</button><button onclick="adminSettings()">⚙️ الإعدادات</button></aside><main id="adminMain"></main></section>
+<section id="teacher" class="shell page hidden"><aside><h3>لوحة المدرس</h3><button onclick="teacherHome()">🏠 الرئيسية</button><button onclick="teacherNotifications()">🔔 الإشعارات <span id="teacherNotifCount" class="notif-count hidden">0</span></button><button onclick="teacherProfile()">👤 البروفايل</button><button onclick="teacherContent()">📁 المحاضرات والملفات</button><button onclick="teacherExams()">📝 الاختبارات</button><button onclick="teacherStudents()">👨‍🎓 الطلاب والمستويات</button><button onclick="teacherRequests()">✅ طلبات التسجيل</button><button onclick="teacherMessages()">💬 رسائل الطلاب</button><button onclick="teacherParentMessages()">👨‍👩‍👦 رسائل ولي الأمر</button><button onclick="teacherResults()">📊 النتائج</button><button onclick="teacherNotices()">📢 تبليغات المدير</button></aside><main id="teacherMain"></main></section>
+<section id="student" class="dashboard page hidden"><h2 id="studentWelcome">لوحة الطالب</h2><div id="studentTopNotice"></div><div class="stats"><div><b id="subDays">0</b><span>أيام الاشتراك</span></div><div><b id="subCount">0</b><span>مواد مشترك بها</span></div><div><b id="msgCount">0</b><span>الرسائل</span></div><div><b id="avgScore">0%</b><span>المعدل</span></div></div><div id="studentNav" class="panel hidden"><div class="row"><button onclick="studentMySubjects()">📚 موادي</button><button onclick="studentMyExams()">📝 اختباراتي</button><button onclick="studentLevel()">🏆 مستواي</button><button onclick="studentGrades()">📊 درجاتي</button><button onclick="studentMessages()">💬 الرسائل</button><button onclick="studentNotifications()">🔔 الإشعارات <span id="studentNotifCount" class="notif-count hidden">0</span></button><button class="gold" onclick="studentSubscription()">💳 الاشتراك</button></div></div><div id="studentPanel" class="panel"></div></section>
+<section id="parentPanel" class="dashboard page hidden"><h2 id="parentWelcome">لوحة ولي الأمر</h2><div class="panel"><h3>بحث عن الطالب</h3><input id="parentSearchInput" placeholder="اكتب اسم الطالب الثلاثي"><button onclick="parentSearchStudent()">بحث</button><button onclick="parentNotifications()">🔔 الإشعارات <span id="parentNotifCount" class="notif-count hidden">0</span></button></div><div id="parentContent" class="panel"><div class="empty">ابحث عن اسم الطالب لمتابعة مستواه ودرجاته.</div></div></section>
 <section id="subjectRoom" class="section page hidden"><h2 id="roomTitle">غرفة المادة</h2><div class="tabs"><button onclick="roomTab('lectures')">المحاضرات</button><button onclick="roomTab('files')">الملفات</button><button onclick="roomTab('exams')">الاختبارات</button><button onclick="roomTab('levels')">المستويات</button><button onclick="roomTab('messages')">رسائل الأستاذ</button></div><div id="roomContent" class="panel"></div></section>
 <section id="examPage" class="section page hidden"><h2>الاختبار</h2><div id="examArea" class="panel"></div></section><div id="syncIndicator" class="sync-indicator hidden">متصل مباشر</div>
-<button id="smartBackFloat" class="smart-back hidden" onclick="smartBack()">⬅️ رجوع</button>
 <footer>© منصة آفاق التعليمية — Firebase + Backup</footer>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-storage-compat.js"></script>
 
 <script>
 const STORE='AFAQ_COMPLETE_ORDERED_V1',USER_STORE='AFAQ_COMPLETE_ORDERED_USER_V1';
@@ -114,6 +289,7 @@ const firebaseConfig={
 
 firebase.initializeApp(firebaseConfig);
 const db=firebase.firestore();
+const storage=firebase.storage();
 const STATE_DOC=db.collection('afaq_platform').doc('main_state');
 
 let state=null,user=JSON.parse(localStorage.getItem(USER_STORE)||'null'),currentSubjectId=null,currentExamId=null,timerInt=null,examBuild=[];
@@ -127,8 +303,18 @@ function defaultState(){
     settings:{studentCode:'1234',adminCode:'admin',parentGlobalCode:'parent',masterCard:'0000 0000 0000 0000',defaultSubscriptionDays:30},
     subjects:[],teachers:[],students:[],parents:[],enrollRequests:[],enrollments:[],
     payments:[],lectures:[],files:[],exams:[],results:[],messages:[],parentMessages:[],
-    adminNotices:[],noticeReplies:[],contactMessages:[]
+    adminNotices:[],noticeReplies:[],contactMessages:[],notifications:[],activityLog:[],notifications:[],activityLog:[]
   };
+}
+
+
+function normalizeState(){
+  if(!state) state=defaultState();
+  const d=defaultState();
+  Object.keys(d).forEach(function(k){
+    if(state[k]===undefined) state[k]=d[k];
+  });
+  if(!Array.isArray(state.notifications)) state.notifications=[];
 }
 
 async function loadCloudState(){
@@ -141,10 +327,12 @@ async function loadCloudState(){
       state=JSON.parse(localStorage.getItem(STORE)||'null')||defaultState();
       await STATE_DOC.set({state,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
     }
+    normalizeState();
     cloudReady=true;
   }catch(err){
     console.error('Firebase load error:',err);
     state=JSON.parse(localStorage.getItem(STORE)||'null')||defaultState();
+    normalizeState();
     alert('لم يتم الاتصال بـ Firebase. ستعمل المنصة على هذا الجهاز فقط مؤقتاً.');
   }
 }
@@ -187,6 +375,7 @@ function updateUI(){
   if(document.getElementById('smartBackTop')) smartBackTop.classList.toggle('hidden',!logged);
   if(document.getElementById('smartBackFloat')) smartBackFloat.classList.toggle('hidden',!logged);
   document.querySelectorAll('.auth').forEach(a=>a.classList.toggle('hidden',!logged));
+  if(logged) updateNotificationBadges();
 }function logout(){user=null;localStorage.removeItem(USER_STORE);updateUI();showPage('home')}function ensureInit(){studentGrade.innerHTML=gradeOptions();teacherLoginGrade.innerHTML=gradeOptions();teacherLoginSubject.innerHTML=subjectOptions();teacherLoginGrade.onchange=()=>teacherLoginSubject.innerHTML=subjectOptions()}function setUser(u){user=u;localStorage.setItem(USER_STORE,JSON.stringify(u));updateUI()}function loginStudent(){const name=studentName.value.trim(),grade=studentGrade.value,code=studentCode.value.trim();if(!name||!grade||!code)return alert('أكمل بيانات الطالب');if(code!==state.settings.studentCode)return alert('رمز الطالب غير صحيح');let s=state.students.find(x=>same(x.name,name)&&same(x.grade,grade));if(!s){s={id:uid('stu'),name,grade,phone:'',lastLogin:new Date().toLocaleString('ar-IQ')};state.students.push(s)}else s.lastLogin=new Date().toLocaleString('ar-IQ');save();setUser({role:'student',name,grade,id:s.id});studentDashboard()}function loginParent(){const name=parentName.value.trim(),code=parentCode.value.trim();if(!name||!code)return alert('أكمل بيانات ولي الأمر');let p=state.parents.find(x=>same(x.name,name)&&x.code===code);if(!p&&code===state.settings.parentGlobalCode){p={id:uid('par'),name,code,students:[]};state.parents.push(p);save()}if(!p)return alert('رمز ولي الأمر غير صحيح');setUser({role:'parent',name,id:p.id});showPage('parentPanel');parentWelcome.textContent='مرحباً '+name}function loginTeacher(){const name=teacherName.value.trim(),grade=teacherLoginGrade.value,subject=teacherLoginSubject.value,code=teacherCode.value.trim();if(!name||!grade||!subject||!code)return alert('أكمل بيانات المدرس');const t=state.teachers.find(x=>same(x.name,name)&&same(x.grade,grade)&&same(x.subject,subject)&&x.code===code&&x.active!==false);if(!t)return alert('بيانات المدرس غير مطابقة لما أضافه المدير');setUser({role:'teacher',name,grade,subject,id:t.id});showPage('teacher');teacherHome()}function loginAdmin(){if(adminCode.value.trim()!==state.settings.adminCode)return alert('رمز المدير غير صحيح');setUser({role:'admin',name:'مدير المنصة'});showPage('admin');adminHome()}function sendContact(){if(!contactName.value.trim()||!contactTitle.value.trim()||!contactBody.value.trim())return alert('أكمل الرسالة');state.contactMessages.unshift({id:uid('contact'),name:contactName.value.trim(),title:contactTitle.value.trim(),body:contactBody.value.trim(),date:new Date().toLocaleString('ar-IQ'),reply:''});save();alert('تم إرسال الرسالة');contactName.value=contactTitle.value=contactBody.value=''}function subjectIdBy(subject,grade){let s=state.subjects.find(x=>same(x.name,subject)&&same(x.grade,grade));return s?.id||''}function teacherFor(subject,grade){return state.teachers.find(t=>same(t.subject,subject)&&same(t.grade,grade)&&t.active!==false)}function subjectById(id){return state.subjects.find(s=>s.id===id)}function teacherById(id){return state.teachers.find(t=>t.id===id)}function activeSubscriptionFor(studentId,subjectId){const p=state.payments.filter(x=>x.studentId===studentId&&x.subjectId===subjectId&&x.status==='approved').sort((a,b)=>new Date(b.endDate)-new Date(a.endDate))[0];if(!p)return null;if(new Date(p.endDate+'T23:59:59')<new Date())return null;return p}function daysLeft(studentId,subjectId){const s=activeSubscriptionFor(studentId,subjectId);if(!s)return 0;return Math.max(0,Math.ceil((new Date(s.endDate+'T23:59:59')-new Date())/(1000*60*60*24)))}function studentApprovedEnrollments(studentId){return state.enrollments.filter(e=>e.studentId===studentId&&e.status==='approved')}function avgForStudent(studentId){const r=state.results.filter(x=>x.studentId===studentId);return r.length?Math.round(r.reduce((a,b)=>a+b.percent,0)/r.length):0}function studentSubjectStats(studentId,subjectId){
  const rs=state.results.filter(r=>r.studentId===studentId&&r.subjectId===subjectId);
  const totalExams=state.exams.filter(e=>e.subjectId===subjectId).length;
@@ -204,7 +393,22 @@ function subjectRankingRows(subjectId){
   return {studentId:e.studentId,name:st?.name||'طالب',grade:st?.grade||'',phone:st?.phone||'',...stats};
  }).sort((a,b)=>(b.avg-a.avg)||(b.completed-a.completed)||(b.totalScore-a.totalScore));
 }function showPublicSubjects(){showPage('subjects');publicSubjects.innerHTML=state.subjects.length?state.subjects.map(s=>`<div class="card"><h3>${s.icon||'📚'} ${s.name}</h3><p>${s.grade}</p></div>`).join(''):`<div class='empty'>لا توجد مواد حالياً</div>`}
-function adminHome(){setActivePanel('adminHome');jumpToWorkspace('adminMain');adminMain.innerHTML=`<h2>لوحة المدير</h2><div class="stats"><div><b>${state.subjects.length}</b><span>المواد</span></div><div><b>${state.teachers.length}</b><span>المدرسون</span></div><div><b>${state.students.length}</b><span>الطلاب</span></div><div><b>${state.payments.filter(p=>p.status==='pending').length}</b><span>طلبات اشتراك</span></div></div><div class="panel"><p>استخدم الأقسام الجانبية لإدارة المنصة.</p></div>`}function adminSubjects(){setActivePanel('adminSubjects');jumpToWorkspace('adminMain');adminMain.innerHTML=`<h2>إدارة المواد والمدرسين</h2><div class="panel"><h3>إضافة مادة</h3><div class="row"><select id="aSubName">${subjectOptions()}</select><select id="aSubGrade">${gradeOptions()}</select><input id="aSubCode" placeholder="كود المادة"><input id="aSubIcon" placeholder="رمز مثل 🧬"></div><button onclick="addAdminSubject()">إضافة المادة</button></div><div class="panel"><h3>إضافة مدرس وربطه بمادة وصف</h3><input id="aTeacherName" placeholder="اسم المدرس الثلاثي"><div class="row"><select id="aTeacherGrade">${gradeOptions()}</select><select id="aTeacherSubject">${subjectOptions()}</select><input id="aTeacherCode" placeholder="رمز المدرس"></div><button onclick="addAdminTeacher()">إضافة المدرس</button></div><div class="panel"><h3>المواد</h3>${state.subjects.length?state.subjects.map(s=>{const t=teacherFor(s.name,s.grade);return `<div class="file-item"><div><b>${s.icon||'📚'} ${s.name}</b><br><span class="badge">${s.grade}</span><span class="badge">كود: ${s.code}</span>${t?`<span class="pill greenish">مدرس: ${t.name}</span>`:''}</div><button class="danger" onclick="deleteSubject('${s.id}')">حذف</button></div>`}).join(''):`<div class='empty'>لا توجد مواد</div>`}</div><div class="panel"><h3>المدرسون</h3>${state.teachers.length?state.teachers.map(t=>`<div class="file-item"><div><b>${t.name}</b><br><span class="badge">${t.subject}</span><span class="badge">${t.grade}</span><span class="badge">رمز: ${t.code}</span></div><button onclick="toggleTeacher('${t.id}')">${t.active===false?'تفعيل':'تعطيل'}</button></div>`).join(''):`<div class='empty'>لا يوجد مدرسون</div>`}</div>`}function addAdminSubject(){const name=aSubName.value,grade=aSubGrade.value,code=aSubCode.value.trim(),icon=aSubIcon.value.trim()||'📚';if(!code)return alert('أدخل كود المادة');if(state.subjects.some(s=>same(s.name,name)&&same(s.grade,grade)))return alert('هذه المادة موجودة لهذا الصف');state.subjects.push({id:uid('sub'),name,grade,code,icon});save();adminSubjects()}function addAdminTeacher(){const name=aTeacherName.value.trim(),grade=aTeacherGrade.value,subject=aTeacherSubject.value,code=aTeacherCode.value.trim();if(!name||!code)return alert('أكمل اسم المدرس والرمز');const sid=subjectIdBy(subject,grade);if(!sid)return alert('أضف المادة لهذا الصف أولاً');if(state.teachers.some(t=>same(t.subject,subject)&&same(t.grade,grade)&&t.active!==false))return alert('يوجد مدرس مفعل لهذه المادة والصف');state.teachers.push({id:uid('teach'),name,grade,subject,code,active:true,bio:'',experience:'',photo:''});save();adminSubjects()}function deleteSubject(id){if(confirm('حذف المادة؟')){state.subjects=state.subjects.filter(s=>s.id!==id);save();adminSubjects()}}function toggleTeacher(id){const t=teacherById(id);if(t){t.active=t.active===false;save();adminSubjects()}}function adminStudents(){setActivePanel('adminStudents');jumpToWorkspace('adminMain');adminMain.innerHTML=`<h2>الطلاب</h2><div class="panel"><table><thead><tr><th>الطالب</th><th>الصف</th><th>الهاتف</th><th>ولي الأمر</th><th>اشتراكات</th></tr></thead><tbody>${state.students.length?state.students.map(s=>{const par=state.parents.find(p=>(p.students||[]).includes(s.id));const subs=studentApprovedEnrollments(s.id).length;return `<tr><td>${s.name}</td><td>${s.grade}</td><td>${s.phone||''}</td><td>${par?par.name:'غير مربوط'}</td><td>${subs}</td></tr>`}).join(''):`<tr><td colspan='5'>لا يوجد طلاب</td></tr>`}</tbody></table></div>`}function adminParents(){setActivePanel('adminParents');jumpToWorkspace('adminMain');adminMain.innerHTML=`<h2>أولياء الأمور</h2><div class="panel"><h3>إضافة / ربط ولي أمر</h3><input id="pName" placeholder="اسم ولي الأمر"><input id="pCode" placeholder="رمز ولي الأمر"><select id="pStudent">${state.students.map(s=>`<option value="${s.id}">${s.name} - ${s.grade}</option>`).join('')}</select><button onclick="addParentLink()">إضافة وربط</button></div><div class="panel">${state.parents.length?state.parents.map(p=>`<div class="file-item"><div><b>${p.name}</b><br>الأبناء: ${(p.students||[]).map(id=>state.students.find(s=>s.id===id)?.name).filter(Boolean).join('، ')||'لا يوجد'}</div></div>`).join(''):`<div class='empty'>لا يوجد أولياء أمور</div>`}</div>`}function addParentLink(){const name=pName.value.trim(),code=pCode.value.trim(),sid=pStudent.value;if(!name||!code||!sid)return alert('أكمل البيانات');let p=state.parents.find(x=>same(x.name,name)&&x.code===code);if(!p){p={id:uid('par'),name,code,students:[]};state.parents.push(p)}if(!p.students.includes(sid))p.students.push(sid);save();adminParents()}function adminPayments(){setActivePanel('adminPayments');jumpToWorkspace('adminMain');const pending=state.payments.filter(p=>p.status==='pending'),approved=state.payments.filter(p=>p.status==='approved');adminMain.innerHTML=`<h2>طلبات الاشتراك والتحويل</h2><div class="notice">رقم الماستر كارد: <b>${state.settings.masterCard}</b></div><div class="panel"><h3>طلبات قيد الموافقة</h3>${pending.length?pending.map(p=>{const s=state.students.find(x=>x.id===p.studentId),sub=subjectById(p.subjectId);return `<div class="file-item"><div><b>${s?.name}</b><br>${sub?.name} - ${sub?.grade}<br>الهاتف: ${p.phone}<br>المبلغ: ${p.amount}<br>التاريخ: ${p.payDate}</div><div><input id="days${p.id}" type="number" value="${state.settings.defaultSubscriptionDays}"><button class="green" onclick="approvePayment('${p.id}')">قبول</button><button class="danger" onclick="rejectPayment('${p.id}')">رفض</button></div></div>`}).join(''):`<div class='empty'>لا توجد طلبات</div>`}</div><div class="panel"><h3>اشتراكات مفعلة</h3>${approved.length?approved.map(p=>{const s=state.students.find(x=>x.id===p.studentId),sub=subjectById(p.subjectId);return `<div class="file-item"><b>${s?.name}</b><span>${sub?.name} - ينتهي ${p.endDate}</span></div>`}).join(''):`<div class='empty'>لا توجد اشتراكات</div>`}</div>`}function approvePayment(id){const p=state.payments.find(x=>x.id===id);if(!p)return;const days=+document.getElementById('days'+id).value||state.settings.defaultSubscriptionDays;const end=new Date();end.setDate(end.getDate()+days);p.status='approved';p.days=days;p.startDate=todayISO();p.endDate=end.toISOString().slice(0,10);p.approvedAt=new Date().toLocaleString('ar-IQ');save();adminPayments()}function rejectPayment(id){const p=state.payments.find(x=>x.id===id);if(p){p.status='rejected';save();adminPayments()}}function adminResults(){setActivePanel('adminResults');jumpToWorkspace('adminMain');adminMain.innerHTML=`<h2>نتائج تفصيلية</h2><div class="panel"><table><thead><tr><th>الطالب</th><th>ولي الأمر</th><th>الصف</th><th>المادة</th><th>الاختبار</th><th>الدرجة</th><th>المستوى</th></tr></thead><tbody>${state.results.length?state.results.map(r=>{const st=state.students.find(s=>s.id===r.studentId),par=state.parents.find(p=>(p.students||[]).includes(r.studentId)),sub=subjectById(r.subjectId);return `<tr><td>${st?.name}</td><td>${par?par.name:'غير مربوط'}</td><td>${st?.grade}</td><td>${sub?.name}</td><td>${r.examTitle}</td><td>${r.score}/${r.total}</td><td>${levelFromPercent(r.percent)}</td></tr>`}).join(''):`<tr><td colspan='7'>لا توجد نتائج</td></tr>`}</tbody></table></div>`}function adminTeacherNotices(){setActivePanel('adminTeacherNotices');jumpToWorkspace('adminMain');adminMain.innerHTML=`<h2>تبليغات المدرسين</h2><div class="panel"><select id="noticeTeacher"><option value="all">كل المدرسين</option>${state.teachers.map(t=>`<option value="${t.id}">${t.name} - ${t.subject} - ${t.grade}</option>`).join('')}</select><textarea id="noticeText" placeholder="اكتب التبليغ"></textarea><button onclick="sendAdminNotice()">إرسال التبليغ</button></div><div class="panel"><h3>الردود</h3>${state.noticeReplies.length?state.noticeReplies.map(r=>`<div class="file-item"><b>${r.teacherName}</b><span>${r.text}</span></div>`).join(''):`<div class='empty'>لا توجد ردود</div>`}</div>`}function sendAdminNotice(){if(!noticeText.value.trim())return alert('اكتب التبليغ');state.adminNotices.unshift({id:uid('not'),teacherId:noticeTeacher.value,text:noticeText.value.trim(),date:new Date().toLocaleString('ar-IQ')});save();alert('تم إرسال التبليغ');adminTeacherNotices()}function adminContactMessages(){setActivePanel('adminContactMessages');jumpToWorkspace('adminMain');adminMain.innerHTML=`<h2>رسائل التواصل</h2>${state.contactMessages.length?state.contactMessages.map(m=>`<div class="panel"><b>${m.title}</b><p>من: ${m.name}</p><p>${m.body}</p></div>`).join(''):`<div class='panel empty'>لا توجد رسائل</div>`}`}
+function adminHome(){setActivePanel('adminHome');const d=adminDashboardStats();adminMain.innerHTML=`<h2>لوحة المدير</h2>
+<div class="dash-grid">
+  <div class="dash-card"><b>${d.students}</b><span>الطلاب</span></div>
+  <div class="dash-card"><b>${d.teachers}</b><span>المدرسون</span></div>
+  <div class="dash-card"><b>${d.parents}</b><span>أولياء الأمور</span></div>
+  <div class="dash-card"><b>${d.subjects}</b><span>المواد</span></div>
+  <div class="dash-card"><b>${d.exams}</b><span>الاختبارات</span></div>
+  <div class="dash-card"><b>${d.results}</b><span>النتائج</span></div>
+  <div class="dash-card"><b>${d.activeSubs}</b><span>اشتراكات نشطة</span></div>
+  <div class="dash-card"><b>${d.pendingSubs}</b><span>طلبات اشتراك</span></div>
+  <div class="dash-card"><b>${d.messages}</b><span>الرسائل</span></div>
+</div>
+<div class="panel">
+  <h3>آخر نشاط في المنصة</h3>
+  ${recentActivityHTML(10)}
+</div>`;jumpToWorkspace('adminMain');}function adminSubjects(){setActivePanel('adminSubjects');jumpToWorkspace('adminMain');adminMain.innerHTML=`<h2>إدارة المواد والمدرسين</h2><div class="panel"><h3>إضافة مادة</h3><div class="row"><select id="aSubName">${subjectOptions()}</select><select id="aSubGrade">${gradeOptions()}</select><input id="aSubCode" placeholder="كود المادة"><input id="aSubIcon" placeholder="رمز مثل 🧬"></div><button onclick="addAdminSubject()">إضافة المادة</button></div><div class="panel"><h3>إضافة مدرس وربطه بمادة وصف</h3><input id="aTeacherName" placeholder="اسم المدرس الثلاثي"><div class="row"><select id="aTeacherGrade">${gradeOptions()}</select><select id="aTeacherSubject">${subjectOptions()}</select><input id="aTeacherCode" placeholder="رمز المدرس"></div><button onclick="addAdminTeacher()">إضافة المدرس</button></div><div class="panel"><h3>المواد</h3>${state.subjects.length?state.subjects.map(s=>{const t=teacherFor(s.name,s.grade);return `<div class="file-item"><div><b>${s.icon||'📚'} ${s.name}</b><br><span class="badge">${s.grade}</span><span class="badge">كود: ${s.code}</span>${t?`<span class="pill greenish">مدرس: ${t.name}</span>`:''}</div><button onclick="openAdminSubjectPage('${s.id}')">فتح الصفحة</button><button class="danger" onclick="deleteSubject('${s.id}')">حذف</button></div>`}).join(''):`<div class='empty'>لا توجد مواد</div>`}</div><div class="panel"><h3>المدرسون</h3>${state.teachers.length?state.teachers.map(t=>`<div class="file-item"><div><b>${t.name}</b><br><span class="badge">${t.subject}</span><span class="badge">${t.grade}</span><span class="badge">رمز: ${t.code}</span></div><button onclick="toggleTeacher('${t.id}')">${t.active===false?'تفعيل':'تعطيل'}</button></div>`).join(''):`<div class='empty'>لا يوجد مدرسون</div>`}</div>`}function addAdminSubject(){const name=aSubName.value,grade=aSubGrade.value,code=aSubCode.value.trim(),icon=aSubIcon.value.trim()||'📚';if(!code)return alert('أدخل كود المادة');if(state.subjects.some(s=>same(s.name,name)&&same(s.grade,grade)))return alert('هذه المادة موجودة لهذا الصف');const newSubject={id:uid('sub'),name,grade,code,icon};state.subjects.push(newSubject);logActivity({source:'المواد',action:'إضافة مادة جديدة: '+name,subjectId:newSubject.id,subjectName:name,icon:'📚'});addNotification('admin',{source:'المواد',title:'تمت إضافة مادة جديدة',body:name+' - '+grade,subjectId:newSubject.id,subjectName:name,icon:'📚'});save();adminSubjects()}function addAdminTeacher(){const name=aTeacherName.value.trim(),grade=aTeacherGrade.value,subject=aTeacherSubject.value,code=aTeacherCode.value.trim();if(!name||!code)return alert('أكمل اسم المدرس والرمز');const sid=subjectIdBy(subject,grade);if(!sid)return alert('أضف المادة لهذا الصف أولاً');if(state.teachers.some(t=>same(t.subject,subject)&&same(t.grade,grade)&&t.active!==false))return alert('يوجد مدرس مفعل لهذه المادة والصف');const newTeacher={id:uid('teach'),name,grade,subject,code,active:true,bio:'',experience:'',photo:''};state.teachers.push(newTeacher);logActivity({source:'المدرسون',action:'إضافة مدرس جديد: '+name,teacherId:newTeacher.id,teacherName:name,icon:'👨‍🏫'});addNotification('admin',{source:'المدرسون',title:'تمت إضافة مدرس جديد',body:name+' - '+subject+' - '+grade,teacherId:newTeacher.id,teacherName:name,icon:'👨‍🏫'});save();adminSubjects()}function deleteSubject(id){if(confirm('حذف المادة؟')){state.subjects=state.subjects.filter(s=>s.id!==id);save();adminSubjects()}}function toggleTeacher(id){const t=teacherById(id);if(t){t.active=t.active===false;save();adminSubjects()}}function adminStudents(){setActivePanel('adminStudents');jumpToWorkspace('adminMain');adminMain.innerHTML=`<h2>الطلاب</h2><div class="panel"><table><thead><tr><th>الطالب</th><th>الصف</th><th>الهاتف</th><th>ولي الأمر</th><th>اشتراكات</th></tr></thead><tbody>${state.students.length?state.students.map(s=>{const par=state.parents.find(p=>(p.students||[]).includes(s.id));const subs=studentApprovedEnrollments(s.id).length;return `<tr><td>${s.name}</td><td>${s.grade}</td><td>${s.phone||''}</td><td>${par?par.name:'غير مربوط'}</td><td>${subs}</td></tr>`}).join(''):`<tr><td colspan='5'>لا يوجد طلاب</td></tr>`}</tbody></table></div>`}function adminParents(){setActivePanel('adminParents');jumpToWorkspace('adminMain');adminMain.innerHTML=`<h2>أولياء الأمور</h2><div class="panel"><h3>إضافة / ربط ولي أمر</h3><input id="pName" placeholder="اسم ولي الأمر"><input id="pCode" placeholder="رمز ولي الأمر"><select id="pStudent">${state.students.map(s=>`<option value="${s.id}">${s.name} - ${s.grade}</option>`).join('')}</select><button onclick="addParentLink()">إضافة وربط</button></div><div class="panel">${state.parents.length?state.parents.map(p=>`<div class="file-item"><div><b>${p.name}</b><br>الأبناء: ${(p.students||[]).map(id=>state.students.find(s=>s.id===id)?.name).filter(Boolean).join('، ')||'لا يوجد'}</div></div>`).join(''):`<div class='empty'>لا يوجد أولياء أمور</div>`}</div>`}function addParentLink(){const name=pName.value.trim(),code=pCode.value.trim(),sid=pStudent.value;if(!name||!code||!sid)return alert('أكمل البيانات');let p=state.parents.find(x=>same(x.name,name)&&x.code===code);if(!p){p={id:uid('par'),name,code,students:[]};state.parents.push(p)}if(!p.students.includes(sid))p.students.push(sid);save();adminParents()}function adminPayments(){setActivePanel('adminPayments');jumpToWorkspace('adminMain');const pending=state.payments.filter(p=>p.status==='pending'),approved=state.payments.filter(p=>p.status==='approved');adminMain.innerHTML=`<h2>طلبات الاشتراك والتحويل</h2><div class="notice">رقم الماستر كارد: <b>${state.settings.masterCard}</b></div><div class="panel"><h3>طلبات قيد الموافقة</h3>${pending.length?pending.map(p=>{const s=state.students.find(x=>x.id===p.studentId),sub=subjectById(p.subjectId);return `<div class="file-item"><div><b>${s?.name}</b><br>${sub?.name} - ${sub?.grade}<br>الهاتف: ${p.phone}<br>المبلغ: ${p.amount}<br>التاريخ: ${p.payDate}</div><div><input id="days${p.id}" type="number" value="${state.settings.defaultSubscriptionDays}"><button class="green" onclick="approvePayment('${p.id}')">قبول</button><button class="danger" onclick="rejectPayment('${p.id}')">رفض</button></div></div>`}).join(''):`<div class='empty'>لا توجد طلبات</div>`}</div><div class="panel"><h3>اشتراكات مفعلة</h3>${approved.length?approved.map(p=>{const s=state.students.find(x=>x.id===p.studentId),sub=subjectById(p.subjectId);return `<div class="file-item"><b>${s?.name}</b><span>${sub?.name} - ينتهي ${p.endDate}</span></div>`}).join(''):`<div class='empty'>لا توجد اشتراكات</div>`}</div>`}function approvePayment(id){const p=state.payments.find(x=>x.id===id);if(!p)return;const days=+document.getElementById('days'+id).value||state.settings.defaultSubscriptionDays;const end=new Date();end.setDate(end.getDate()+days);p.status='approved';logActivity({source:'الاشتراكات',action:'تفعيل اشتراك طالب',studentId:p.studentId,subjectId:p.subjectId,icon:'💳'});p.days=days;p.startDate=todayISO();p.endDate=end.toISOString().slice(0,10);p.approvedAt=new Date().toLocaleString('ar-IQ');{const st=state.students.find(s=>s.id===p.studentId),sub=subjectById(p.subjectId);addNotification('student:'+p.studentId,{source:'الاشتراكات',title:'تم تفعيل اشتراكك',body:'تم تفعيل الاشتراك حتى '+p.endDate,subjectId:p.subjectId,subjectName:sub?.name||'',studentId:p.studentId,studentName:st?.name||'',icon:'💳'});}save();adminPayments()}function rejectPayment(id){const p=state.payments.find(x=>x.id===id);if(p){p.status='rejected';save();adminPayments()}}function adminResults(){setActivePanel('adminResults');jumpToWorkspace('adminMain');adminMain.innerHTML=`<h2>نتائج تفصيلية</h2><div class="panel"><table><thead><tr><th>الطالب</th><th>ولي الأمر</th><th>الصف</th><th>المادة</th><th>الاختبار</th><th>الدرجة</th><th>المستوى</th></tr></thead><tbody>${state.results.length?state.results.map(r=>{const st=state.students.find(s=>s.id===r.studentId),par=state.parents.find(p=>(p.students||[]).includes(r.studentId)),sub=subjectById(r.subjectId);return `<tr><td>${st?.name}</td><td>${par?par.name:'غير مربوط'}</td><td>${st?.grade}</td><td>${sub?.name}</td><td>${r.examTitle}</td><td>${r.score}/${r.total}</td><td>${levelFromPercent(r.percent)}</td></tr>`}).join(''):`<tr><td colspan='7'>لا توجد نتائج</td></tr>`}</tbody></table></div>`}function adminTeacherNotices(){setActivePanel('adminTeacherNotices');jumpToWorkspace('adminMain');adminMain.innerHTML=`<h2>تبليغات المدرسين</h2><div class="panel"><select id="noticeTeacher"><option value="all">كل المدرسين</option>${state.teachers.map(t=>`<option value="${t.id}">${t.name} - ${t.subject} - ${t.grade}</option>`).join('')}</select><textarea id="noticeText" placeholder="اكتب التبليغ"></textarea><button onclick="sendAdminNotice()">إرسال التبليغ</button></div><div class="panel"><h3>الردود</h3>${state.noticeReplies.length?state.noticeReplies.map(r=>`<div class="file-item"><b>${r.teacherName}</b><span>${r.text}</span></div>`).join(''):`<div class='empty'>لا توجد ردود</div>`}</div>`}function sendAdminNotice(){if(!noticeText.value.trim())return alert('اكتب التبليغ');state.adminNotices.unshift({id:uid('not'),teacherId:noticeTeacher.value,text:noticeText.value.trim(),date:new Date().toLocaleString('ar-IQ')});{const targets=noticeTeacher.value==='all'?state.teachers.map(t=>'teacher:'+t.id):['teacher:'+noticeTeacher.value];addNotification(targets,{source:'تبليغات المدير',title:'تبليغ جديد من المدير',body:noticeText.value.trim(),icon:'📢'});}save();alert('تم إرسال التبليغ');adminTeacherNotices()}function adminContactMessages(){setActivePanel('adminContactMessages');jumpToWorkspace('adminMain');adminMain.innerHTML=`<h2>رسائل التواصل</h2>${state.contactMessages.length?state.contactMessages.map(m=>`<div class="panel"><b>${m.title}</b><p>من: ${m.name}</p><p>${m.body}</p></div>`).join(''):`<div class='panel empty'>لا توجد رسائل</div>`}`}
 function adminBackup(){setActivePanel('adminBackup');jumpToWorkspace('adminMain');
   adminMain.innerHTML = `
     <h2>النسخ الاحتياطي</h2>
@@ -227,10 +431,10 @@ function adminBackup(){setActivePanel('adminBackup');jumpToWorkspace('adminMain'
 }
 
 function adminSettings(){setActivePanel('adminSettings');jumpToWorkspace('adminMain');adminMain.innerHTML=`<h2>الإعدادات</h2><div class="panel"><label>رمز المدير</label><input id="setAdmin" value="${state.settings.adminCode}"><label>رمز الطالب العام</label><input id="setStudent" value="${state.settings.studentCode}"><label>رمز ولي الأمر العام</label><input id="setParent" value="${state.settings.parentGlobalCode}"><label>رقم الماستر كارد</label><input id="setCard" value="${state.settings.masterCard}"><button onclick="saveSettings()">حفظ</button><button class="danger" onclick="resetAll()">إعادة ضبط</button></div>`}function saveSettings(){state.settings.adminCode=setAdmin.value;state.settings.studentCode=setStudent.value;state.settings.parentGlobalCode=setParent.value;state.settings.masterCard=setCard.value;save();alert('تم الحفظ')}function resetAll(){if(confirm('حذف كل البيانات؟')){localStorage.removeItem(STORE);localStorage.removeItem(USER_STORE);location.reload()}}
-function currentTeacher(){return teacherById(user?.id)}function currentSubject(){const t=currentTeacher();return state.subjects.find(s=>same(s.name,t?.subject)&&same(s.grade,t?.grade))}function teacherHome(){setActivePanel('teacherHome');jumpToWorkspace('teacherMain');const t=currentTeacher(),sub=currentSubject();teacherMain.innerHTML=`<h2>لوحة المدرس</h2><div class="panel"><h3>${t.name}</h3><span class="badge">${t.subject}</span><span class="badge">${t.grade}</span></div><div class="stats"><div><b>${state.enrollments.filter(e=>e.subjectId===sub?.id&&e.status==='approved').length}</b><span>طلاب المادة</span></div><div><b>${state.exams.filter(e=>e.subjectId===sub?.id).length}</b><span>اختبارات</span></div><div><b>${state.messages.filter(m=>m.teacherId===t.id).length}</b><span>رسائل</span></div></div>`}function teacherProfile(){setActivePanel('teacherProfile');jumpToWorkspace('teacherMain');const t=currentTeacher();teacherMain.innerHTML=`<h2>بروفايل المدرس</h2><div class="panel"><p><b>${t.name}</b></p><p>${t.subject} - ${t.grade}</p><textarea id="tBio" rows="4" placeholder="نبذة">${t.bio||''}</textarea><input id="tExp" value="${t.experience||''}" placeholder="الخبرة أو المؤهل"><button onclick="saveTeacherProfile()">حفظ البروفايل</button></div>`}function saveTeacherProfile(){const t=currentTeacher();t.bio=tBio.value;t.experience=tExp.value;save();alert('تم حفظ البروفايل');teacherProfile()}function teacherContent(){setActivePanel('teacherContent');jumpToWorkspace('teacherMain');const sub=currentSubject();teacherMain.innerHTML=`<h2>المحاضرات والملفات</h2><div class="panel"><h3>إضافة مادة تعليمية</h3><input id="contTitle" placeholder="عنوان المحتوى"><select id="contType"><option>محاضرة</option><option>ملف PDF</option><option>فيديو</option><option>رابط</option></select><select id="contLevel">${levels().map(l=>`<option>${l}</option>`).join('')}</select><input id="contUrl" placeholder="رابط اختياري"><input id="contFile" type="file" accept=".pdf,video/*"><button onclick="addTeacherContent()">إضافة</button></div><div class="panel"><h3>المحتوى الحالي</h3>${[...state.lectures,...state.files].filter(x=>x.subjectId===sub?.id).length?[...state.lectures,...state.files].filter(x=>x.subjectId===sub?.id).map(x=>`<div class="file-item"><b>${x.title}</b><span>${x.kind||x.type} - ${x.level}</span><button onclick="openContent('${x.id}')">فتح</button></div>`).join(''):`<div class='empty'>لا يوجد محتوى</div>`}</div>`}function addTeacherContent(){const sub=currentSubject();if(!sub)return alert('لا توجد مادة مرتبطة');if(!contTitle.value.trim())return alert('اكتب العنوان');const file=contFile.files[0],item={id:uid('content'),title:contTitle.value.trim(),subjectId:sub.id,teacherId:user.id,level:contLevel.value,kind:contType.value,url:contUrl.value.trim(),date:new Date().toLocaleString('ar-IQ')};const add=(data='',mime='')=>{item.data=data;item.mime=mime;if(contType.value==='محاضرة')state.lectures.push(item);else state.files.push(item);save();teacherContent()};if(file){const r=new FileReader();r.onload=()=>add(r.result,file.type);r.readAsDataURL(file)}else add()}function openContent(id){const x=[...state.lectures,...state.files].find(i=>i.id===id);if(!x)return;if(x.url){window.open(x.url,'_blank');return}const w=window.open();if((x.mime||'').includes('video'))w.document.write(`<video controls style="width:100%" src="${x.data}"></video>`);else if((x.mime||'').includes('pdf'))w.document.write(`<iframe src="${x.data}" style="width:100%;height:100vh;border:0"></iframe>`);else w.document.write(`<a href="${x.data}" download>تحميل</a>`)}function teacherExams(){setActivePanel('teacherExams');jumpToWorkspace('teacherMain');const sub=currentSubject();examBuild=[];teacherMain.innerHTML=`<h2>إنشاء اختبار</h2><div class="notice">مستويات الطلاب تُحسب تلقائياً حسب نتائج الاختبارات ولا تُحدد عند إنشاء الاختبار.</div><div class="panel"><input id="exTitle" placeholder="عنوان الاختبار"><input id="exMinutes" type="number" placeholder="المدة بالدقائق"></div><div class="panel"><h3>إضافة سؤال</h3><select id="qType"><option value="mcq">اختيار من متعدد</option><option value="tf">صح وخطأ</option><option value="list">تعداد</option><option value="essay">مقالي</option></select><input id="qText" placeholder="نص السؤال"><input id="qOptions" placeholder="الخيارات أو إجابات التعداد مفصولة بفواصل"><input id="qAnswer" placeholder="الإجابة الصحيحة"><input id="qPoints" type="number" placeholder="درجة السؤال"><button onclick="addQuestion()">إضافة السؤال</button></div><div class="panel"><h3>أسئلة الاختبار</h3><div id="qBuild"></div><button class="gold" onclick="saveExam()">حفظ الاختبار</button></div><div class="panel"><h3>اختباراتي</h3>${state.exams.filter(e=>e.subjectId===sub?.id).length?state.exams.filter(e=>e.subjectId===sub?.id).map(e=>`<div class="file-item"><b>${e.title}</b><span>${e.questions.length} سؤال</span></div>`).join(''):`<div class='empty'>لا توجد اختبارات</div>`}</div>`;renderBuild()}function addQuestion(){if(!qText.value.trim())return alert('اكتب السؤال');let q={type:qType.value,text:qText.value.trim(),options:qOptions.value.split(/[،,]/).map(x=>x.trim()).filter(Boolean),answer:qAnswer.value.trim(),points:+qPoints.value||1};if(q.type==='tf'&&!['صح','خطأ'].includes(q.answer))return alert('إجابة صح وخطأ يجب أن تكون صح أو خطأ');if(q.type==='list')q.answer=q.options;if(q.type==='essay')q.answer='';examBuild.push(q);qText.value=qOptions.value=qAnswer.value=qPoints.value='';renderBuild()}function renderBuild(){if(!document.getElementById('qBuild'))return;const total=examBuild.reduce((a,b)=>a+b.points,0);qBuild.innerHTML=(examBuild.length?examBuild.map((q,i)=>`<div class="file-item"><b>${i+1}- ${q.text}</b><span>${q.type} - ${q.points} درجة</span><button class="danger" onclick="examBuild.splice(${i},1);renderBuild()">حذف</button></div>`).join(''):`<div class='empty'>لا توجد أسئلة</div>`)+`<div class="notice">الدرجة الكلية: ${total}</div>`}function saveExam(){const sub=currentSubject();if(!exTitle.value.trim()||!examBuild.length)return alert('أكمل الاختبار');const total=examBuild.reduce((a,b)=>a+b.points,0);state.exams.push({id:uid('exam'),title:exTitle.value.trim(),subjectId:sub.id,teacherId:user.id,minutes:+exMinutes.value||20,total,questions:[...examBuild]});save();teacherExams()}function teacherStudents(){setActivePanel('teacherStudents');jumpToWorkspace('teacherMain');const sub=currentSubject(),rows=subjectRankingRows(sub?.id);teacherMain.innerHTML=`<h2>طلاب المادة ومستوياتهم التلقائية</h2><div class="notice">المستوى يُحسب تلقائياً من نتائج اختبارات الطلاب، ويظهر الجدول من الأعلى إلى الأقل.</div><div class="panel"><table><thead><tr><th>التسلسل</th><th>الطالب</th><th>المستوى</th><th>الاختبارات المجابة</th><th>الدرجة الكلية</th><th>النسبة</th><th>الهاتف</th></tr></thead><tbody>${rows.length?rows.map((r,i)=>`<tr><td>${i+1}</td><td>${r.name}</td><td>${r.level}</td><td>${r.completed}/${r.totalExams}</td><td>${r.totalScore}/${r.totalPossible||0}</td><td>${r.avg}%</td><td>${r.phone||''}</td></tr>`).join(''):`<tr><td colspan='7'>لا يوجد طلاب أو نتائج بعد</td></tr>`}</tbody></table></div>`}function teacherRequests(){setActivePanel('teacherRequests');jumpToWorkspace('teacherMain');const sub=currentSubject(),req=state.enrollRequests.filter(r=>r.subjectId===sub?.id&&r.status==='pending');teacherMain.innerHTML=`<h2>طلبات دخول المادة</h2>${req.length?req.map(r=>{const st=state.students.find(s=>s.id===r.studentId);return `<div class="file-item"><div><b>${st?.name}</b><br>${st?.grade}<br>${r.date}</div><button class="green" onclick="approveEnroll('${r.id}')">قبول</button><button class="danger" onclick="rejectEnroll('${r.id}')">رفض</button></div>`}).join(''):`<div class='panel empty'>لا توجد طلبات</div>`}`}function approveEnroll(id){const r=state.enrollRequests.find(x=>x.id===id);if(!r)return;r.status='approved';if(!state.enrollments.some(e=>e.studentId===r.studentId&&e.subjectId===r.subjectId))state.enrollments.push({id:uid('en'),studentId:r.studentId,subjectId:r.subjectId,status:'approved',date:new Date().toLocaleString('ar-IQ')});save();teacherRequests()}function rejectEnroll(id){const r=state.enrollRequests.find(x=>x.id===id);if(r){r.status='rejected';save();teacherRequests()}}function teacherMessages(){setActivePanel('teacherMessages');jumpToWorkspace('teacherMain');const sub=currentSubject(),ens=state.enrollments.filter(e=>e.subjectId===sub?.id&&e.status==='approved'),ms=state.messages.filter(m=>m.teacherId===user.id&&m.subjectId===sub?.id);teacherMain.innerHTML=`<h2>رسائل الطلاب</h2><div class="panel"><select id="tmStudent">${ens.map(e=>{const st=state.students.find(s=>s.id===e.studentId);return `<option value="${e.studentId}">${st?.name}</option>`}).join('')}</select><textarea id="tmText" placeholder="رسالة للطالب"></textarea><button onclick="teacherSendStudent()">إرسال</button></div><div class="chat">${ms.length?ms.map(m=>renderMsg(m,user.id)).join(''):`<div class='empty'>لا توجد رسائل</div>`}</div>`}function teacherSendStudent(){if(!tmText.value.trim())return alert('اكتب الرسالة');const sub=currentSubject();state.messages.push({id:uid('msg'),fromId:user.id,fromName:user.name,toId:tmStudent.value,teacherId:user.id,subjectId:sub.id,text:tmText.value.trim(),date:new Date().toLocaleString('ar-IQ')});save();teacherMessages()}function teacherParentMessages(){setActivePanel('teacherParentMessages');jumpToWorkspace('teacherMain');const sub=currentSubject(),ms=state.parentMessages.filter(m=>m.teacherId===user.id&&m.subjectId===sub?.id);teacherMain.innerHTML=`<h2>رسائل أولياء الأمور</h2><div class="chat">${ms.length?ms.map(m=>`<div class="msg"><b>${m.parentName}</b><p>${m.text}</p><button onclick="replyParentMsg('${m.id}')">رد</button>${m.reply?`<p><b>ردك:</b> ${m.reply}</p>`:''}</div>`).join(''):`<div class='empty'>لا توجد رسائل</div>`}</div>`}function replyParentMsg(id){const text=prompt('اكتب الرد');if(!text)return;const m=state.parentMessages.find(x=>x.id===id);m.reply=text;m.replyDate=new Date().toLocaleString('ar-IQ');save();teacherParentMessages()}function teacherResults(){setActivePanel('teacherResults');jumpToWorkspace('teacherMain');const sub=currentSubject(),rs=state.results.filter(r=>r.subjectId===sub?.id);teacherMain.innerHTML=`<h2>نتائج المادة</h2><div class="panel"><table><thead><tr><th>الطالب</th><th>الاختبار</th><th>الدرجة</th><th>المستوى</th></tr></thead><tbody>${rs.length?rs.map(r=>{const st=state.students.find(s=>s.id===r.studentId);return `<tr><td>${st?.name}</td><td>${r.examTitle}</td><td>${r.score}/${r.total}</td><td>${levelFromPercent(r.percent)}</td></tr>`}).join(''):`<tr><td colspan='4'>لا توجد نتائج</td></tr>`}</tbody></table></div>`}function teacherNotices(){setActivePanel('teacherNotices');jumpToWorkspace('teacherMain');const notices=state.adminNotices.filter(n=>n.teacherId==='all'||n.teacherId===user.id);teacherMain.innerHTML=`<h2>تبليغات المدير</h2>${notices.length?notices.map(n=>`<div class="panel"><p>${n.text}</p><small>${n.date}</small><textarea id="reply${n.id}" placeholder="ردك"></textarea><button onclick="replyNotice('${n.id}')">إرسال الرد</button></div>`).join(''):`<div class='panel empty'>لا توجد تبليغات</div>`}`}function replyNotice(id){const text=document.getElementById('reply'+id).value.trim();if(!text)return;state.noticeReplies.push({id:uid('rep'),noticeId:id,teacherId:user.id,teacherName:user.name,text,date:new Date().toLocaleString('ar-IQ')});save();alert('تم إرسال الرد')}
-function studentDashboard(){showPage('student');studentWelcome.textContent='مرحباً '+user.name;refreshStudentStats();if(!studentHasAnySubscription())studentSubscription();else studentMySubjects()}function studentHasAnySubscription(){return state.payments.some(p=>p.studentId===user.id&&p.status==='approved'&&new Date(p.endDate+'T23:59:59')>=new Date())}function refreshStudentStats(){const ens=studentApprovedEnrollments(user.id),msgs=state.messages.filter(m=>m.toId===user.id||m.fromId===user.id).length;subCount.textContent=ens.length;msgCount.textContent=msgs;avgScore.textContent=avgForStudent(user.id)+'%';let days=0;state.payments.filter(p=>p.studentId===user.id&&p.status==='approved').forEach(p=>{days=Math.max(days,daysLeft(user.id,p.subjectId))});subDays.textContent=days;studentNav.classList.toggle('hidden',!studentHasAnySubscription());studentTopNotice.innerHTML=studentHasAnySubscription()?`<div class="notice ok">اشتراكك مفعل. أعلى مدة متبقية: ${days} يوم</div>`:`<div class="notice">يجب إرسال طلب اشتراك حتى تفتح لك لوحة المواد.</div>`}function studentSubscription(){setActivePanel('studentSubscription');jumpToWorkspace('studentPanel');studentPanel.innerHTML=`<h3>طلب اشتراك</h3><div class="notice">رقم بطاقة الماستر كارد: <b>${state.settings.masterCard}</b></div><input value="${user.name}" disabled><select id="paySubject">${state.subjects.filter(s=>same(s.grade,user.grade)).map(s=>`<option value="${s.id}">${s.name} - ${s.grade}</option>`).join('')}</select><input id="payPhone" placeholder="رقم الهاتف"><input id="payAmount" type="number" placeholder="المبلغ المرسل"><input id="payDate" type="date" value="${new Date().toISOString().slice(0,10)}"><input id="payNote" placeholder="ملاحظة أو رقم العملية"><button class="gold" onclick="sendPayment()">إرسال إلى المدير</button>`}function sendPayment(){if(!paySubject.value||!payPhone.value.trim()||!payAmount.value.trim())return alert('أكمل بيانات الاشتراك');state.payments.unshift({id:uid('pay'),studentId:user.id,subjectId:paySubject.value,phone:payPhone.value.trim(),amount:payAmount.value.trim(),payDate:payDate.value,note:payNote.value.trim(),status:'pending',createdAt:new Date().toLocaleString('ar-IQ')});let st=state.students.find(s=>s.id===user.id);if(st)st.phone=payPhone.value.trim();save();alert('تم إرسال الطلب للمدير');refreshStudentStats()}function studentMySubjects(){setActivePanel('studentMySubjects');jumpToWorkspace('studentPanel');const subjects=state.subjects.filter(s=>same(s.grade,user.grade)),ens=studentApprovedEnrollments(user.id).map(e=>e.subjectId);studentPanel.innerHTML=`<h3>غرفة المواد</h3><div class="notice">لا تستطيع دخول أي مادة إلا بعد إرسال طلب تسجيل بكود المادة، ثم موافقة المدرس.</div>${subjects.length?subjects.map(s=>`<div class="file-item"><div><b>${s.icon||'📚'} ${s.name}</b><br><span class="badge">${s.grade}</span></div><button onclick="studentOpenOrRequest('${s.id}')">${ens.includes(s.id)?'فتح المادة':'تسجيل بكود المادة'}</button></div>`).join(''):`<div class='empty'>لا توجد مواد لصفك حالياً</div>`}`}function studentOpenOrRequest(subjectId){const en=state.enrollments.find(e=>e.studentId===user.id&&e.subjectId===subjectId&&e.status==='approved');if(en){openRoom(subjectId);return}const sub=subjectById(subjectId),code=prompt('أدخل كود المادة');if(code!==sub.code)return alert('كود المادة غير صحيح');if(state.enrollRequests.some(r=>r.studentId===user.id&&r.subjectId===subjectId&&r.status==='pending'))return alert('طلبك قيد موافقة المدرس');state.enrollRequests.push({id:uid('req'),studentId:user.id,subjectId,status:'pending',date:new Date().toLocaleString('ar-IQ')});save();alert('تم إرسال طلب التسجيل للمدرس، وبعد الموافقة ستضاف المادة تلقائياً.')}function openRoom(subjectId){setActivePanel('subjectRoom');currentSubjectId=subjectId;const s=subjectById(subjectId);roomTitle.textContent=`${s.name} - ${s.grade}`;showPage('subjectRoom');roomTab('lectures')}function roomTab(tab){jumpToWorkspace('roomContent');const sid=currentSubjectId;if(tab==='lectures'){const arr=state.lectures.filter(x=>x.subjectId===sid);roomContent.innerHTML=`<h3>المحاضرات</h3>${arr.length?arr.map(x=>`<div class="file-item"><b>${x.title}</b><span>${x.level}</span><button onclick="openContent('${x.id}')">فتح</button></div>`).join(''):`<div class='empty'>لا توجد محاضرات</div>`}`}if(tab==='files'){const arr=state.files.filter(x=>x.subjectId===sid);roomContent.innerHTML=`<h3>الملفات</h3>${arr.length?arr.map(x=>`<div class="file-item"><b>${x.title}</b><span>${x.level}</span><button onclick="openContent('${x.id}')">فتح</button></div>`).join(''):`<div class='empty'>لا توجد ملفات</div>`}`}if(tab==='exams'){const arr=state.exams.filter(x=>x.subjectId===sid);roomContent.innerHTML=`<h3>الاختبارات</h3>${arr.length?arr.map(x=>`<div class="file-item"><b>${x.title}</b><span>${x.level} - ${x.total} درجة</span><button onclick="openExam('${x.id}')">بدء</button></div>`).join(''):`<div class='empty'>لا توجد اختبارات</div>`}`}if(tab==='levels'){const rows=subjectRankingRows(sid);roomContent.innerHTML=`<h3>جدول مستويات الطلاب</h3><div class="notice">الترتيب يُحسب تلقائياً حسب نتائج اختبارات الطلاب في هذه المادة.</div><table><thead><tr><th>التسلسل</th><th>الطالب</th><th>المستوى</th><th>الاختبارات المجابة</th><th>الدرجة</th><th>النسبة</th></tr></thead><tbody>${rows.length?rows.map((r,i)=>`<tr><td>${i+1}</td><td>${r.name}</td><td>${r.level}</td><td>${r.completed}/${r.totalExams}</td><td>${r.totalScore}/${r.totalPossible||0}</td><td>${r.avg}%</td></tr>`).join(''):`<tr><td colspan='6'>لا توجد نتائج بعد</td></tr>`}</tbody></table>`}if(tab==='messages')studentSubjectMessages()}function studentSubjectMessages(){jumpToWorkspace('roomContent');const sid=currentSubjectId,sub=subjectById(sid),t=teacherFor(sub.name,sub.grade),ms=state.messages.filter(m=>m.subjectId===sid&&(m.toId===user.id||m.fromId===user.id));roomContent.innerHTML=`<h3>رسائل المادة</h3>${t?`<textarea id="sMsg" placeholder="اكتب رسالة للأستاذ ${t.name}"></textarea><button onclick="studentSendTeacher('${t.id}','${sid}')">إرسال</button>`:`<div class='empty'>لا يوجد مدرس</div>`}<div class="chat">${ms.length?ms.map(m=>renderMsg(m,user.id)).join(''):`<div class='empty'>لا توجد رسائل</div>`}</div>`}function studentSendTeacher(tid,sid){if(!sMsg.value.trim())return;state.messages.push({id:uid('msg'),fromId:user.id,fromName:user.name,toId:tid,teacherId:tid,subjectId:sid,text:sMsg.value.trim(),date:new Date().toLocaleString('ar-IQ')});save();studentSubjectMessages()}function studentMyExams(){setActivePanel('studentMyExams');jumpToWorkspace('studentPanel');const ens=studentApprovedEnrollments(user.id).map(e=>e.subjectId),exs=state.exams.filter(e=>ens.includes(e.subjectId));studentPanel.innerHTML=`<h3>اختباراتي</h3>${exs.length?exs.map(e=>{const sub=subjectById(e.subjectId),res=state.results.find(r=>r.examId===e.id&&r.studentId===user.id);return `<div class="file-item"><b>${sub?.name}</b><span>${e.title}: ${res?res.score+'/'+res.total:'لم يؤدَّ'}</span></div>`}).join(''):`<div class='empty'>لا توجد اختبارات</div>`}`}function studentLevel(){setActivePanel('studentLevel');jumpToWorkspace('studentPanel');const ens=studentApprovedEnrollments(user.id);if(!ens.length){studentPanel.innerHTML=`<div class='empty'>لم تشترك في أي مادة بعد</div>`;return}studentPanel.innerHTML=`<h3>مستواي وترتيبي</h3>${ens.map(en=>{const sub=subjectById(en.subjectId),rows=subjectRankingRows(en.subjectId);return `<div class="panel"><h3>${sub?.name} - ${sub?.grade}</h3><table><thead><tr><th>التسلسل</th><th>الطالب</th><th>المستوى</th><th>الاختبارات المجابة</th><th>الدرجة</th><th>النسبة</th></tr></thead><tbody>${rows.length?rows.map((r,i)=>`<tr><td>${i+1}</td><td>${r.name}</td><td>${r.level}</td><td>${r.completed}/${r.totalExams}</td><td>${r.totalScore}/${r.totalPossible||0}</td><td>${r.avg}%</td></tr>`).join(''):`<tr><td colspan='6'>لا توجد نتائج بعد</td></tr>`}</tbody></table></div>`}).join('')}`}
+function currentTeacher(){return teacherById(user?.id)}function currentSubject(){const t=currentTeacher();return state.subjects.find(s=>same(s.name,t?.subject)&&same(s.grade,t?.grade))}function teacherHome(){setActivePanel('teacherHome');jumpToWorkspace('teacherMain');const t=currentTeacher(),sub=currentSubject();teacherMain.innerHTML=`<h2>لوحة المدرس</h2><div class="panel"><h3>${t.name}</h3><span class="badge">${t.subject}</span><span class="badge">${t.grade}</span></div><div class="stats"><div><b>${state.enrollments.filter(e=>e.subjectId===sub?.id&&e.status==='approved').length}</b><span>طلاب المادة</span></div><div><b>${state.exams.filter(e=>e.subjectId===sub?.id).length}</b><span>اختبارات</span></div><div><b>${state.messages.filter(m=>m.teacherId===t.id).length}</b><span>رسائل</span></div></div>`}function teacherProfile(){setActivePanel('teacherProfile');jumpToWorkspace('teacherMain');const t=currentTeacher();teacherMain.innerHTML=`<h2>بروفايل المدرس</h2><div class="panel"><p><b>${t.name}</b></p><p>${t.subject} - ${t.grade}</p><textarea id="tBio" rows="4" placeholder="نبذة">${t.bio||''}</textarea><input id="tExp" value="${t.experience||''}" placeholder="الخبرة أو المؤهل"><button onclick="saveTeacherProfile()">حفظ البروفايل</button></div>`}function saveTeacherProfile(){const t=currentTeacher();t.bio=tBio.value;t.experience=tExp.value;save();alert('تم حفظ البروفايل');teacherProfile()}function teacherContent(){setActivePanel('teacherContent');jumpToWorkspace('teacherMain');const sub=currentSubject();teacherMain.innerHTML=`<h2>المحاضرات والملفات</h2><div class="panel"><h3>إضافة مادة تعليمية</h3><input id="contTitle" placeholder="عنوان المحتوى"><select id="contType"><option>محاضرة</option><option>ملف PDF</option><option>فيديو</option><option>رابط</option></select><select id="contLevel">${levels().map(l=>`<option>${l}</option>`).join('')}</select><input id="contUrl" placeholder="رابط اختياري"><input id="contFile" type="file" accept=".pdf,.doc,.docx,.ppt,.pptx,image/*,video/*"><div id="uploadProgress" class="upload-progress"></div><button onclick="addTeacherContent()">إضافة ورفع</button><p class="notice">يمكنك رفع ملف مباشر إلى Firebase Storage أو وضع رابط Google Drive.</p></div><div class="panel"><h3>المحتوى الحالي</h3>${[...state.lectures,...state.files].filter(x=>x.subjectId===sub?.id).length?[...state.lectures,...state.files].filter(x=>x.subjectId===sub?.id).map(x=>`<div class="file-item"><b>${x.title}</b><span>${x.kind||x.type} - ${x.level}</span><button onclick="openContent('${x.id}')">فتح</button></div>`).join(''):`<div class='empty'>لا يوجد محتوى</div>`}</div>`}async function addTeacherContent(){const sub=currentSubject();if(!sub)return alert('لا توجد مادة مرتبطة');if(!contTitle.value.trim())return alert('اكتب العنوان');const file=contFile.files[0];const item={id:uid('content'),title:contTitle.value.trim(),subjectId:sub.id,teacherId:user.id,level:contLevel.value,kind:contType.value,url:contUrl.value.trim(),date:new Date().toLocaleString('ar-IQ')};try{if(file){item.url=await uploadFileToFirebase(file,'subjects/'+sub.id,'uploadProgress');item.fileName=file.name;item.mime=file.type}const add=()=>{if(contType.value==='محاضرة')state.lectures.push(item);else state.files.push(item);const targets=state.enrollments.filter(e=>e.subjectId===sub.id&&e.status==='approved').map(e=>'student:'+e.studentId);logActivity({source:item.kind,action:'إضافة محتوى جديد: '+item.title,subjectId:sub.id,subjectName:sub.name,teacherId:user.id,teacherName:user.name,icon:item.kind==='محاضرة'?'📘':(item.kind==='فيديو'?'🎬':'📁')});addNotification(targets,{source:item.kind,title:'محتوى جديد: '+item.title,body:'تمت إضافة '+item.kind+' في المادة',subjectId:sub.id,subjectName:sub.name,teacherId:user.id,teacherName:user.name,icon:item.kind==='محاضرة'?'📘':(item.kind==='فيديو'?'🎬':'📁')});save();teacherContent()};if(!item.url && !file){if(!confirm('لم تضع رابطاً أو ملفاً. هل تريد إضافة المحتوى بدون ملف؟'))return}add()}catch(err){console.error(err)}}function openContent(id){const x=[...state.lectures,...state.files].find(i=>i.id===id);if(!x)return;if(x.url){window.open(x.url,'_blank');return}const w=window.open();if((x.mime||'').includes('video'))w.document.write(`<video controls style="width:100%" src="${x.data}"></video>`);else if((x.mime||'').includes('pdf'))w.document.write(`<iframe src="${x.data}" style="width:100%;height:100vh;border:0"></iframe>`);else w.document.write(`<a href="${x.data}" download>تحميل</a>`)}function teacherExams(){setActivePanel('teacherExams');jumpToWorkspace('teacherMain');const sub=currentSubject();examBuild=[];teacherMain.innerHTML=`<h2>إنشاء اختبار</h2><div class="notice">مستويات الطلاب تُحسب تلقائياً حسب نتائج الاختبارات ولا تُحدد عند إنشاء الاختبار.</div><div class="panel"><input id="exTitle" placeholder="عنوان الاختبار"><input id="exMinutes" type="number" placeholder="المدة بالدقائق"></div><div class="panel"><h3>إضافة سؤال</h3><select id="qType"><option value="mcq">اختيار من متعدد</option><option value="tf">صح وخطأ</option><option value="list">تعداد</option><option value="essay">مقالي</option></select><input id="qText" placeholder="نص السؤال"><input id="qOptions" placeholder="الخيارات أو إجابات التعداد مفصولة بفواصل"><input id="qAnswer" placeholder="الإجابة الصحيحة"><input id="qPoints" type="number" placeholder="درجة السؤال"><button onclick="addQuestion()">إضافة السؤال</button></div><div class="panel"><h3>أسئلة الاختبار</h3><div id="qBuild"></div><button class="gold" onclick="saveExam()">حفظ الاختبار</button></div><div class="panel"><h3>اختباراتي</h3>${state.exams.filter(e=>e.subjectId===sub?.id).length?state.exams.filter(e=>e.subjectId===sub?.id).map(e=>`<div class="file-item"><b>${e.title}</b><span>${e.questions.length} سؤال</span></div>`).join(''):`<div class='empty'>لا توجد اختبارات</div>`}</div>`;renderBuild()}function addQuestion(){if(!qText.value.trim())return alert('اكتب السؤال');let q={type:qType.value,text:qText.value.trim(),options:qOptions.value.split(/[،,]/).map(x=>x.trim()).filter(Boolean),answer:qAnswer.value.trim(),points:+qPoints.value||1};if(q.type==='tf'&&!['صح','خطأ'].includes(q.answer))return alert('إجابة صح وخطأ يجب أن تكون صح أو خطأ');if(q.type==='list')q.answer=q.options;if(q.type==='essay')q.answer='';examBuild.push(q);qText.value=qOptions.value=qAnswer.value=qPoints.value='';renderBuild()}function renderBuild(){if(!document.getElementById('qBuild'))return;const total=examBuild.reduce((a,b)=>a+b.points,0);qBuild.innerHTML=(examBuild.length?examBuild.map((q,i)=>`<div class="file-item"><b>${i+1}- ${q.text}</b><span>${q.type} - ${q.points} درجة</span><button class="danger" onclick="examBuild.splice(${i},1);renderBuild()">حذف</button></div>`).join(''):`<div class='empty'>لا توجد أسئلة</div>`)+`<div class="notice">الدرجة الكلية: ${total}</div>`}function saveExam(){const sub=currentSubject();if(!exTitle.value.trim()||!examBuild.length)return alert('أكمل الاختبار');const total=examBuild.reduce((a,b)=>a+b.points,0);const newExam={id:uid('exam'),title:exTitle.value.trim(),subjectId:sub.id,teacherId:user.id,minutes:+exMinutes.value||20,total,questions:[...examBuild]};state.exams.push(newExam);logActivity({source:'الاختبارات',action:'إضافة اختبار جديد: '+newExam.title,subjectId:sub.id,subjectName:sub.name,teacherId:user.id,teacherName:user.name,icon:'📝'});{const targets=state.enrollments.filter(e=>e.subjectId===sub.id&&e.status==='approved').map(e=>'student:'+e.studentId);addNotification(targets,{source:'الاختبارات',title:'اختبار جديد: '+newExam.title,body:'تمت إضافة اختبار جديد في المادة',subjectId:sub.id,subjectName:sub.name,teacherId:user.id,teacherName:user.name,icon:'📝'});}save();teacherExams()}function teacherStudents(){setActivePanel('teacherStudents');jumpToWorkspace('teacherMain');const sub=currentSubject(),rows=subjectRankingRows(sub?.id);teacherMain.innerHTML=`<h2>طلاب المادة ومستوياتهم التلقائية</h2><div class="notice">المستوى يُحسب تلقائياً من نتائج اختبارات الطلاب، ويظهر الجدول من الأعلى إلى الأقل.</div><div class="panel"><table><thead><tr><th>التسلسل</th><th>الطالب</th><th>المستوى</th><th>الاختبارات المجابة</th><th>الدرجة الكلية</th><th>النسبة</th><th>الهاتف</th></tr></thead><tbody>${rows.length?rows.map((r,i)=>`<tr><td>${i+1}</td><td>${r.name}</td><td>${r.level}</td><td>${r.completed}/${r.totalExams}</td><td>${r.totalScore}/${r.totalPossible||0}</td><td>${r.avg}%</td><td>${r.phone||''}</td></tr>`).join(''):`<tr><td colspan='7'>لا يوجد طلاب أو نتائج بعد</td></tr>`}</tbody></table></div>`}function teacherRequests(){setActivePanel('teacherRequests');jumpToWorkspace('teacherMain');const sub=currentSubject(),req=state.enrollRequests.filter(r=>r.subjectId===sub?.id&&r.status==='pending');teacherMain.innerHTML=`<h2>طلبات دخول المادة</h2>${req.length?req.map(r=>{const st=state.students.find(s=>s.id===r.studentId);return `<div class="file-item"><div><b>${st?.name}</b><br>${st?.grade}<br>${r.date}</div><button class="green" onclick="approveEnroll('${r.id}')">قبول</button><button class="danger" onclick="rejectEnroll('${r.id}')">رفض</button></div>`}).join(''):`<div class='panel empty'>لا توجد طلبات</div>`}`}function approveEnroll(id){const r=state.enrollRequests.find(x=>x.id===id);if(!r)return;r.status='approved';logActivity({source:'المواد',action:'قبول طالب في مادة',studentId:r.studentId,subjectId:r.subjectId,icon:'✅'});if(!state.enrollments.some(e=>e.studentId===r.studentId&&e.subjectId===r.subjectId))state.enrollments.push({id:uid('en'),studentId:r.studentId,subjectId:r.subjectId,status:'approved',date:new Date().toLocaleString('ar-IQ')});{const sub=subjectById(r.subjectId);addNotification('student:'+r.studentId,{source:'المواد',title:'تم قبول دخول المادة',body:'تمت الموافقة على دخولك إلى المادة',subjectId:r.subjectId,subjectName:sub?.name||'',teacherId:user.id,teacherName:user.name,icon:'✅'});}save();teacherRequests()}function rejectEnroll(id){const r=state.enrollRequests.find(x=>x.id===id);if(r){r.status='rejected';save();teacherRequests()}}function teacherMessages(){setActivePanel('teacherMessages');jumpToWorkspace('teacherMain');const sub=currentSubject(),ens=state.enrollments.filter(e=>e.subjectId===sub?.id&&e.status==='approved'),ms=state.messages.filter(m=>m.teacherId===user.id&&m.subjectId===sub?.id);teacherMain.innerHTML=`<h2>رسائل الطلاب</h2><div class="panel"><select id="tmStudent">${ens.map(e=>{const st=state.students.find(s=>s.id===e.studentId);return `<option value="${e.studentId}">${st?.name}</option>`}).join('')}</select><textarea id="tmText" placeholder="رسالة للطالب"></textarea><button onclick="teacherSendStudent()">إرسال</button></div><div class="chat">${ms.length?ms.map(m=>renderMsg(m,user.id)).join(''):`<div class='empty'>لا توجد رسائل</div>`}</div>`}function teacherSendStudent(){if(!tmText.value.trim())return alert('اكتب الرسالة');const sub=currentSubject();logActivity({source:'رسائل الأستاذ',action:'إرسال رسالة لطالب',studentId:tmStudent.value,subjectId:sub.id,subjectName:sub.name,teacherId:user.id,teacherName:user.name,icon:'💬'});state.messages.push({id:uid('msg'),fromId:user.id,fromName:user.name,toId:tmStudent.value,teacherId:user.id,subjectId:sub.id,text:tmText.value.trim(),date:new Date().toLocaleString('ar-IQ')});addNotification('student:'+tmStudent.value,{source:'رسائل الأستاذ',title:'رسالة جديدة من الأستاذ',body:tmText.value.trim(),subjectId:sub.id,subjectName:sub.name,teacherId:user.id,teacherName:user.name,icon:'💬'});save();teacherMessages()}function teacherParentMessages(){setActivePanel('teacherParentMessages');jumpToWorkspace('teacherMain');const sub=currentSubject(),ms=state.parentMessages.filter(m=>m.teacherId===user.id&&m.subjectId===sub?.id);teacherMain.innerHTML=`<h2>رسائل أولياء الأمور</h2><div class="chat">${ms.length?ms.map(m=>`<div class="msg"><b>${m.parentName}</b><p>${m.text}</p><button onclick="replyParentMsg('${m.id}')">رد</button>${m.reply?`<p><b>ردك:</b> ${m.reply}</p>`:''}</div>`).join(''):`<div class='empty'>لا توجد رسائل</div>`}</div>`}function replyParentMsg(id){const text=prompt('اكتب الرد');if(!text)return;const m=state.parentMessages.find(x=>x.id===id);m.reply=text;m.replyDate=new Date().toLocaleString('ar-IQ');save();teacherParentMessages()}function teacherResults(){setActivePanel('teacherResults');jumpToWorkspace('teacherMain');const sub=currentSubject(),rs=state.results.filter(r=>r.subjectId===sub?.id);teacherMain.innerHTML=`<h2>نتائج المادة</h2><div class="panel"><table><thead><tr><th>الطالب</th><th>الاختبار</th><th>الدرجة</th><th>المستوى</th></tr></thead><tbody>${rs.length?rs.map(r=>{const st=state.students.find(s=>s.id===r.studentId);return `<tr><td>${st?.name}</td><td>${r.examTitle}</td><td>${r.score}/${r.total}</td><td>${levelFromPercent(r.percent)}</td></tr>`}).join(''):`<tr><td colspan='4'>لا توجد نتائج</td></tr>`}</tbody></table></div>`}function teacherNotices(){setActivePanel('teacherNotices');jumpToWorkspace('teacherMain');const notices=state.adminNotices.filter(n=>n.teacherId==='all'||n.teacherId===user.id);teacherMain.innerHTML=`<h2>تبليغات المدير</h2>${notices.length?notices.map(n=>`<div class="panel"><p>${n.text}</p><small>${n.date}</small><textarea id="reply${n.id}" placeholder="ردك"></textarea><button onclick="replyNotice('${n.id}')">إرسال الرد</button></div>`).join(''):`<div class='panel empty'>لا توجد تبليغات</div>`}`}function replyNotice(id){const text=document.getElementById('reply'+id).value.trim();if(!text)return;state.noticeReplies.push({id:uid('rep'),noticeId:id,teacherId:user.id,teacherName:user.name,text,date:new Date().toLocaleString('ar-IQ')});addNotification('admin',{source:'ردود المدرسين',title:'رد جديد من مدرس',body:text,teacherId:user.id,teacherName:user.name,icon:'📩'});save();alert('تم إرسال الرد')}
+function studentDashboard(){showPage('student');studentWelcome.textContent='مرحباً '+user.name;refreshStudentStats();if(!studentHasAnySubscription())studentSubscription();else studentMySubjects()}function studentHasAnySubscription(){return state.payments.some(p=>p.studentId===user.id&&p.status==='approved'&&new Date(p.endDate+'T23:59:59')>=new Date())}function refreshStudentStats(){const ens=studentApprovedEnrollments(user.id),msgs=state.messages.filter(m=>m.toId===user.id||m.fromId===user.id).length;subCount.textContent=ens.length;msgCount.textContent=msgs;avgScore.textContent=avgForStudent(user.id)+'%';let days=0;state.payments.filter(p=>p.studentId===user.id&&p.status==='approved').forEach(p=>{days=Math.max(days,daysLeft(user.id,p.subjectId))});subDays.textContent=days;studentNav.classList.toggle('hidden',!studentHasAnySubscription());studentTopNotice.innerHTML=studentHasAnySubscription()?`<div class="notice ok">اشتراكك مفعل. أعلى مدة متبقية: ${days} يوم</div>`:`<div class="notice">يجب إرسال طلب اشتراك حتى تفتح لك لوحة المواد.</div>`}function studentSubscription(){setActivePanel('studentSubscription');jumpToWorkspace('studentPanel');studentPanel.innerHTML=`<h3>طلب اشتراك</h3><div class="notice">رقم بطاقة الماستر كارد: <b>${state.settings.masterCard}</b></div><input value="${user.name}" disabled><select id="paySubject">${state.subjects.filter(s=>same(s.grade,user.grade)).map(s=>`<option value="${s.id}">${s.name} - ${s.grade}</option>`).join('')}</select><input id="payPhone" placeholder="رقم الهاتف"><input id="payAmount" type="number" placeholder="المبلغ المرسل"><input id="payDate" type="date" value="${new Date().toISOString().slice(0,10)}"><input id="payNote" placeholder="ملاحظة أو رقم العملية"><button class="gold" onclick="sendPayment()">إرسال إلى المدير</button>`}function sendPayment(){if(!paySubject.value||!payPhone.value.trim()||!payAmount.value.trim())return alert('أكمل بيانات الاشتراك');logActivity({source:'الاشتراكات',action:'طلب اشتراك جديد من '+user.name,studentId:user.id,icon:'💳'});state.payments.unshift({id:uid('pay'),studentId:user.id,subjectId:paySubject.value,phone:payPhone.value.trim(),amount:payAmount.value.trim(),payDate:payDate.value,note:payNote.value.trim(),status:'pending',createdAt:new Date().toLocaleString('ar-IQ')});{const sub=subjectById(paySubject.value);addNotification('admin',{source:'الاشتراكات',title:'طلب اشتراك جديد',body:user.name+' أرسل طلب اشتراك',subjectId:paySubject.value,subjectName:sub?.name||'',studentId:user.id,studentName:user.name,icon:'💳'});}let st=state.students.find(s=>s.id===user.id);if(st)st.phone=payPhone.value.trim();save();alert('تم إرسال الطلب للمدير');refreshStudentStats()}function studentMySubjects(){setActivePanel('studentMySubjects');jumpToWorkspace('studentPanel');const subjects=state.subjects.filter(s=>same(s.grade,user.grade)),ens=studentApprovedEnrollments(user.id).map(e=>e.subjectId);studentPanel.innerHTML=`<h3>غرفة المواد</h3><div class="notice">لا تستطيع دخول أي مادة إلا بعد إرسال طلب تسجيل بكود المادة، ثم موافقة المدرس.</div>${subjects.length?subjects.map(s=>`<div class="file-item"><div><b>${s.icon||'📚'} ${s.name}</b><br><span class="badge">${s.grade}</span></div><button onclick="studentOpenOrRequest('${s.id}')">${ens.includes(s.id)?'فتح المادة':'تسجيل بكود المادة'}</button></div>`).join(''):`<div class='empty'>لا توجد مواد لصفك حالياً</div>`}`}function studentOpenOrRequest(subjectId){const en=state.enrollments.find(e=>e.studentId===user.id&&e.subjectId===subjectId&&e.status==='approved');if(en){openRoom(subjectId);return}const sub=subjectById(subjectId),code=prompt('أدخل كود المادة');if(code!==sub.code)return alert('كود المادة غير صحيح');if(state.enrollRequests.some(r=>r.studentId===user.id&&r.subjectId===subjectId&&r.status==='pending'))return alert('طلبك قيد موافقة المدرس');state.enrollRequests.push({id:uid('req'),studentId:user.id,subjectId,status:'pending',date:new Date().toLocaleString('ar-IQ')});save();alert('تم إرسال طلب التسجيل للمدرس، وبعد الموافقة ستضاف المادة تلقائياً.')}function openRoom(subjectId){setActivePanel('subjectRoom');currentSubjectId=subjectId;const s=subjectById(subjectId);roomTitle.textContent=`${s.name} - ${s.grade}`;showPage('subjectRoom');roomTab('lectures')}function roomTab(tab){jumpToWorkspace('roomContent');const sid=currentSubjectId;if(tab==='lectures'){const arr=state.lectures.filter(x=>x.subjectId===sid);roomContent.innerHTML=`<h3>المحاضرات</h3>${arr.length?arr.map(x=>`<div class="file-item"><b>${x.title}</b><span>${x.level}</span><button onclick="openContent('${x.id}')">فتح</button></div>`).join(''):`<div class='empty'>لا توجد محاضرات</div>`}`}if(tab==='files'){const arr=state.files.filter(x=>x.subjectId===sid);roomContent.innerHTML=`<h3>الملفات</h3>${arr.length?arr.map(x=>`<div class="file-item"><b>${x.title}</b><span>${x.level}</span><button onclick="openContent('${x.id}')">فتح</button></div>`).join(''):`<div class='empty'>لا توجد ملفات</div>`}`}if(tab==='exams'){const arr=state.exams.filter(x=>x.subjectId===sid);roomContent.innerHTML=`<h3>الاختبارات</h3>${arr.length?arr.map(x=>`<div class="file-item"><b>${x.title}</b><span>${x.level} - ${x.total} درجة</span><button onclick="openExam('${x.id}')">بدء</button></div>`).join(''):`<div class='empty'>لا توجد اختبارات</div>`}`}if(tab==='levels'){const rows=subjectRankingRows(sid);roomContent.innerHTML=`<h3>جدول مستويات الطلاب</h3><div class="notice">الترتيب يُحسب تلقائياً حسب نتائج اختبارات الطلاب في هذه المادة.</div><table><thead><tr><th>التسلسل</th><th>الطالب</th><th>المستوى</th><th>الاختبارات المجابة</th><th>الدرجة</th><th>النسبة</th></tr></thead><tbody>${rows.length?rows.map((r,i)=>`<tr><td>${i+1}</td><td>${r.name}</td><td>${r.level}</td><td>${r.completed}/${r.totalExams}</td><td>${r.totalScore}/${r.totalPossible||0}</td><td>${r.avg}%</td></tr>`).join(''):`<tr><td colspan='6'>لا توجد نتائج بعد</td></tr>`}</tbody></table>`}if(tab==='messages')studentSubjectMessages()}function studentSubjectMessages(){jumpToWorkspace('roomContent');const sid=currentSubjectId,sub=subjectById(sid),t=teacherFor(sub.name,sub.grade),ms=state.messages.filter(m=>m.subjectId===sid&&(m.toId===user.id||m.fromId===user.id));roomContent.innerHTML=`<h3>رسائل المادة</h3>${t?`<textarea id="sMsg" placeholder="اكتب رسالة للأستاذ ${t.name}"></textarea><button onclick="studentSendTeacher('${t.id}','${sid}')">إرسال</button>`:`<div class='empty'>لا يوجد مدرس</div>`}<div class="chat">${ms.length?ms.map(m=>renderMsg(m,user.id)).join(''):`<div class='empty'>لا توجد رسائل</div>`}</div>`}function studentSendTeacher(tid,sid){if(!sMsg.value.trim())return;logActivity({source:'رسائل الطلاب',action:'رسالة من طالب إلى مدرس',studentId:user.id,studentName:user.name,subjectId:sid,icon:'💬'});state.messages.push({id:uid('msg'),fromId:user.id,fromName:user.name,toId:tid,teacherId:tid,subjectId:sid,text:sMsg.value.trim(),date:new Date().toLocaleString('ar-IQ')});{const sub=subjectById(sid),t=teacherById(tid)||teacherFor(sub?.name,sub?.grade);addNotification('teacher:'+tid,{source:'رسائل الطلاب',title:'رسالة جديدة من طالب',body:sMsg.value.trim(),subjectId:sid,subjectName:sub?.name||'',teacherId:tid,teacherName:t?.name||'',studentId:user.id,studentName:user.name,icon:'💬'});}save();studentSubjectMessages()}function studentMyExams(){setActivePanel('studentMyExams');jumpToWorkspace('studentPanel');const ens=studentApprovedEnrollments(user.id).map(e=>e.subjectId),exs=state.exams.filter(e=>ens.includes(e.subjectId));studentPanel.innerHTML=`<h3>اختباراتي</h3>${exs.length?exs.map(e=>{const sub=subjectById(e.subjectId),res=state.results.find(r=>r.examId===e.id&&r.studentId===user.id);return `<div class="file-item"><b>${sub?.name}</b><span>${e.title}: ${res?res.score+'/'+res.total:'لم يؤدَّ'}</span></div>`}).join(''):`<div class='empty'>لا توجد اختبارات</div>`}`}function studentLevel(){setActivePanel('studentLevel');jumpToWorkspace('studentPanel');const ens=studentApprovedEnrollments(user.id);if(!ens.length){studentPanel.innerHTML=`<div class='empty'>لم تشترك في أي مادة بعد</div>`;return}studentPanel.innerHTML=`<h3>مستواي وترتيبي</h3>${ens.map(en=>{const sub=subjectById(en.subjectId),rows=subjectRankingRows(en.subjectId);return `<div class="panel"><h3>${sub?.name} - ${sub?.grade}</h3><table><thead><tr><th>التسلسل</th><th>الطالب</th><th>المستوى</th><th>الاختبارات المجابة</th><th>الدرجة</th><th>النسبة</th></tr></thead><tbody>${rows.length?rows.map((r,i)=>`<tr><td>${i+1}</td><td>${r.name}</td><td>${r.level}</td><td>${r.completed}/${r.totalExams}</td><td>${r.totalScore}/${r.totalPossible||0}</td><td>${r.avg}%</td></tr>`).join(''):`<tr><td colspan='6'>لا توجد نتائج بعد</td></tr>`}</tbody></table></div>`}).join('')}`}
 function studentGrades(){setActivePanel('studentGrades');jumpToWorkspace('studentPanel');const rs=state.results.filter(r=>r.studentId===user.id);studentPanel.innerHTML=`<h3>درجاتي</h3>${rs.length?rs.map(r=>{const sub=subjectById(r.subjectId);return `<div class="file-item"><b>${r.examTitle}</b><span>${sub?.name} - ${r.score}/${r.total} - ${r.percent}%</span></div>`}).join(''):`<div class='empty'>لا توجد درجات</div>`}`}function studentMessages(){setActivePanel('studentMessages');jumpToWorkspace('studentPanel');const ms=state.messages.filter(m=>m.toId===user.id||m.fromId===user.id);studentPanel.innerHTML=`<h3>تبليغات ورسائل المدرسين</h3><div class="chat">${ms.length?ms.map(m=>renderMsg(m,user.id)).join(''):`<div class='empty'>لا توجد رسائل</div>`}</div>`}function renderMsg(m,myId){return `<div class="msg ${m.fromId===myId?'mine':''}"><b>${m.fromName||''}</b><p>${m.text}</p><small>${m.date}</small></div>`}
-function openExam(id){jumpToWorkspace('examArea');const e=state.exams.find(x=>x.id===id);if(!e)return;if(state.results.some(r=>r.examId===id&&r.studentId===user.id))return alert('أديت هذا الاختبار مسبقاً');currentExamId=id;showPage('examPage');examArea.innerHTML=`<h3>${e.title}</h3><p>${e.total} درجة</p><button onclick="startExam()">بدء</button>`}function startExam(){jumpToWorkspace('examArea');const e=state.exams.find(x=>x.id===currentExamId);let sec=e.minutes*60;examArea.innerHTML=`<div id="timer" class="timer"></div><div class="progress"><div id="bar"></div></div><form id="examForm">${e.questions.map((q,i)=>questionHTML(q,i)).join('')}<button type="button" onclick="submitExam()">إرسال</button></form>`;clearInterval(timerInt);timerInt=setInterval(()=>{sec--;timer.textContent=Math.floor(sec/60)+':'+String(sec%60).padStart(2,'0');bar.style.width=(100-sec/(e.minutes*60)*100)+'%';if(sec<=0){clearInterval(timerInt);submitExam()}},1000)}function questionHTML(q,i){if(q.type==='mcq')return `<div class="question"><b>${i+1}- ${q.text}</b><span class="badge">${q.points} درجة</span>${q.options.map(o=>`<label><input type="radio" name="q${i}" value="${o}"> ${o}</label><br>`).join('')}</div>`;if(q.type==='tf')return `<div class="question"><b>${i+1}- ${q.text}</b><span class="badge">${q.points} درجة</span><div class="choice-row"><label class="choice-card"><input type="radio" name="q${i}" value="صح">صح</label><label class="choice-card"><input type="radio" name="q${i}" value="خطأ">خطأ</label></div></div>`;return `<div class="question"><b>${i+1}- ${q.text}</b><span class="badge">${q.points} درجة</span><textarea name="q${i}" rows="4"></textarea></div>`}function submitExam(){clearInterval(timerInt);const e=state.exams.find(x=>x.id===currentExamId),data=new FormData(examForm);let score=0;e.questions.forEach((q,i)=>{const v=(data.get('q'+i)||'').trim();if(q.type==='essay'){if(v.length>15)score+=q.points}else if(q.type==='list'){const parts=v.split(/[،,]/).map(clean),good=(q.answer||[]).filter(a=>parts.some(p=>p.includes(clean(a))||clean(a).includes(p))).length;score+=q.answer.length?Math.round(good/q.answer.length*q.points):0}else if(same(v,q.answer))score+=q.points});const percent=e.total?Math.round(score/e.total*100):0;state.results.push({id:uid('res'),examId:e.id,examTitle:e.title,studentId:user.id,subjectId:e.subjectId,score,total:e.total,percent,date:new Date().toLocaleString('ar-IQ')});save();examArea.innerHTML=`<h2>النتيجة</h2><h1>${score}/${e.total}</h1><p>${percent}% - ${levelFromPercent(percent)}</p>`;refreshStudentStats()}function parentSearchStudent(){setActivePanel('parentSearchStudent');jumpToWorkspace('parentContent');const name=parentSearchInput.value.trim(),st=state.students.find(s=>same(s.name,name));if(!st){parentContent.innerHTML="<div class='empty'>لم يتم العثور على الطالب</div>";return}let p=state.parents.find(x=>x.id===user.id);if(p&&!p.students.includes(st.id)){p.students.push(st.id);save()}const ens=studentApprovedEnrollments(st.id),rs=state.results.filter(r=>r.studentId===st.id);parentContent.innerHTML=`<h3>${st.name}</h3><p>${st.grade}</p><h4>المواد</h4>${ens.length?ens.map(e=>{const sub=subjectById(e.subjectId),t=teacherFor(sub.name,sub.grade);return `<div class="file-item"><div><b>${sub.name}</b><br>${sub.grade}</div>${t?`<button onclick="parentMsgTeacher('${st.id}','${sub.id}','${t.id}')">مراسلة الأستاذ</button>`:''}</div>`}).join(''):`<div class='empty'>لا توجد مواد</div>`}<h4>النتائج</h4>${rs.length?rs.map(r=>{const sub=subjectById(r.subjectId);return `<div class="file-item"><b>${sub?.name}</b><span>${r.examTitle} - ${r.score}/${r.total} - ${levelFromPercent(r.percent)}</span></div>`}).join(''):`<div class='empty'>لا توجد نتائج</div>`}`}function parentMsgTeacher(studentId,subjectId,teacherId){const text=prompt('اكتب رسالتك للأستاذ');if(!text)return;state.parentMessages.push({id:uid('pm'),parentId:user.id,parentName:user.name,studentId,subjectId,teacherId,text,date:new Date().toLocaleString('ar-IQ')});save();alert('تم إرسال الرسالة للأستاذ')}
+function openExam(id){jumpToWorkspace('examArea');const e=state.exams.find(x=>x.id===id);if(!e)return;if(state.results.some(r=>r.examId===id&&r.studentId===user.id))return alert('أديت هذا الاختبار مسبقاً');currentExamId=id;showPage('examPage');examArea.innerHTML=`<h3>${e.title}</h3><p>${e.total} درجة</p><button onclick="startExam()">بدء</button>`}function startExam(){jumpToWorkspace('examArea');const e=state.exams.find(x=>x.id===currentExamId);let sec=e.minutes*60;examArea.innerHTML=`<div id="timer" class="timer"></div><div class="progress"><div id="bar"></div></div><form id="examForm">${e.questions.map((q,i)=>questionHTML(q,i)).join('')}<button type="button" onclick="submitExam()">إرسال</button></form>`;clearInterval(timerInt);timerInt=setInterval(()=>{sec--;timer.textContent=Math.floor(sec/60)+':'+String(sec%60).padStart(2,'0');bar.style.width=(100-sec/(e.minutes*60)*100)+'%';if(sec<=0){clearInterval(timerInt);submitExam()}},1000)}function questionHTML(q,i){if(q.type==='mcq')return `<div class="question"><b>${i+1}- ${q.text}</b><span class="badge">${q.points} درجة</span>${q.options.map(o=>`<label><input type="radio" name="q${i}" value="${o}"> ${o}</label><br>`).join('')}</div>`;if(q.type==='tf')return `<div class="question"><b>${i+1}- ${q.text}</b><span class="badge">${q.points} درجة</span><div class="choice-row"><label class="choice-card"><input type="radio" name="q${i}" value="صح">صح</label><label class="choice-card"><input type="radio" name="q${i}" value="خطأ">خطأ</label></div></div>`;return `<div class="question"><b>${i+1}- ${q.text}</b><span class="badge">${q.points} درجة</span><textarea name="q${i}" rows="4"></textarea></div>`}function submitExam(){clearInterval(timerInt);const e=state.exams.find(x=>x.id===currentExamId),data=new FormData(examForm);let score=0;e.questions.forEach((q,i)=>{const v=(data.get('q'+i)||'').trim();if(q.type==='essay'){if(v.length>15)score+=q.points}else if(q.type==='list'){const parts=v.split(/[،,]/).map(clean),good=(q.answer||[]).filter(a=>parts.some(p=>p.includes(clean(a))||clean(a).includes(p))).length;score+=q.answer.length?Math.round(good/q.answer.length*q.points):0}else if(same(v,q.answer))score+=q.points});const percent=e.total?Math.round(score/e.total*100):0;state.results.push({id:uid('res'),examId:e.id,examTitle:e.title,studentId:user.id,subjectId:e.subjectId,score,total:e.total,percent,date:new Date().toLocaleString('ar-IQ')});{const sub=subjectById(e.subjectId),t=teacherFor(sub?.name,sub?.grade),parents=state.parents.filter(p=>(p.students||[]).includes(user.id)).map(p=>'parent:'+p.id);if(t)addNotification('teacher:'+t.id,{source:'النتائج',title:'نتيجة اختبار جديدة',body:user.name+' حصل على '+score+'/'+e.total,subjectId:e.subjectId,subjectName:sub?.name||'',teacherId:t.id,teacherName:t.name,studentId:user.id,studentName:user.name,icon:'📊'});addNotification(parents,{source:'نتائج الطالب',title:'ظهرت نتيجة اختبار',body:user.name+' حصل على '+score+'/'+e.total,subjectId:e.subjectId,subjectName:sub?.name||'',studentId:user.id,studentName:user.name,icon:'📊'});}save();examArea.innerHTML=`<h2>النتيجة</h2><h1>${score}/${e.total}</h1><p>${percent}% - ${levelFromPercent(percent)}</p>`;refreshStudentStats()}function parentSearchStudent(){setActivePanel('parentSearchStudent');jumpToWorkspace('parentContent');const name=parentSearchInput.value.trim(),st=state.students.find(s=>same(s.name,name));if(!st){parentContent.innerHTML="<div class='empty'>لم يتم العثور على الطالب</div>";return}let p=state.parents.find(x=>x.id===user.id);if(p&&!p.students.includes(st.id)){p.students.push(st.id);save()}const ens=studentApprovedEnrollments(st.id),rs=state.results.filter(r=>r.studentId===st.id);parentContent.innerHTML=`<h3>${st.name}</h3><p>${st.grade}</p><h4>المواد</h4>${ens.length?ens.map(e=>{const sub=subjectById(e.subjectId),t=teacherFor(sub.name,sub.grade);return `<div class="file-item"><div><b>${sub.name}</b><br>${sub.grade}</div>${t?`<button onclick="parentMsgTeacher('${st.id}','${sub.id}','${t.id}')">مراسلة الأستاذ</button>`:''}</div>`}).join(''):`<div class='empty'>لا توجد مواد</div>`}<h4>النتائج</h4>${rs.length?rs.map(r=>{const sub=subjectById(r.subjectId);return `<div class="file-item"><b>${sub?.name}</b><span>${r.examTitle} - ${r.score}/${r.total} - ${levelFromPercent(r.percent)}</span></div>`}).join(''):`<div class='empty'>لا توجد نتائج</div>`}`}function parentMsgTeacher(studentId,subjectId,teacherId){const text=prompt('اكتب رسالتك للأستاذ');if(!text)return;state.parentMessages.push({id:uid('pm'),parentId:user.id,parentName:user.name,studentId,subjectId,teacherId,text,date:new Date().toLocaleString('ar-IQ')});{const sub=subjectById(subjectId);addNotification('teacher:'+teacherId,{source:'رسائل ولي الأمر',title:'رسالة جديدة من ولي أمر',body:text,subjectId:subjectId,subjectName:sub?.name||'',teacherId:teacherId,teacherName:teacherById(teacherId)?.name||'',studentId:studentId,studentName:state.students.find(s=>s.id===studentId)?.name||'',icon:'👨‍👩‍👦'});}save();alert('تم إرسال الرسالة للأستاذ')}
 function createBackup(){
   try{
     const backup = {
@@ -302,6 +506,262 @@ function restoreBackup(){
 }
 
 
+
+function roleTargetIds(role){
+  if(role==='admin') return ['admin'];
+  if(role==='teacher') return state.teachers.map(function(t){return 'teacher:'+t.id;});
+  if(role==='student') return state.students.map(function(s){return 'student:'+s.id;});
+  if(role==='parent') return state.parents.map(function(p){return 'parent:'+p.id;});
+  return [];
+}
+
+
+function logActivity(info){
+  if(!state.activityLog) state.activityLog=[];
+  state.activityLog.unshift({
+    id:uid('act'),
+    actor:user?.name||'النظام',
+    actorRole:user?.role||'system',
+    action:info.action||'تحديث',
+    source:info.source||'النظام',
+    subjectId:info.subjectId||'',
+    subjectName:info.subjectName||'',
+    teacherId:info.teacherId||'',
+    teacherName:info.teacherName||'',
+    studentId:info.studentId||'',
+    studentName:info.studentName||'',
+    icon:info.icon||'🕒',
+    date:new Date().toLocaleString('ar-IQ')
+  });
+  if(state.activityLog.length>300) state.activityLog=state.activityLog.slice(0,300);
+}
+
+function recentActivityHTML(limit){
+  const arr=(state.activityLog||[]).slice(0,limit||40);
+  if(!arr.length)return "<div class='empty'>لا يوجد نشاط بعد</div>";
+  return arr.map(function(a){
+    const sub=a.subjectName?`<span class="badge">${a.subjectName}</span>`:'';
+    return `<div class="activity-item"><div class="activity-icon">${a.icon||'🕒'}</div><div><b>${a.action}</b><p>${a.actor} - ${a.source}</p>${sub}<div class="notification-meta">${a.date}</div></div></div>`;
+  }).join('');
+}
+
+function subjectDashboardStats(subjectId){
+  return {
+    students: state.enrollments.filter(e=>e.subjectId===subjectId&&e.status==='approved').length,
+    lectures: state.lectures.filter(x=>x.subjectId===subjectId).length,
+    files: state.files.filter(x=>x.subjectId===subjectId).length,
+    exams: state.exams.filter(x=>x.subjectId===subjectId).length,
+    results: state.results.filter(x=>x.subjectId===subjectId).length,
+    messages: state.messages.filter(x=>x.subjectId===subjectId).length
+  };
+}
+
+function openAdminSubjectPage(subjectId){
+  setActivePanel('adminSubjectPage:'+subjectId);
+  const sub=subjectById(subjectId);
+  if(!sub){adminSubjects();return}
+  const t=teacherFor(sub.name,sub.grade);
+  const st=subjectDashboardStats(subjectId);
+  adminMain.innerHTML=`
+    <div class="subject-hero">
+      <h2>${sub.icon||'📚'} ${sub.name}</h2>
+      <p>${sub.grade}</p>
+      <p>المدرس: ${t?t.name:'غير محدد'}</p>
+    </div>
+    <div class="subject-grid">
+      <div class="subject-tile"><b>${st.students}</b>الطلاب المسجلون</div>
+      <div class="subject-tile"><b>${st.lectures}</b>المحاضرات</div>
+      <div class="subject-tile"><b>${st.files}</b>الملفات</div>
+      <div class="subject-tile"><b>${st.exams}</b>الاختبارات</div>
+      <div class="subject-tile"><b>${st.results}</b>النتائج</div>
+      <div class="subject-tile"><b>${st.messages}</b>الرسائل</div>
+    </div>
+    <div class="panel">
+      <h3>آخر نشاط لهذه المادة</h3>
+      ${recentActivityHTML(15)}
+    </div>
+  `;
+  jumpToWorkspace('adminMain');
+}
+
+function teacherSubjectPage(){
+  setActivePanel('teacherSubjectPage');
+  const sub=currentSubject();
+  if(!sub){teacherHome();return}
+  const st=subjectDashboardStats(sub.id);
+  teacherMain.innerHTML=`
+    <div class="subject-hero">
+      <h2>${sub.icon||'📚'} ${sub.name}</h2>
+      <p>${sub.grade}</p>
+      <p>الأستاذ: ${user.name}</p>
+    </div>
+    <div class="subject-grid">
+      <div class="subject-tile" onclick="teacherStudents()"><b>${st.students}</b>الطلاب</div>
+      <div class="subject-tile" onclick="teacherContent()"><b>${st.lectures+st.files}</b>المحتوى</div>
+      <div class="subject-tile" onclick="teacherExams()"><b>${st.exams}</b>الاختبارات</div>
+      <div class="subject-tile" onclick="teacherResults()"><b>${st.results}</b>النتائج</div>
+      <div class="subject-tile" onclick="teacherMessages()"><b>${st.messages}</b>الرسائل</div>
+    </div>
+  `;
+  jumpToWorkspace('teacherMain');
+}
+
+function adminDashboardStats(){
+  const activeSubs=state.payments.filter(p=>p.status==='approved'&&new Date(p.endDate+'T23:59:59')>=new Date()).length;
+  const pendingSubs=state.payments.filter(p=>p.status==='pending').length;
+  return {
+    students:state.students.length,
+    teachers:state.teachers.length,
+    parents:state.parents.length,
+    subjects:state.subjects.length,
+    exams:state.exams.length,
+    results:state.results.length,
+    activeSubs:activeSubs,
+    pendingSubs:pendingSubs,
+    messages:state.messages.length+state.parentMessages.length
+  };
+}
+
+function adminActivityLog(){
+  setActivePanel('adminActivityLog');
+  adminMain.innerHTML=`<h2>سجل النشاط</h2><div class="panel">${recentActivityHTML(80)}</div>`;
+  jumpToWorkspace('adminMain');
+}
+
+async function uploadFileToFirebase(file, folder, progressId){
+  if(!file)return '';
+  if(!window.firebase || !storage){
+    alert('Firebase Storage غير متاح حالياً');
+    return '';
+  }
+  const safeName=file.name.replace(/[^\w\u0600-\u06FF.\-]+/g,'_');
+  const path=(folder||'uploads')+'/'+Date.now()+'_'+safeName;
+  const ref=storage.ref().child(path);
+  const task=ref.put(file);
+  const prog=document.getElementById(progressId);
+  if(prog)prog.style.display='block';
+  return new Promise(function(resolve,reject){
+    task.on('state_changed',function(snap){
+      const pct=Math.round((snap.bytesTransferred/snap.totalBytes)*100);
+      if(prog)prog.innerHTML='<div style="width:'+pct+'%"></div>';
+    },function(err){
+      console.error(err);
+      alert('تعذر رفع الملف. استخدم رابط Google Drive إذا كانت Storage غير مفعلة.');
+      reject(err);
+    },async function(){
+      const url=await task.snapshot.ref.getDownloadURL();
+      resolve(url);
+    });
+  });
+}
+
+function addNotification(targets, info){
+  if(!state.notifications) state.notifications=[];
+  const arr=Array.isArray(targets)?targets:[targets];
+  arr.filter(Boolean).forEach(function(target){
+    state.notifications.unshift({
+      id:uid('notif'),
+      target:target,
+      source:info.source||'النظام',
+      title:info.title||'إشعار جديد',
+      body:info.body||'',
+      subjectId:info.subjectId||'',
+      subjectName:info.subjectName||'',
+      teacherId:info.teacherId||'',
+      teacherName:info.teacherName||'',
+      studentId:info.studentId||'',
+      studentName:info.studentName||'',
+      icon:info.icon||'🔔',
+      date:new Date().toLocaleString('ar-IQ'),
+      read:false
+    });
+  });
+}
+
+function myNotificationTarget(){
+  if(!user)return '';
+  if(user.role==='admin')return 'admin';
+  if(user.role==='teacher')return 'teacher:'+user.id;
+  if(user.role==='student')return 'student:'+user.id;
+  if(user.role==='parent')return 'parent:'+user.id;
+  return '';
+}
+
+function myNotifications(){
+  const target=myNotificationTarget();
+  return (state.notifications||[]).filter(function(n){return n.target===target;});
+}
+
+function unreadNotifications(){
+  return myNotifications().filter(function(n){return !n.read;});
+}
+
+function updateNotificationBadges(){
+  const count=unreadNotifications().length;
+  ['adminNotifCount','teacherNotifCount','studentNotifCount','parentNotifCount'].forEach(function(id){
+    const el=document.getElementById(id);
+    if(el){
+      el.textContent=count;
+      el.classList.toggle('hidden',count===0);
+    }
+  });
+}
+
+function notificationListHTML(list){
+  if(!list.length)return "<div class='empty'>لا توجد إشعارات حالياً</div>";
+  return list.map(function(n){
+    const sub=n.subjectName?`<p><b>المادة:</b> ${n.subjectName}</p>`:'';
+    const teacher=n.teacherName?`<p><b>المدرس:</b> ${n.teacherName}</p>`:'';
+    const source=n.source?`<span class="pill">${n.source}</span>`:'';
+    return `<div class="notification-card ${n.read?'':'notification-unread'}">
+      <div class="notification-icon">${n.icon||'🔔'}</div>
+      <div>
+        <h4>${n.title}</h4>
+        <p>${n.body||''}</p>
+        ${sub}${teacher}
+        <div class="notification-meta">${source} ${n.date||''}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function markMyNotificationsRead(){
+  const target=myNotificationTarget();
+  (state.notifications||[]).forEach(function(n){
+    if(n.target===target)n.read=true;
+  });
+  save();
+  updateNotificationBadges();
+}
+
+function adminNotifications(){
+  setActivePanel('adminNotifications');
+  const list=myNotifications();
+  adminMain.innerHTML=`<h2>الإشعارات</h2><div class="panel"><button onclick="markMyNotificationsRead()" class="green">تحديد الكل كمقروء</button>${notificationListHTML(list)}</div>`;
+  jumpToWorkspace('adminMain');
+}
+
+function teacherNotifications(){
+  setActivePanel('teacherNotifications');
+  const list=myNotifications();
+  teacherMain.innerHTML=`<h2>الإشعارات</h2><div class="panel"><button onclick="markMyNotificationsRead()" class="green">تحديد الكل كمقروء</button>${notificationListHTML(list)}</div>`;
+  jumpToWorkspace('teacherMain');
+}
+
+function studentNotifications(){
+  setActivePanel('studentNotifications');
+  const list=myNotifications();
+  studentPanel.innerHTML=`<h3>الإشعارات</h3><div class="panel"><button onclick="markMyNotificationsRead()" class="green">تحديد الكل كمقروء</button>${notificationListHTML(list)}</div>`;
+  jumpToWorkspace('studentPanel');
+}
+
+function parentNotifications(){
+  setActivePanel('parentNotifications');
+  const list=myNotifications();
+  parentContent.innerHTML=`<h3>الإشعارات</h3><div class="panel"><button onclick="markMyNotificationsRead()" class="green">تحديد الكل كمقروء</button>${notificationListHTML(list)}</div>`;
+  jumpToWorkspace('parentContent');
+}
+
 function setActivePanel(panel){
   activePanel=panel||'home';
 }
@@ -320,7 +780,8 @@ function rerenderActivePanel(){
   try{
     if(user.role==='admin'){
       showPage('admin');
-      if(activePanel==='adminSubjects')adminSubjects();
+      if(activePanel==='adminNotifications')adminNotifications();
+      else if(activePanel==='adminSubjects')adminSubjects();
       else if(activePanel==='adminStudents')adminStudents();
       else if(activePanel==='adminParents')adminParents();
       else if(activePanel==='adminPayments')adminPayments();
@@ -328,6 +789,8 @@ function rerenderActivePanel(){
       else if(activePanel==='adminTeacherNotices')adminTeacherNotices();
       else if(activePanel==='adminContactMessages')adminContactMessages();
       else if(activePanel==='adminBackup')adminBackup();
+      else if(activePanel==='adminActivityLog')adminActivityLog();
+      else if(activePanel.startsWith('adminSubjectPage:'))openAdminSubjectPage(activePanel.split(':')[1]);
       else if(activePanel==='adminSettings')adminSettings();
       else adminHome();
       return;
@@ -335,7 +798,8 @@ function rerenderActivePanel(){
 
     if(user.role==='teacher'){
       showPage('teacher');
-      if(activePanel==='teacherProfile')teacherProfile();
+      if(activePanel==='teacherNotifications')teacherNotifications();
+      else if(activePanel==='teacherProfile')teacherProfile();
       else if(activePanel==='teacherContent')teacherContent();
       else if(activePanel==='teacherExams')teacherExams();
       else if(activePanel==='teacherStudents')teacherStudents();
@@ -344,12 +808,14 @@ function rerenderActivePanel(){
       else if(activePanel==='teacherParentMessages')teacherParentMessages();
       else if(activePanel==='teacherResults')teacherResults();
       else if(activePanel==='teacherNotices')teacherNotices();
+      else if(activePanel==='teacherSubjectPage')teacherSubjectPage();
       else teacherHome();
       return;
     }
 
     if(user.role==='student'){
-      if(activePanel==='studentSubscription')studentSubscription();
+      if(activePanel==='studentNotifications')studentNotifications();
+      else if(activePanel==='studentSubscription')studentSubscription();
       else if(activePanel==='studentMySubjects')studentMySubjects();
       else if(activePanel==='studentMyExams')studentMyExams();
       else if(activePanel==='studentLevel')studentLevel();
@@ -364,6 +830,8 @@ function rerenderActivePanel(){
     if(user.role==='parent'){
       showPage('parentPanel');
       parentWelcome.textContent='مرحباً '+user.name;
+      if(activePanel==='parentNotifications')parentNotifications();
+      updateNotificationBadges();
       return;
     }
   }catch(err){
@@ -393,6 +861,7 @@ function startRealtimeSync(){
 
     if(oldText!==newText){
       showSyncStatus('تم التحديث مباشرة', true);
+      updateNotificationBadges();
       rerenderActivePanel();
     }
   },function(error){
@@ -406,6 +875,7 @@ async function startApp(){
   startRealtimeSync();
   ensureInit();
   updateUI();
+  if(user) updateNotificationBadges();
   if(user){
     if(user.role==='student')studentDashboard();
     if(user.role==='teacher'){showPage('teacher');teacherHome()}

@@ -21,9 +21,69 @@
 <section id="parentPanel" class="dashboard page hidden"><h2 id="parentWelcome">لوحة ولي الأمر</h2><div class="panel"><h3>بحث عن الطالب</h3><input id="parentSearchInput" placeholder="اكتب اسم الطالب الثلاثي"><button onclick="parentSearchStudent()">بحث</button></div><div id="parentContent" class="panel"><div class="empty">ابحث عن اسم الطالب لمتابعة مستواه ودرجاته.</div></div></section>
 <section id="subjectRoom" class="section page hidden"><h2 id="roomTitle">غرفة المادة</h2><div class="tabs"><button onclick="roomTab('lectures')">المحاضرات</button><button onclick="roomTab('files')">الملفات</button><button onclick="roomTab('exams')">الاختبارات</button><button onclick="roomTab('levels')">المستويات</button><button onclick="roomTab('messages')">رسائل الأستاذ</button></div><div id="roomContent" class="panel"></div></section>
 <section id="examPage" class="section page hidden"><h2>الاختبار</h2><div id="examArea" class="panel"></div></section><button id="smartBackFloat" class="smart-back hidden" onclick="smartBack()">⬅️ رجوع</button>
-<footer>© منصة آفاق التعليمية</footer>
+<footer>© منصة آفاق التعليمية — Firebase + Backup</footer>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+
 <script>
-const STORE='AFAQ_COMPLETE_ORDERED_V1',USER_STORE='AFAQ_COMPLETE_ORDERED_USER_V1';let state=JSON.parse(localStorage.getItem(STORE)||'null'),user=JSON.parse(localStorage.getItem(USER_STORE)||'null'),currentSubjectId=null,currentExamId=null,timerInt=null,examBuild=[];if(!state){state={settings:{studentCode:'1234',adminCode:'admin',parentGlobalCode:'parent',masterCard:'0000 0000 0000 0000',defaultSubscriptionDays:30},subjects:[],teachers:[],students:[],parents:[],enrollRequests:[],enrollments:[],payments:[],lectures:[],files:[],exams:[],results:[],messages:[],parentMessages:[],adminNotices:[],noticeReplies:[],contactMessages:[]};save()}function save(){localStorage.setItem(STORE,JSON.stringify(state))}function clean(v){return String(v||'').trim().replace(/\s+/g,' ').toLowerCase()}function same(a,b){return clean(a)===clean(b)}function uid(p){return p+'_'+Date.now()+'_'+Math.floor(Math.random()*9999)}function todayISO(){return new Date().toISOString().slice(0,10)}function grades(){return ['الصف الثالث متوسط','الصف الرابع إعدادي','الصف الخامس إعدادي','الصف السادس إعدادي']}function subjectsList(){return ['الأحياء','الكيمياء','الفيزياء','الرياضيات','اللغة العربية','اللغة الإنجليزية','الاجتماعيات']}function levels(){return ['أسطورة','متقدم','جيد جداً','متوسط','مبتدئ']}function gradeOptions(sel=''){return grades().map(g=>`<option value="${g}" ${g===sel?'selected':''}>${g}</option>`).join('')}function subjectOptions(sel=''){return subjectsList().map(s=>`<option value="${s}" ${s===sel?'selected':''}>${s}</option>`).join('')}function levelFromPercent(p){if(p>=95)return'أسطورة';if(p>=85)return'متقدم';if(p>=75)return'جيد جداً';if(p>=60)return'متوسط';return'مبتدئ'}function showPage(id){document.querySelectorAll('.page').forEach(p=>p.classList.add('hidden'));document.getElementById(id).classList.remove('hidden');window.scrollTo({top:0,behavior:'smooth'});updateUI()}function smartBack(){
+const STORE='AFAQ_COMPLETE_ORDERED_V1',USER_STORE='AFAQ_COMPLETE_ORDERED_USER_V1';
+
+const firebaseConfig={
+  apiKey:"AIzaSyAercsM1RjeL-GTMCBafeSN7W1aph9hvRw",
+  authDomain:"afaq-education-99de3.firebaseapp.com",
+  projectId:"afaq-education-99de3",
+  storageBucket:"afaq-education-99de3.firebasestorage.app",
+  messagingSenderId:"23291110528",
+  appId:"1:23291110528:web:cf1fcdeb13487faf6cb265",
+  measurementId:"G-QQ2Y4Y3XKL"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db=firebase.firestore();
+const STATE_DOC=db.collection('afaq_platform').doc('main_state');
+
+let state=null,user=JSON.parse(localStorage.getItem(USER_STORE)||'null'),currentSubjectId=null,currentExamId=null,timerInt=null,examBuild=[];
+let cloudReady=false;
+
+function defaultState(){
+  return {
+    settings:{studentCode:'1234',adminCode:'admin',parentGlobalCode:'parent',masterCard:'0000 0000 0000 0000',defaultSubscriptionDays:30},
+    subjects:[],teachers:[],students:[],parents:[],enrollRequests:[],enrollments:[],
+    payments:[],lectures:[],files:[],exams:[],results:[],messages:[],parentMessages:[],
+    adminNotices:[],noticeReplies:[],contactMessages:[]
+  };
+}
+
+async function loadCloudState(){
+  try{
+    const snap=await STATE_DOC.get();
+    if(snap.exists && snap.data().state){
+      state=snap.data().state;
+      localStorage.setItem(STORE,JSON.stringify(state));
+    }else{
+      state=JSON.parse(localStorage.getItem(STORE)||'null')||defaultState();
+      await STATE_DOC.set({state,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
+    }
+    cloudReady=true;
+  }catch(err){
+    console.error('Firebase load error:',err);
+    state=JSON.parse(localStorage.getItem(STORE)||'null')||defaultState();
+    alert('لم يتم الاتصال بـ Firebase. ستعمل المنصة على هذا الجهاز فقط مؤقتاً.');
+  }
+}
+
+function save(){
+  if(!state)return;
+  localStorage.setItem(STORE,JSON.stringify(state));
+  if(cloudReady){
+    STATE_DOC.set({state,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true})
+      .catch(function(err){
+        console.error('Firebase save error:',err);
+        alert('لم يتم حفظ التعديل في Firebase. تحقق من Rules أو الاتصال.');
+      });
+  }
+}function clean(v){return String(v||'').trim().replace(/\s+/g,' ').toLowerCase()}function same(a,b){return clean(a)===clean(b)}function uid(p){return p+'_'+Date.now()+'_'+Math.floor(Math.random()*9999)}function todayISO(){return new Date().toISOString().slice(0,10)}function grades(){return ['الصف الثالث متوسط','الصف الرابع إعدادي','الصف الخامس إعدادي','الصف السادس إعدادي']}function subjectsList(){return ['الأحياء','الكيمياء','الفيزياء','الرياضيات','اللغة العربية','اللغة الإنجليزية','الاجتماعيات']}function levels(){return ['أسطورة','متقدم','جيد جداً','متوسط','مبتدئ']}function gradeOptions(sel=''){return grades().map(g=>`<option value="${g}" ${g===sel?'selected':''}>${g}</option>`).join('')}function subjectOptions(sel=''){return subjectsList().map(s=>`<option value="${s}" ${s===sel?'selected':''}>${s}</option>`).join('')}function levelFromPercent(p){if(p>=95)return'أسطورة';if(p>=85)return'متقدم';if(p>=75)return'جيد جداً';if(p>=60)return'متوسط';return'مبتدئ'}function showPage(id){document.querySelectorAll('.page').forEach(p=>p.classList.add('hidden'));document.getElementById(id).classList.remove('hidden');window.scrollTo({top:0,behavior:'smooth'});updateUI()}function smartBack(){
   if(!user){showPage('home');return}
   if(user.role==='admin'){showPage('admin');adminHome();return}
   if(user.role==='teacher'){showPage('teacher');teacherHome();return}
@@ -150,7 +210,18 @@ function restoreBackup(){
   }
 }
 
-ensureInit();updateUI();if(user){if(user.role==='student')studentDashboard();if(user.role==='teacher'){showPage('teacher');teacherHome()}if(user.role==='admin'){showPage('admin');adminHome()}if(user.role==='parent'){showPage('parentPanel');parentWelcome.textContent='مرحباً '+user.name}}
+async function startApp(){
+  await loadCloudState();
+  ensureInit();
+  updateUI();
+  if(user){
+    if(user.role==='student')studentDashboard();
+    if(user.role==='teacher'){showPage('teacher');teacherHome()}
+    if(user.role==='admin'){showPage('admin');adminHome()}
+    if(user.role==='parent'){showPage('parentPanel');parentWelcome.textContent='مرحباً '+user.name}
+  }
+}
+startApp();
 </script>
 </body>
 </html>

@@ -254,7 +254,67 @@ nav a{
 @media(max-width:520px){
   .subject-grid,.dash-grid{grid-template-columns:1fr}
 }
+/* تحسين واجهة الهاتف */
+@media (max-width:768px){
 
+/* الشريط العلوي */
+.topbar,
+header{
+    position:sticky;
+    top:0;
+    z-index:999;
+    background:#fff;
+    padding:8px 12px !important;
+    min-height:auto !important;
+}
+
+/* عنوان المنصة */
+.logo,
+.logo-text{
+    font-size:20px !important;
+    margin:0 !important;
+}
+
+/* روابط القائمة */
+nav{
+    display:flex;
+    justify-content:center;
+    gap:6px;
+    flex-wrap:wrap;
+    margin-top:6px;
+}
+
+nav a,
+nav button{
+    padding:6px 12px !important;
+    font-size:13px !important;
+    border-radius:12px;
+}
+
+/* أزرار الرجوع والخروج */
+.hero-actions,
+.header-actions{
+    display:flex;
+    justify-content:center;
+    gap:8px;
+    margin-top:8px;
+}
+
+.hero-actions button,
+.header-actions button{
+    padding:8px 16px !important;
+    font-size:13px !important;
+}
+
+/* إزالة الفراغ الكبير أسفل الهيدر */
+.hero,
+.welcome,
+.banner{
+    padding-top:10px !important;
+    margin-top:0 !important;
+}
+
+}
 </style>
 </head>
 <body>

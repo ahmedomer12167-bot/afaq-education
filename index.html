@@ -121,6 +121,64 @@ function openExam(id){const e=state.exams.find(x=>x.id===id);if(!e)return;if(sta
   await loadCloudState();
   ensureInit();
   updateUI();
+function createBackup(){
+
+const backup={
+date:new Date().toISOString(),
+data:state
+};
+
+const blob=new Blob(
+[JSON.stringify(backup,null,2)],
+{type:"application/json"}
+);
+
+const a=document.createElement("a");
+a.href=URL.createObjectURL(blob);
+a.download="afaq-backup-"+Date.now()+".json";
+a.click();
+
+}
+
+function restoreBackup(){
+
+const file=document.getElementById(
+"restoreBackupFile"
+).files[0];
+
+if(!file){
+alert("اختر ملف النسخة الاحتياطية");
+return;
+}
+
+const reader=new FileReader();
+
+reader.onload=function(e){
+
+try{
+
+const backup=
+JSON.parse(e.target.result);
+
+state=backup.data;
+
+save();
+
+alert("تمت الاستعادة بنجاح");
+
+location.reload();
+
+}catch{
+
+alert("ملف غير صالح");
+
+}
+
+};
+
+reader.readAsText(file);
+
+}
   if(user){
     if(user.role==='student')studentDashboard();
     if(user.role==='teacher'){showPage('teacher');teacherHome()}

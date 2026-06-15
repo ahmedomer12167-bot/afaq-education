@@ -273,7 +273,70 @@ nav a{
 .homework-answer{background:#f8fbff;border:1px solid #e7edf9;border-radius:16px;padding:12px;margin:8px 0}
 .ai-box{background:linear-gradient(135deg,#f8fbff,#eef5ff);border:1px solid #dbeafe;border-radius:22px;padding:18px;margin:12px 0}
 @media(max-width:600px){.feature-grid{grid-template-columns:1fr}.rank-card{display:block;text-align:center}.calendar-item{display:block}}
+/* تصغير الهيدر في الموبايل */
+@media (max-width: 768px){
 
+  .topbar{
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 999 !important;
+    background: rgba(255,255,255,.96) !important;
+    backdrop-filter: blur(12px);
+    padding: 6px 8px !important;
+  }
+
+  .header{
+    padding: 4px 8px !important;
+    gap: 6px !important;
+    min-height: auto !important;
+  }
+
+  .logo{
+    font-size: 17px !important;
+    margin: 0 !important;
+  }
+
+  .logo-mark{
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 11px !important;
+    font-size: 16px !important;
+  }
+
+  nav{
+    display: flex !important;
+    justify-content: center !important;
+    gap: 5px !important;
+    flex-wrap: wrap !important;
+    margin-top: 4px !important;
+  }
+
+  nav a{
+    font-size: 12px !important;
+    padding: 5px 9px !important;
+    border-radius: 999px !important;
+  }
+
+  #smartBackTop,
+  #logoutBtn{
+    font-size: 12px !important;
+    padding: 7px 14px !important;
+    border-radius: 999px !important;
+    margin: 3px !important;
+  }
+
+  .smart-back{
+    display: none !important;
+  }
+
+  .shell aside{
+    margin-top: 0 !important;
+  }
+
+  .page{
+    padding-top: 12px !important;
+  }
+}
 </style>
 </head>
 <body>

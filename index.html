@@ -108,27 +108,19 @@ function subjectRankingRows(subjectId){
 }function showPublicSubjects(){showPage('subjects');publicSubjects.innerHTML=state.subjects.length?state.subjects.map(s=>`<div class="card"><h3>${s.icon||'📚'} ${s.name}</h3><p>${s.grade}</p></div>`).join(''):`<div class='empty'>لا توجد مواد حالياً</div>`}
 function adminHome(){adminMain.innerHTML=`<h2>لوحة المدير</h2><div class="stats"><div><b>${state.subjects.length}</b><span>المواد</span></div><div><b>${state.teachers.length}</b><span>المدرسون</span></div><div><b>${state.students.length}</b><span>الطلاب</span></div><div><b>${state.payments.filter(p=>p.status==='pending').length}</b><span>طلبات اشتراك</span></div></div><div class="panel"><p>استخدم الأقسام الجانبية لإدارة المنصة.</p></div>`}
 function adminBackup(){
-
-adminMain.innerHTML = `
+  adminMain.innerHTML = `
 <h2>النسخ الاحتياطي</h2>
-
 <div class="panel">
-
 <button onclick="createBackup()" class="gold">
 📥 إنشاء نسخة احتياطية
 </button>
-
 <hr>
-
 <input type="file" id="restoreBackupFile">
-
 <button onclick="restoreBackup()" class="green">
 📤 استعادة نسخة احتياطية
 </button>
-
 </div>
 `;
-  
 }
 function adminSubjects(){adminMain.innerHTML=`<h2>إدارة المواد والمدرسين</h2><div class="panel"><h3>إضافة مادة</h3><div class="row"><select id="aSubName">${subjectOptions()}</select><select id="aSubGrade">${gradeOptions()}</select><input id="aSubCode" placeholder="كود المادة"><input id="aSubIcon" placeholder="رمز مثل 🧬"></div><button onclick="addAdminSubject()">إضافة المادة</button></div><div class="panel"><h3>إضافة مدرس وربطه بمادة وصف</h3><input id="aTeacherName" placeholder="اسم المدرس الثلاثي"><div class="row"><select id="aTeacherGrade">${gradeOptions()}</select><select id="aTeacherSubject">${subjectOptions()}</select><input id="aTeacherCode" placeholder="رمز المدرس"></div><button onclick="addAdminTeacher()">إضافة المدرس</button></div><div class="panel"><h3>المواد</h3>${state.subjects.length?state.subjects.map(s=>{const t=teacherFor(s.name,s.grade);return `<div class="file-item"><div><b>${s.icon||'📚'} ${s.name}</b><br><span class="badge">${s.grade}</span><span class="badge">كود: ${s.code}</span>${t?`<span class="pill greenish">مدرس: ${t.name}</span>`:''}</div><button class="danger" onclick="deleteSubject('${s.id}')">حذف</button></div>`}).join(''):`<div class='empty'>لا توجد مواد</div>`}</div><div class="panel"><h3>المدرسون</h3>${state.teachers.length?state.teachers.map(t=>`<div class="file-item"><div><b>${t.name}</b><br><span class="badge">${t.subject}</span><span class="badge">${t.grade}</span><span class="badge">رمز: ${t.code}</span></div><button onclick="toggleTeacher('${t.id}')">${t.active===false?'تفعيل':'تعطيل'}</button></div>`).join(''):`<div class='empty'>لا يوجد مدرسون</div>`}</div>`}function addAdminSubject(){const name=aSubName.value,grade=aSubGrade.value,code=aSubCode.value.trim(),icon=aSubIcon.value.trim()||'📚';if(!code)return alert('أدخل كود المادة');if(state.subjects.some(s=>same(s.name,name)&&same(s.grade,grade)))return alert('هذه المادة موجودة لهذا الصف');state.subjects.push({id:uid('sub'),name,grade,code,icon});save();adminSubjects()}function addAdminTeacher(){const name=aTeacherName.value.trim(),grade=aTeacherGrade.value,subject=aTeacherSubject.value,code=aTeacherCode.value.trim();if(!name||!code)return alert('أكمل اسم المدرس والرمز');const sid=subjectIdBy(subject,grade);if(!sid)return alert('أضف المادة لهذا الصف أولاً');if(state.teachers.some(t=>same(t.subject,subject)&&same(t.grade,grade)&&t.active!==false))return alert('يوجد مدرس مفعل لهذه المادة والصف');state.teachers.push({id:uid('teach'),name,grade,subject,code,active:true,bio:'',experience:'',photo:''});save();adminSubjects()}function deleteSubject(id){if(confirm('حذف المادة؟')){state.subjects=state.subjects.filter(s=>s.id!==id);save();adminSubjects()}}function toggleTeacher(id){const t=teacherById(id);if(t){t.active=t.active===false;save();adminSubjects()}}function adminStudents(){adminMain.innerHTML=`<h2>الطلاب</h2><div class="panel"><table><thead><tr><th>الطالب</th><th>الصف</th><th>الهاتف</th><th>ولي الأمر</th><th>اشتراكات</th></tr></thead><tbody>${state.students.length?state.students.map(s=>{const par=state.parents.find(p=>(p.students||[]).includes(s.id));const subs=studentApprovedEnrollments(s.id).length;return `<tr><td>${s.name}</td><td>${s.grade}</td><td>${s.phone||''}</td><td>${par?par.name:'غير مربوط'}</td><td>${subs}</td></tr>`}).join(''):`<tr><td colspan='5'>لا يوجد طلاب</td></tr>`}</tbody></table></div>`}function adminParents(){adminMain.innerHTML=`<h2>أولياء الأمور</h2><div class="panel"><h3>إضافة / ربط ولي أمر</h3><input id="pName" placeholder="اسم ولي الأمر"><input id="pCode" placeholder="رمز ولي الأمر"><select id="pStudent">${state.students.map(s=>`<option value="${s.id}">${s.name} - ${s.grade}</option>`).join('')}</select><button onclick="addParentLink()">إضافة وربط</button></div><div class="panel">${state.parents.length?state.parents.map(p=>`<div class="file-item"><div><b>${p.name}</b><br>الأبناء: ${(p.students||[]).map(id=>state.students.find(s=>s.id===id)?.name).filter(Boolean).join('، ')||'لا يوجد'}</div></div>`).join(''):`<div class='empty'>لا يوجد أولياء أمور</div>`}</div>`}function addParentLink(){const name=pName.value.trim(),code=pCode.value.trim(),sid=pStudent.value;if(!name||!code||!sid)return alert('أكمل البيانات');let p=state.parents.find(x=>same(x.name,name)&&x.code===code);if(!p){p={id:uid('par'),name,code,students:[]};state.parents.push(p)}if(!p.students.includes(sid))p.students.push(sid);save();adminParents()}function adminPayments(){const pending=state.payments.filter(p=>p.status==='pending'),approved=state.payments.filter(p=>p.status==='approved');adminMain.innerHTML=`<h2>طلبات الاشتراك والتحويل</h2><div class="notice">رقم الماستر كارد: <b>${state.settings.masterCard}</b></div><div class="panel"><h3>طلبات قيد الموافقة</h3>${pending.length?pending.map(p=>{const s=state.students.find(x=>x.id===p.studentId),sub=subjectById(p.subjectId);return `<div class="file-item"><div><b>${s?.name}</b><br>${sub?.name} - ${sub?.grade}<br>الهاتف: ${p.phone}<br>المبلغ: ${p.amount}<br>التاريخ: ${p.payDate}</div><div><input id="days${p.id}" type="number" value="${state.settings.defaultSubscriptionDays}"><button class="green" onclick="approvePayment('${p.id}')">قبول</button><button class="danger" onclick="rejectPayment('${p.id}')">رفض</button></div></div>`}).join(''):`<div class='empty'>لا توجد طلبات</div>`}</div><div class="panel"><h3>اشتراكات مفعلة</h3>${approved.length?approved.map(p=>{const s=state.students.find(x=>x.id===p.studentId),sub=subjectById(p.subjectId);return `<div class="file-item"><b>${s?.name}</b><span>${sub?.name} - ينتهي ${p.endDate}</span></div>`}).join(''):`<div class='empty'>لا توجد اشتراكات</div>`}</div>`}function approvePayment(id){const p=state.payments.find(x=>x.id===id);if(!p)return;const days=+document.getElementById('days'+id).value||state.settings.defaultSubscriptionDays;const end=new Date();end.setDate(end.getDate()+days);p.status='approved';p.days=days;p.startDate=todayISO();p.endDate=end.toISOString().slice(0,10);p.approvedAt=new Date().toLocaleString('ar-IQ');save();adminPayments()}function rejectPayment(id){const p=state.payments.find(x=>x.id===id);if(p){p.status='rejected';save();adminPayments()}}function adminResults(){adminMain.innerHTML=`<h2>نتائج تفصيلية</h2><div class="panel"><table><thead><tr><th>الطالب</th><th>ولي الأمر</th><th>الصف</th><th>المادة</th><th>الاختبار</th><th>الدرجة</th><th>المستوى</th></tr></thead><tbody>${state.results.length?state.results.map(r=>{const st=state.students.find(s=>s.id===r.studentId),par=state.parents.find(p=>(p.students||[]).includes(r.studentId)),sub=subjectById(r.subjectId);return `<tr><td>${st?.name}</td><td>${par?par.name:'غير مربوط'}</td><td>${st?.grade}</td><td>${sub?.name}</td><td>${r.examTitle}</td><td>${r.score}/${r.total}</td><td>${levelFromPercent(r.percent)}</td></tr>`}).join(''):`<tr><td colspan='7'>لا توجد نتائج</td></tr>`}</tbody></table></div>`}function adminTeacherNotices(){adminMain.innerHTML=`<h2>تبليغات المدرسين</h2><div class="panel"><select id="noticeTeacher"><option value="all">كل المدرسين</option>${state.teachers.map(t=>`<option value="${t.id}">${t.name} - ${t.subject} - ${t.grade}</option>`).join('')}</select><textarea id="noticeText" placeholder="اكتب التبليغ"></textarea><button onclick="sendAdminNotice()">إرسال التبليغ</button></div><div class="panel"><h3>الردود</h3>${state.noticeReplies.length?state.noticeReplies.map(r=>`<div class="file-item"><b>${r.teacherName}</b><span>${r.text}</span></div>`).join(''):`<div class='empty'>لا توجد ردود</div>`}</div>`}function sendAdminNotice(){if(!noticeText.value.trim())return alert('اكتب التبليغ');state.adminNotices.unshift({id:uid('not'),teacherId:noticeTeacher.value,text:noticeText.value.trim(),date:new Date().toLocaleString('ar-IQ')});save();alert('تم إرسال التبليغ');adminTeacherNotices()}function adminContactMessages(){adminMain.innerHTML=`<h2>رسائل التواصل</h2>${state.contactMessages.length?state.contactMessages.map(m=>`<div class="panel"><b>${m.title}</b><p>من: ${m.name}</p><p>${m.body}</p></div>`).join(''):`<div class='panel empty'>لا توجد رسائل</div>`}`}function adminSettings(){adminMain.innerHTML=`<h2>الإعدادات</h2><div class="panel"><label>رمز المدير</label><input id="setAdmin" value="${state.settings.adminCode}"><label>رمز الطالب العام</label><input id="setStudent" value="${state.settings.studentCode}"><label>رمز ولي الأمر العام</label><input id="setParent" value="${state.settings.parentGlobalCode}"><label>رقم الماستر كارد</label><input id="setCard" value="${state.settings.masterCard}"><button onclick="saveSettings()">حفظ</button><button class="danger" onclick="resetAll()">إعادة ضبط</button></div>`}function saveSettings(){state.settings.adminCode=setAdmin.value;state.settings.studentCode=setStudent.value;state.settings.parentGlobalCode=setParent.value;state.settings.masterCard=setCard.value;save();alert('تم الحفظ')}function resetAll(){if(confirm('حذف كل البيانات؟')){localStorage.removeItem(STORE);localStorage.removeItem(USER_STORE);location.reload()}}
 function currentTeacher(){return teacherById(user?.id)}function currentSubject(){const t=currentTeacher();return state.subjects.find(s=>same(s.name,t?.subject)&&same(s.grade,t?.grade))}function teacherHome(){const t=currentTeacher(),sub=currentSubject();teacherMain.innerHTML=`<h2>لوحة المدرس</h2><div class="panel"><h3>${t.name}</h3><span class="badge">${t.subject}</span><span class="badge">${t.grade}</span></div><div class="stats"><div><b>${state.enrollments.filter(e=>e.subjectId===sub?.id&&e.status==='approved').length}</b><span>طلاب المادة</span></div><div><b>${state.exams.filter(e=>e.subjectId===sub?.id).length}</b><span>اختبارات</span></div><div><b>${state.messages.filter(m=>m.teacherId===t.id).length}</b><span>رسائل</span></div></div>`}function teacherProfile(){const t=currentTeacher();teacherMain.innerHTML=`<h2>بروفايل المدرس</h2><div class="panel"><p><b>${t.name}</b></p><p>${t.subject} - ${t.grade}</p><textarea id="tBio" rows="4" placeholder="نبذة">${t.bio||''}</textarea><input id="tExp" value="${t.experience||''}" placeholder="الخبرة أو المؤهل"><button onclick="saveTeacherProfile()">حفظ البروفايل</button></div>`}function saveTeacherProfile(){const t=currentTeacher();t.bio=tBio.value;t.experience=tExp.value;save();alert('تم حفظ البروفايل');teacherProfile()}function teacherContent(){const sub=currentSubject();teacherMain.innerHTML=`<h2>المحاضرات والملفات</h2><div class="panel"><h3>إضافة مادة تعليمية</h3><input id="contTitle" placeholder="عنوان المحتوى"><select id="contType"><option>محاضرة</option><option>ملف PDF</option><option>فيديو</option><option>رابط</option></select><select id="contLevel">${levels().map(l=>`<option>${l}</option>`).join('')}</select><input id="contUrl" placeholder="رابط اختياري"><input id="contFile" type="file" accept=".pdf,video/*"><button onclick="addTeacherContent()">إضافة</button></div><div class="panel"><h3>المحتوى الحالي</h3>${[...state.lectures,...state.files].filter(x=>x.subjectId===sub?.id).length?[...state.lectures,...state.files].filter(x=>x.subjectId===sub?.id).map(x=>`<div class="file-item"><b>${x.title}</b><span>${x.kind||x.type} - ${x.level}</span><button onclick="openContent('${x.id}')">فتح</button></div>`).join(''):`<div class='empty'>لا يوجد محتوى</div>`}</div>`}function addTeacherContent(){const sub=currentSubject();if(!sub)return alert('لا توجد مادة مرتبطة');if(!contTitle.value.trim())return alert('اكتب العنوان');const file=contFile.files[0];
@@ -144,71 +136,44 @@ function openExam(id){const e=state.exams.find(x=>x.id===id);if(!e)return;if(sta
   ensureInit();
   updateUI();
 function createBackup(){
-  try{
-    const backup={
-      date:new Date().toISOString(),
-      data:state
-    };
+  const backup = {
+    date: new Date().toISOString(),
+    data: state
+  };
 
-    const blob=new Blob(
-      [JSON.stringify(backup,null,2)],
-      {type:"application/json"}
-    );
+  const text = JSON.stringify(backup, null, 2);
+  const blob = new Blob([text], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
 
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement("a");
-    a.href=url;
-    a.download="afaq-backup-"+new Date().toISOString().slice(0,10)+".json";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "afaq-backup.json";
+  a.click();
 
-    alert("تم إنشاء النسخة الاحتياطية");
-  }catch(err){
-    alert("حدث خطأ أثناء إنشاء النسخة الاحتياطية");
-    console.error(err);
-  }
+  URL.revokeObjectURL(url);
+  alert("تم إنشاء النسخة الاحتياطية");
 }
 
 function restoreBackup(){
+  const input = document.getElementById("restoreBackupFile");
+  const file = input.files[0];
 
-const file=document.getElementById(
-"restoreBackupFile"
-).files[0];
+  if(!file){
+    alert("اختر ملف النسخة الاحتياطية أولاً");
+    return;
+  }
 
-if(!file){
-alert("اختر ملف النسخة الاحتياطية");
-return;
-}
+  const reader = new FileReader();
 
-const reader=new FileReader();
+  reader.onload = function(e){
+    const backup = JSON.parse(e.target.result);
+    state = backup.data;
+    save();
+    alert("تمت استعادة النسخة الاحتياطية بنجاح");
+    location.reload();
+  };
 
-reader.onload=function(e){
-
-try{
-
-const backup=
-JSON.parse(e.target.result);
-
-state=backup.data;
-
-save();
-
-alert("تمت الاستعادة بنجاح");
-
-location.reload();
-
-}catch{
-
-alert("ملف غير صالح");
-
-}
-
-};
-
-reader.readAsText(file);
-
+  reader.readAsText(file);
 }
   if(user){
     if(user.role==='student')studentDashboard();

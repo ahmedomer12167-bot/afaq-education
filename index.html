@@ -381,6 +381,62 @@ nav a{
 .home-photo-upload{background:#f8fbff;border:1px dashed #b9c9e8;border-radius:22px;padding:14px;margin:12px 0;text-align:center}
 .essay-box{background:#fff8df;border:1px solid #ffe08a;border-radius:16px;padding:12px;margin:8px 0}
 
+
+/* ===== Home Branding + Exam Anti Cheat ===== */
+.home-brand-card{
+  max-width:720px;
+  margin:18px auto 0;
+  background:rgba(255,255,255,.92);
+  border:1px solid #dbeafe;
+  border-radius:32px;
+  padding:22px;
+  text-align:center;
+  box-shadow:0 18px 40px rgba(15,23,42,.10);
+}
+.home-brand-card img{
+  width:min(100%,520px);
+  max-height:280px;
+  object-fit:cover;
+  border-radius:28px;
+  display:block;
+  margin:0 auto 14px;
+  box-shadow:0 14px 30px rgba(15,23,42,.12);
+}
+.home-brand-card p{
+  font-size:18px;
+  line-height:1.9;
+  margin:8px 0 0;
+  color:#071b49;
+  font-weight:800;
+}
+.exam-guard-box{
+  background:#fff8df;
+  border:1px solid #ffe08a;
+  border-radius:18px;
+  padding:12px;
+  margin:12px 0;
+  font-weight:900;
+  color:#7c4a00;
+}
+.exam-lock-overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(7,27,73,.92);
+  z-index:999999;
+  display:grid;
+  place-items:center;
+  color:#fff;
+  text-align:center;
+  padding:25px;
+}
+.exam-lock-overlay .box{
+  max-width:520px;
+  background:#fff;
+  color:#071b49;
+  border-radius:28px;
+  padding:24px;
+}
+
 </style>
 
 <link rel="manifest" href="manifest.json">
@@ -403,7 +459,7 @@ nav a{
 <section id="parentPanel" class="dashboard page hidden"><h2 id="parentWelcome">لوحة ولي الأمر</h2><div class="panel"><h3>بحث عن الطالب</h3><input id="parentSearchInput" placeholder="اكتب اسم الطالب الثلاثي"><button onclick="parentSearchStudent()">بحث</button><button onclick="parentAttendance()">✅ حضور الطالب</button><button onclick="parentHomework()">📝 واجبات الطالب</button><button onclick="parentNotifications()">🔔 الإشعارات <span id="parentNotifCount" class="notif-count hidden">0</span></button></div><div id="parentContent" class="panel"><div class="empty">ابحث عن اسم الطالب لمتابعة مستواه ودرجاته.</div></div></section>
 <section id="subjectRoom" class="section page hidden"><h2 id="roomTitle">غرفة المادة</h2><div class="tabs"><button onclick="roomTab('lectures')">المحاضرات</button><button onclick="roomTab('files')">الملفات</button><button onclick="roomTab('exams')">الاختبارات</button><button onclick="roomTab('levels')">المستويات</button><button onclick="roomTab('honor')">🏆 لوحة الشرف</button><button onclick="roomTab('results')">📊 النتائج</button><button onclick="roomTab('messages')">رسائل الأستاذ</button></div><div id="roomContent" class="panel"></div></section>
 <section id="examPage" class="section page hidden"><h2>الاختبار</h2><div id="examArea" class="panel"></div></section><div id="syncIndicator" class="sync-indicator hidden">متصل مباشر</div>
-<footer>© منصة آفاق التعليمية — Firebase + Backup</footer>
+<footer>© منصة آفاق التعليمية</footer>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
@@ -889,8 +945,9 @@ function parentAdvancedDashboardForStudent(st){
 function updateHomeDynamic(){
   const box=document.getElementById('homeDynamicBox');
   if(!box||!state||!state.settings)return;
-  const img=state.settings.homeImage||'', bio=state.settings.homeBio||'';
-  box.innerHTML=(img||bio)?`<div class="login-card" style="margin-top:18px;text-align:center">${img?`<img src="${img}" style="width:130px;height:130px;object-fit:cover;border-radius:32px;background:#fff">`:''}${bio?`<p>${bio}</p>`:''}</div>`:'';
+  const img=state.settings.homeImage||'';
+  const bio=state.settings.homeBio||'';
+  box.innerHTML=(img||bio)?`<div class="home-brand-card">${img?`<img src="${img}" alt="صورة المنصة">`:''}${bio?`<p>${bio}</p>`:''}</div>`:'';
 }
 function clearMyNotifications(){
   const target=myNotificationTarget();
@@ -905,22 +962,28 @@ function clearMyNotifications(){
 function clearActivityLog(){if(confirm('تفريغ سجل النشاط؟')){state.activityLog=[];save();adminActivityLog();}}
 function adminHomeAppearance(){
   setActivePanel('adminHomeAppearance');jumpToWorkspace('adminMain');
-  adminMain.innerHTML=`<div class="page-title-card"><h2>واجهة المنصة الرئيسية</h2><p>إضافة صورة وبايو يظهران في الواجهة الرئيسية</p></div>
+  adminMain.innerHTML=`<div class="page-title-card"><h2>واجهة المنصة الرئيسية</h2><p>الصورة والبايو يظهران في صفحة التسجيل الرئيسية</p></div>
   <div class="panel">
     <div class="home-photo-upload">
       <label>رفع صورة الواجهة من الجهاز</label>
       <input id="homeImageFile" type="file" accept="image/*">
-      <button class="green" onclick="uploadHomeImageFile()">رفع الصورة وحفظها</button>
+      <button class="green" onclick="uploadHomeImageFile()">رفع الصورة وتطبيقها</button>
     </div>
-    <label>أو رابط صورة الواجهة</label>
-    <input id="homeImg" value="${state.settings.homeImage||''}" placeholder="ضع رابط الصورة">
+    <label>رابط صورة الواجهة</label>
+    <input id="homeImg" value="${state.settings.homeImage||''}" placeholder="يظهر رابط الصورة هنا بعد الرفع">
     <label>بايو الواجهة</label>
     <textarea id="homeBio" rows="4" placeholder="اكتب نبذة عن المنصة">${state.settings.homeBio||''}</textarea>
-    <button class="green" onclick="saveHomeAppearance()">حفظ</button>
+    <button class="green" onclick="saveHomeAppearance()">حفظ وتطبيق على الواجهة</button>
   </div>
-  <div class="panel"><h3>معاينة</h3><div class="hero-admin-preview">${state.settings.homeImage?`<img src="${state.settings.homeImage}">`:''}<p>${state.settings.homeBio||'لا يوجد بايو بعد'}</p></div></div>`;
+  <div class="panel"><h3>المعاينة التي ستظهر في صفحة التسجيل</h3><div class="home-brand-card">${state.settings.homeImage?`<img src="${state.settings.homeImage}">`:''}${state.settings.homeBio?`<p>${state.settings.homeBio}</p>`:'<p>لا يوجد بايو بعد</p>'}</div></div>`;
 }
-function saveHomeAppearance(){state.settings.homeImage=homeImg.value.trim();state.settings.homeBio=homeBio.value.trim();save();updateHomeDynamic();alert('تم الحفظ');adminHomeAppearance();}
+function saveHomeAppearance(){
+  state.settings.homeImage=(document.getElementById('homeImg')?.value||'').trim();
+  state.settings.homeBio=(document.getElementById('homeBio')?.value||'').trim();
+  save();updateHomeDynamic();
+  alert('تم تطبيق صورة المنصة والبايو على الواجهة الرئيسية');
+  adminHomeAppearance();
+}
 function studentSubjectsNames(studentId){return state.enrollments.filter(e=>e.studentId===studentId&&e.status==='approved').map(e=>subjectById(e.subjectId)).filter(Boolean)}
 function parentNameForStudent(studentId){return state.parents.find(p=>(p.students||[]).includes(studentId))?.name||'غير مربوط'}
 function studentFullStatsPage(studentId,subjectId=''){
@@ -933,15 +996,19 @@ function teacherStudentFullPage(studentId){
   const sub=currentSubject(), st=state.students.find(s=>s.id===studentId); if(!sub||!st)return;
   const m=subjectStudentMetrics(studentId,sub.id), rs=state.results.filter(r=>r.studentId===studentId&&r.subjectId===sub.id);
   const fg=state.finalGrades.find(g=>g.studentId===studentId&&g.subjectId===sub.id)||{};
-  teacherMain.innerHTML=`<div class="page-title-card"><h2>${st.name}</h2><p>${sub.name} - ${sub.grade}</p></div><div class="panel"><div class="smart-grid"><div class="smart-stat"><b>${m.present}</b><span>عدد الحضور</span></div><div class="smart-stat"><b>${m.absent}</b><span>عدد الغياب</span></div><div class="smart-stat"><b>${m.avg}%</b><span>معدل الاختبارات</span></div><div class="smart-stat"><b>${m.smartScore}</b><span>المؤشر</span></div></div></div><div class="panel"><h3>النتائج</h3>${rs.length?rs.map(r=>`<div class="file-item"><b>${r.examTitle}</b><span>${r.score}/${r.total} - ${levelFromPercent(r.percent)}</span></div>`).join(''):`<div class='empty'>لا توجد نتائج</div>`}</div><div class="panel"><h3>النتيجة النهائية</h3><input id="finalGradeInput" type="number" value="${fg.grade||''}" placeholder="النتيجة النهائية"><textarea id="finalNoteInput" placeholder="ملاحظة">${fg.note||''}</textarea><button class="green" onclick="saveFinalGrade('${studentId}')">حفظ/تعديل النتيجة النهائية</button></div>`;
+  teacherMain.innerHTML=`<div class="page-title-card"><h2>${st.name}</h2><p>${sub.name} - ${sub.grade}</p></div><div class="panel"><div class="smart-grid"><div class="smart-stat"><b>${m.present}</b><span>عدد الحضور</span></div><div class="smart-stat"><b>${m.absent}</b><span>عدد الغياب</span></div><div class="smart-stat"><b>${m.avg}%</b><span>معدل الاختبارات</span></div><div class="smart-stat"><b>${m.smartScore}</b><span>المؤشر</span></div></div></div><div class="panel"><h3>النتائج</h3>${rs.length?rs.map(r=>`<div class="file-item"><b>${r.examTitle}</b><span>${r.score}/${r.total} - ${levelFromPercent(r.percent)}</span></div>`).join(''):`<div class='empty'>لا توجد نتائج</div>`}</div><div class="panel"><h3>النتيجة النهائية للمادة</h3><input id="finalGradeInput" type="number" value="${fg.grade||''}" placeholder="النتيجة النهائية من 100"><textarea id="finalNoteInput" placeholder="ملاحظة">${fg.note||''}</textarea><button class="green" onclick="saveFinalGrade('${studentId}')">حفظ/تعديل النتيجة النهائية</button></div>`;
   jumpToWorkspace('teacherMain');
 }
 function saveFinalGrade(studentId){
   const sub=currentSubject(); if(!sub)return;
   let fg=state.finalGrades.find(g=>g.studentId===studentId&&g.subjectId===sub.id);
   if(!fg){fg={id:uid('fg'),studentId,subjectId:sub.id,teacherId:user.id};state.finalGrades.push(fg)}
-  fg.grade=+finalGradeInput.value||0;fg.note=finalNoteInput.value.trim();fg.date=new Date().toLocaleString('ar-IQ');
-  addNotification('student:'+studentId,{source:'النتيجة النهائية',title:'تم تحديث نتيجتك النهائية',body:sub.name+' - '+fg.grade,subjectId:sub.id,subjectName:sub.name,teacherId:user.id,teacherName:user.name,icon:'📊'});
+  fg.grade=+finalGradeInput.value||0;
+  fg.total=100;
+  fg.note=finalNoteInput.value.trim();
+  fg.date=new Date().toLocaleString('ar-IQ');
+  fg.level=finalGradeLevel(fg.grade);
+  addNotification('student:'+studentId,{source:'النتيجة النهائية',title:'تم تحديث نتيجتك النهائية',body:sub.name+' - '+fg.grade+'/100',subjectId:sub.id,subjectName:sub.name,teacherId:user.id,teacherName:user.name,icon:'🏁'});
   save();teacherStudentFullPage(studentId);
 }
 function deleteStudentEnrollment(studentId){const sub=currentSubject();if(!sub||!confirm('حذف الطالب من هذه المادة؟'))return;state.enrollments=state.enrollments.filter(e=>!(e.studentId===studentId&&e.subjectId===sub.id));state.enrollRequests=state.enrollRequests.filter(e=>!(e.studentId===studentId&&e.subjectId===sub.id));save();teacherStudents();}
@@ -1112,17 +1179,31 @@ function openExam(id){jumpToWorkspace('examArea');const e=state.exams.find(x=>x.
   if(done)return alert('لقد أديت هذا الاختبار سابقاً');
   showPage('examPage');
   let seconds=(+exam.minutes||20)*60;
-  examArea.innerHTML=`<h3>${exam.title}</h3><div class="timer" id="timerBox"></div><form id="examForm">${(exam.questions||[]).map((q,i)=>renderExamQuestion(q,i)).join('')}<button type="button" class="green" onclick="submitExam()">تسليم الاختبار</button></form>`;
+  const qs=shuffleArray((exam.questions||[]).map(q=>{
+    const copy={...q};
+    if(copy.type==='mcq'&&Array.isArray(copy.options))copy.options=shuffleArray(copy.options);
+    return copy;
+  }));
+  exam.runtimeQuestions=qs;
+  examArea.innerHTML=`<h3>${exam.title}</h3>
+  <div class="exam-guard-box" id="examWarningsBox">منع الغش مفعل: لا تخرج من صفحة الاختبار، ولا تستخدم النسخ أو اللصق.</div>
+  <div class="timer" id="timerBox"></div>
+  <form id="examForm">${qs.map((q,i)=>renderExamQuestion(q,i)).join('')}<button type="button" class="green" onclick="submitExam()">تسليم الاختبار</button></form>`;
+  startExamGuard(exam);
   clearInterval(timerInt);
   timerInt=setInterval(()=>{seconds--;timerBox.textContent=Math.floor(seconds/60)+':'+String(seconds%60).padStart(2,'0');if(seconds<=0){clearInterval(timerInt);submitExam();}},1000);
 }function questionHTML(q,i){if(q.type==='mcq')return `<div class="question"><b>${i+1}- ${q.text}</b><span class="badge">${q.points} درجة</span>${q.options.map(o=>`<label><input type="radio" name="q${i}" value="${o}"> ${o}</label><br>`).join('')}</div>`;if(q.type==='tf')return `<div class="question"><b>${i+1}- ${q.text}</b><span class="badge">${q.points} درجة</span><div class="choice-row"><label class="choice-card"><input type="radio" name="q${i}" value="صح">صح</label><label class="choice-card"><input type="radio" name="q${i}" value="خطأ">خطأ</label></div></div>`;return `<div class="question"><b>${i+1}- ${q.text}</b><span class="badge">${q.points} درجة</span><textarea name="q${i}" rows="4"></textarea></div>`}function submitExam(){
   const exam=state.exams.find(e=>e.id===currentExamId);if(!exam)return;
+  stopExamGuard();
   clearInterval(timerInt);
-  const answers=(exam.questions||[]).map((q,i)=>getStudentAnswer(q,i));
-  const scoring=autoScoreExam(exam,answers);
-  const hasEssay=(exam.questions||[]).some(q=>q.type==='essay');
+  const originalQuestions=exam.questions||[];
+  const shownQuestions=exam.runtimeQuestions||originalQuestions;
+  const answers=shownQuestions.map((q,i)=>getStudentAnswer(q,i));
+  const tempExam={...exam,questions:shownQuestions};
+  const scoring=autoScoreExam(tempExam,answers);
+  const hasEssay=shownQuestions.some(q=>q.type==='essay');
   const percent=scoring.total?Math.round(scoring.score/scoring.total*100):0;
-  const r={id:uid('res'),studentId:user.id,studentName:user.name,subjectId:exam.subjectId,examId:exam.id,examTitle:exam.title,answers,score:scoring.score,autoScore:scoring.score,total:scoring.total,finalScore:hasEssay?scoring.score:scoring.score,finalTotal:scoring.total,percent,date:new Date().toLocaleString('ar-IQ'),needsGrading:hasEssay,corrected:!hasEssay};
+  const r={id:uid('res'),studentId:user.id,studentName:user.name,subjectId:exam.subjectId,examId:exam.id,examTitle:exam.title,answers,questionsSnapshot:shownQuestions,score:scoring.score,autoScore:scoring.score,total:scoring.total,finalScore:hasEssay?scoring.score:scoring.score,finalTotal:scoring.total,percent,date:new Date().toLocaleString('ar-IQ'),needsGrading:hasEssay,corrected:!hasEssay,warnings:examWarnings};
   state.results.push(r);
   if(!hasEssay){
     ensureFinalGradesArray();
@@ -1130,9 +1211,12 @@ function openExam(id){jumpToWorkspace('examArea');const e=state.exams.find(x=>x.
   }else{
     addNotification('teacher:'+exam.teacherId,{source:'الاختبارات',title:'اختبار يحتاج تصحيح مقالي',body:user.name+' - '+exam.title,subjectId:exam.subjectId,subjectName:subjectNameById(exam.subjectId),studentId:user.id,studentName:user.name,icon:'📝'});
   }
+  if(examWarnings>0){
+    addNotification('teacher:'+exam.teacherId,{source:'منع الغش',title:'تنبيهات أثناء اختبار الطالب',body:user.name+' لديه '+examWarnings+' تنبيه',subjectId:exam.subjectId,subjectName:subjectNameById(exam.subjectId),studentId:user.id,studentName:user.name,icon:'⚠️'});
+  }
   addXP(user.id,20,'إكمال اختبار',exam.subjectId);
   save();
-  examArea.innerHTML=`<div class="panel"><h3>تم تسليم الاختبار</h3><p>${hasEssay?'بانتظار تصحيح السؤال المقالي من المدرس':'درجتك: '+r.score+'/'+r.total}</p><button onclick="studentDashboard()">رجوع</button></div>`;
+  examArea.innerHTML=`<div class="panel"><h3>تم تسليم الاختبار</h3><p>${hasEssay?'بانتظار تصحيح السؤال المقالي من المدرس':'تم تسجيل الاختبار'}</p><button onclick="studentDashboard()">رجوع</button></div>`;
 }function parentSearchStudent(){
   setActivePanel('parentSearchStudent');jumpToWorkspace('parentContent');
   const name=parentSearchInput.value.trim();
@@ -1663,7 +1747,7 @@ let advancedExamQuestions=[];
 function ensureFinalGradesArray(){
   if(!Array.isArray(state.finalExamGrades))state.finalExamGrades=[];
 }
-async function uploadHomeImageFile(){
+async async function uploadHomeImageFile(){
   const file=document.getElementById('homeImageFile')?.files?.[0];
   if(!file)return alert('اختر صورة أولاً');
   try{
@@ -1672,14 +1756,11 @@ async function uploadHomeImageFile(){
     await ref.put(file);
     const url=await ref.getDownloadURL();
     state.settings.homeImage=url;
-    save();
-    alert('تم رفع صورة الواجهة وحفظها');
+    if(document.getElementById('homeImg'))homeImg.value=url;
+    save();updateHomeDynamic();
+    alert('تم رفع صورة الواجهة وتطبيقها على صفحة التسجيل');
     adminHomeAppearance();
-    updateHomeDynamic();
-  }catch(e){
-    console.error(e);
-    alert('تعذر رفع الصورة. تأكد من Firebase Storage Rules.');
-  }
+  }catch(e){console.error(e);alert('تعذر رفع الصورة. تأكد من Firebase Storage Rules.');}
 }
 
 function addAdvancedQuestion(){
@@ -1783,18 +1864,136 @@ function getFinalResultRows(studentId,subjectId=''){
 }
 function studentFinalResults(){
   setActivePanel('studentFinalResults');jumpToWorkspace('studentPanel');
-  const rows=getFinalResultRows(user.id);
-  studentPanel.innerHTML=`<h3>النتائج النهائية</h3>${rows.length?rows.map(r=>{const sub=subjectById(r.subjectId);return `<div class="student-result-card"><b>${sub?.name||''}</b><p>${r.examTitle}</p><span class="final-score-pill">${r.score}/${r.total}</span><span class="badge">${r.level||levelFromPercent(r.percent)}</span></div>`}).join(''):`<div class='empty'>لا توجد نتائج نهائية بعد</div>`}`;
+  const rows=studentSubjectFinalRows();
+  studentPanel.innerHTML=`<h3>النتائج النهائية</h3>
+  ${rows.length?rows.map(r=>`<div class="student-result-card">
+    <b>${r.subjectName}</b>
+    <p>${r.grade}</p>
+    ${r.finalGrade!==undefined&&r.finalGrade!==''?`<span class="final-score-pill">${r.finalGrade}/100</span><span class="badge">${finalGradeLevel(r.finalGrade)}</span>${r.finalNote?`<p>${r.finalNote}</p>`:''}`:`<div class="empty">لم يحدد المدرس النتيجة النهائية بعد</div>`}
+  </div>`).join(''):`<div class='empty'>لا توجد مواد مشترك بها</div>`}`;
 }
 function subjectResultsForCurrentStudent(){
-  const rows=getFinalResultRows(user.id,currentSubjectId);
-  return `<h3>نتائجي في المادة</h3>${rows.length?rows.map(r=>`<div class="student-result-card"><b>${user.name}</b><p>${r.examTitle}</p><span class="final-score-pill">${r.score}/${r.total}</span><span class="badge">${r.level||levelFromPercent(r.percent)}</span></div>`).join(''):`<div class='empty'>لا توجد نتائج في هذه المادة بعد</div>`}`;
+  const sub=subjectById(currentSubjectId);
+  const fg=getSubjectFinalGrade(user.id,currentSubjectId);
+  return `<h3>نتيجتي النهائية في المادة</h3>
+  <div class="student-result-card">
+    <b>${user.name}</b>
+    <p>${sub?.name||''} - ${sub?.grade||''}</p>
+    ${fg?`<span class="final-score-pill">${fg.grade}/100</span><span class="badge">${finalGradeLevel(fg.grade)}</span>${fg.note?`<p>${fg.note}</p>`:''}`:`<div class="empty">لم يحدد المدرس النتيجة النهائية بعد</div>`}
+  </div>`;
+}
+
+
+/* ===== Subject Final Grade Only Patch ===== */
+function getSubjectFinalGrade(studentId,subjectId){
+  if(!Array.isArray(state.finalGrades))state.finalGrades=[];
+  return state.finalGrades.find(g=>g.studentId===studentId&&g.subjectId===subjectId);
+}
+function studentSubjectFinalRows(){
+  const ens=studentApprovedEnrollments(user.id);
+  return ens.map(e=>{
+    const sub=subjectById(e.subjectId);
+    const fg=getSubjectFinalGrade(user.id,e.subjectId);
+    return {subjectId:e.subjectId,subjectName:sub?.name||'',grade:sub?.grade||'',finalGrade:fg?.grade,finalNote:fg?.note||'',date:fg?.date||''};
+  });
+}
+function finalGradeLevel(v){
+  v=+v||0;
+  if(v>=90)return'ممتاز';
+  if(v>=80)return'جيد جداً';
+  if(v>=70)return'جيد';
+  if(v>=60)return'متوسط';
+  return'مبتدئ';
+}
+
+
+/* ===== Robust Home Branding + Anti Cheat Patch ===== */
+let examGuardActive=false;
+let examWarnings=0;
+let examGuardMaxWarnings=3;
+function updateHomeDynamic(){
+  const box=document.getElementById('homeDynamicBox');
+  if(!box||!state||!state.settings)return;
+  const img=state.settings.homeImage||'';
+  const bio=state.settings.homeBio||'';
+  box.innerHTML=(img||bio)?`<div class="home-brand-card">${img?`<img src="${img}" alt="صورة المنصة">`:''}${bio?`<p>${bio}</p>`:''}</div>`:'';
+}
+async function uploadHomeImageFile(){
+  const file=document.getElementById('homeImageFile')?.files?.[0];
+  if(!file)return alert('اختر صورة أولاً');
+  try{
+    const path='home_images/home_'+Date.now()+'_'+file.name.replace(/\s+/g,'_');
+    const ref=storage.ref().child(path);
+    await ref.put(file);
+    const url=await ref.getDownloadURL();
+    state.settings.homeImage=url;
+    if(document.getElementById('homeImg'))homeImg.value=url;
+    save();
+    updateHomeDynamic();
+    alert('تم رفع صورة الواجهة وتطبيقها على صفحة التسجيل');
+    adminHomeAppearance();
+  }catch(e){
+    console.error(e);
+    alert('تعذر رفع الصورة. تأكد من تفعيل Firebase Storage Rules.');
+  }
+}
+function saveHomeAppearance(){
+  state.settings.homeImage=(document.getElementById('homeImg')?.value||'').trim();
+  state.settings.homeBio=(document.getElementById('homeBio')?.value||'').trim();
+  save();
+  updateHomeDynamic();
+  alert('تم تطبيق صورة المنصة والبايو على الواجهة الرئيسية');
+  adminHomeAppearance();
+}
+function startExamGuard(exam){
+  examGuardActive=true;
+  examWarnings=0;
+  examGuardMaxWarnings=+exam.maxWarnings||3;
+  document.addEventListener('visibilitychange', handleExamVisibility);
+  window.addEventListener('blur', handleExamBlur);
+  window.addEventListener('contextmenu', blockExamContext);
+  window.addEventListener('copy', blockExamCopy);
+  window.addEventListener('paste', blockExamCopy);
+}
+function stopExamGuard(){
+  examGuardActive=false;
+  document.removeEventListener('visibilitychange', handleExamVisibility);
+  window.removeEventListener('blur', handleExamBlur);
+  window.removeEventListener('contextmenu', blockExamContext);
+  window.removeEventListener('copy', blockExamCopy);
+  window.removeEventListener('paste', blockExamCopy);
+}
+function blockExamContext(e){
+  if(examGuardActive){e.preventDefault();recordExamWarning('محاولة فتح القائمة/نسخ');}
+}
+function blockExamCopy(e){
+  if(examGuardActive){e.preventDefault();recordExamWarning('محاولة نسخ أو لصق');}
+}
+function handleExamVisibility(){
+  if(examGuardActive && document.hidden)recordExamWarning('الخروج من صفحة الاختبار');
+}
+function handleExamBlur(){
+  if(examGuardActive)recordExamWarning('مغادرة نافذة الاختبار');
+}
+function recordExamWarning(reason){
+  if(!examGuardActive)return;
+  examWarnings++;
+  const warn=document.getElementById('examWarningsBox');
+  if(warn)warn.innerHTML=`تنبيهات منع الغش: ${examWarnings}/${examGuardMaxWarnings} — ${reason}`;
+  if(examWarnings>=examGuardMaxWarnings){
+    stopExamGuard();
+    alert('تم تسليم الاختبار تلقائياً بسبب تكرار مغادرة صفحة الاختبار.');
+    submitExam();
+  }
+}
+function shuffleArray(arr){
+  return [...arr].sort(()=>Math.random()-0.5);
 }
 
 async function startApp(){
   await loadCloudState();
   startRealtimeSync();
-  ensureInit();
+  ensureInit();setTimeout(updateHomeDynamic,500);
   updateUI();
   if(user) updateNotificationBadges();
   if(user){

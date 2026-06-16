@@ -382,11 +382,11 @@ nav a{
 .essay-box{background:#fff8df;border:1px solid #ffe08a;border-radius:16px;padding:12px;margin:8px 0}
 
 
-/* ===== Home Branding + Exam Anti Cheat ===== */
+/* ===== Safe Home Branding ===== */
 .home-brand-card{
   max-width:720px;
   margin:18px auto 0;
-  background:rgba(255,255,255,.92);
+  background:rgba(255,255,255,.94);
   border:1px solid #dbeafe;
   border-radius:32px;
   padding:22px;
@@ -409,32 +409,13 @@ nav a{
   color:#071b49;
   font-weight:800;
 }
-.exam-guard-box{
-  background:#fff8df;
-  border:1px solid #ffe08a;
-  border-radius:18px;
-  padding:12px;
+.home-photo-upload{
+  background:#f8fbff;
+  border:1px dashed #b9c9e8;
+  border-radius:22px;
+  padding:14px;
   margin:12px 0;
-  font-weight:900;
-  color:#7c4a00;
-}
-.exam-lock-overlay{
-  position:fixed;
-  inset:0;
-  background:rgba(7,27,73,.92);
-  z-index:999999;
-  display:grid;
-  place-items:center;
-  color:#fff;
   text-align:center;
-  padding:25px;
-}
-.exam-lock-overlay .box{
-  max-width:520px;
-  background:#fff;
-  color:#071b49;
-  border-radius:28px;
-  padding:24px;
 }
 
 </style>
@@ -944,7 +925,7 @@ function parentAdvancedDashboardForStudent(st){
 /* ===== AFAQ Upgrade JS ===== */
 function updateHomeDynamic(){
   const box=document.getElementById('homeDynamicBox');
-  if(!box||!state||!state.settings)return;
+  if(!box || !state || !state.settings)return;
   const img=state.settings.homeImage||'';
   const bio=state.settings.homeBio||'';
   box.innerHTML=(img||bio)?`<div class="home-brand-card">${img?`<img src="${img}" alt="صورة المنصة">`:''}${bio?`<p>${bio}</p>`:''}</div>`:'';
@@ -975,13 +956,13 @@ function adminHomeAppearance(){
     <textarea id="homeBio" rows="4" placeholder="اكتب نبذة عن المنصة">${state.settings.homeBio||''}</textarea>
     <button class="green" onclick="saveHomeAppearance()">حفظ وتطبيق على الواجهة</button>
   </div>
-  <div class="panel"><h3>المعاينة التي ستظهر في صفحة التسجيل</h3><div class="home-brand-card">${state.settings.homeImage?`<img src="${state.settings.homeImage}">`:''}${state.settings.homeBio?`<p>${state.settings.homeBio}</p>`:'<p>لا يوجد بايو بعد</p>'}</div></div>`;
+  <div class="panel"><h3>المعاينة</h3><div class="home-brand-card">${state.settings.homeImage?`<img src="${state.settings.homeImage}">`:''}${state.settings.homeBio?`<p>${state.settings.homeBio}</p>`:'<p>لا يوجد بايو بعد</p>'}</div></div>`;
 }
 function saveHomeAppearance(){
   state.settings.homeImage=(document.getElementById('homeImg')?.value||'').trim();
   state.settings.homeBio=(document.getElementById('homeBio')?.value||'').trim();
   save();updateHomeDynamic();
-  alert('تم تطبيق صورة المنصة والبايو على الواجهة الرئيسية');
+  alert('تم تطبيق صورة المنصة والبايو');
   adminHomeAppearance();
 }
 function studentSubjectsNames(studentId){return state.enrollments.filter(e=>e.studentId===studentId&&e.status==='approved').map(e=>subjectById(e.subjectId)).filter(Boolean)}
@@ -1179,31 +1160,17 @@ function openExam(id){jumpToWorkspace('examArea');const e=state.exams.find(x=>x.
   if(done)return alert('لقد أديت هذا الاختبار سابقاً');
   showPage('examPage');
   let seconds=(+exam.minutes||20)*60;
-  const qs=shuffleArray((exam.questions||[]).map(q=>{
-    const copy={...q};
-    if(copy.type==='mcq'&&Array.isArray(copy.options))copy.options=shuffleArray(copy.options);
-    return copy;
-  }));
-  exam.runtimeQuestions=qs;
-  examArea.innerHTML=`<h3>${exam.title}</h3>
-  <div class="exam-guard-box" id="examWarningsBox">منع الغش مفعل: لا تخرج من صفحة الاختبار، ولا تستخدم النسخ أو اللصق.</div>
-  <div class="timer" id="timerBox"></div>
-  <form id="examForm">${qs.map((q,i)=>renderExamQuestion(q,i)).join('')}<button type="button" class="green" onclick="submitExam()">تسليم الاختبار</button></form>`;
-  startExamGuard(exam);
+  examArea.innerHTML=`<h3>${exam.title}</h3><div class="timer" id="timerBox"></div><form id="examForm">${(exam.questions||[]).map((q,i)=>renderExamQuestion(q,i)).join('')}<button type="button" class="green" onclick="submitExam()">تسليم الاختبار</button></form>`;
   clearInterval(timerInt);
   timerInt=setInterval(()=>{seconds--;timerBox.textContent=Math.floor(seconds/60)+':'+String(seconds%60).padStart(2,'0');if(seconds<=0){clearInterval(timerInt);submitExam();}},1000);
 }function questionHTML(q,i){if(q.type==='mcq')return `<div class="question"><b>${i+1}- ${q.text}</b><span class="badge">${q.points} درجة</span>${q.options.map(o=>`<label><input type="radio" name="q${i}" value="${o}"> ${o}</label><br>`).join('')}</div>`;if(q.type==='tf')return `<div class="question"><b>${i+1}- ${q.text}</b><span class="badge">${q.points} درجة</span><div class="choice-row"><label class="choice-card"><input type="radio" name="q${i}" value="صح">صح</label><label class="choice-card"><input type="radio" name="q${i}" value="خطأ">خطأ</label></div></div>`;return `<div class="question"><b>${i+1}- ${q.text}</b><span class="badge">${q.points} درجة</span><textarea name="q${i}" rows="4"></textarea></div>`}function submitExam(){
   const exam=state.exams.find(e=>e.id===currentExamId);if(!exam)return;
-  stopExamGuard();
   clearInterval(timerInt);
-  const originalQuestions=exam.questions||[];
-  const shownQuestions=exam.runtimeQuestions||originalQuestions;
-  const answers=shownQuestions.map((q,i)=>getStudentAnswer(q,i));
-  const tempExam={...exam,questions:shownQuestions};
-  const scoring=autoScoreExam(tempExam,answers);
-  const hasEssay=shownQuestions.some(q=>q.type==='essay');
+  const answers=(exam.questions||[]).map((q,i)=>getStudentAnswer(q,i));
+  const scoring=autoScoreExam(exam,answers);
+  const hasEssay=(exam.questions||[]).some(q=>q.type==='essay');
   const percent=scoring.total?Math.round(scoring.score/scoring.total*100):0;
-  const r={id:uid('res'),studentId:user.id,studentName:user.name,subjectId:exam.subjectId,examId:exam.id,examTitle:exam.title,answers,questionsSnapshot:shownQuestions,score:scoring.score,autoScore:scoring.score,total:scoring.total,finalScore:hasEssay?scoring.score:scoring.score,finalTotal:scoring.total,percent,date:new Date().toLocaleString('ar-IQ'),needsGrading:hasEssay,corrected:!hasEssay,warnings:examWarnings};
+  const r={id:uid('res'),studentId:user.id,studentName:user.name,subjectId:exam.subjectId,examId:exam.id,examTitle:exam.title,answers,score:scoring.score,autoScore:scoring.score,total:scoring.total,finalScore:hasEssay?scoring.score:scoring.score,finalTotal:scoring.total,percent,date:new Date().toLocaleString('ar-IQ'),needsGrading:hasEssay,corrected:!hasEssay};
   state.results.push(r);
   if(!hasEssay){
     ensureFinalGradesArray();
@@ -1211,12 +1178,9 @@ function openExam(id){jumpToWorkspace('examArea');const e=state.exams.find(x=>x.
   }else{
     addNotification('teacher:'+exam.teacherId,{source:'الاختبارات',title:'اختبار يحتاج تصحيح مقالي',body:user.name+' - '+exam.title,subjectId:exam.subjectId,subjectName:subjectNameById(exam.subjectId),studentId:user.id,studentName:user.name,icon:'📝'});
   }
-  if(examWarnings>0){
-    addNotification('teacher:'+exam.teacherId,{source:'منع الغش',title:'تنبيهات أثناء اختبار الطالب',body:user.name+' لديه '+examWarnings+' تنبيه',subjectId:exam.subjectId,subjectName:subjectNameById(exam.subjectId),studentId:user.id,studentName:user.name,icon:'⚠️'});
-  }
   addXP(user.id,20,'إكمال اختبار',exam.subjectId);
   save();
-  examArea.innerHTML=`<div class="panel"><h3>تم تسليم الاختبار</h3><p>${hasEssay?'بانتظار تصحيح السؤال المقالي من المدرس':'تم تسجيل الاختبار'}</p><button onclick="studentDashboard()">رجوع</button></div>`;
+  examArea.innerHTML=`<div class="panel"><h3>تم تسليم الاختبار</h3><p>${hasEssay?'بانتظار تصحيح السؤال المقالي من المدرس':'درجتك: '+r.score+'/'+r.total}</p><button onclick="studentDashboard()">رجوع</button></div>`;
 }function parentSearchStudent(){
   setActivePanel('parentSearchStudent');jumpToWorkspace('parentContent');
   const name=parentSearchInput.value.trim();
@@ -1756,11 +1720,12 @@ async async function uploadHomeImageFile(){
     await ref.put(file);
     const url=await ref.getDownloadURL();
     state.settings.homeImage=url;
-    if(document.getElementById('homeImg'))homeImg.value=url;
+    const inp=document.getElementById('homeImg');
+    if(inp)inp.value=url;
     save();updateHomeDynamic();
-    alert('تم رفع صورة الواجهة وتطبيقها على صفحة التسجيل');
+    alert('تم رفع صورة الواجهة وتطبيقها');
     adminHomeAppearance();
-  }catch(e){console.error(e);alert('تعذر رفع الصورة. تأكد من Firebase Storage Rules.');}
+  }catch(e){console.error(e);alert('تعذر رفع الصورة. تأكد من Firebase Storage Rules أو استخدم رابط صورة مباشر.');}
 }
 
 function addAdvancedQuestion(){
@@ -1906,94 +1871,10 @@ function finalGradeLevel(v){
   return'مبتدئ';
 }
 
-
-/* ===== Robust Home Branding + Anti Cheat Patch ===== */
-let examGuardActive=false;
-let examWarnings=0;
-let examGuardMaxWarnings=3;
-function updateHomeDynamic(){
-  const box=document.getElementById('homeDynamicBox');
-  if(!box||!state||!state.settings)return;
-  const img=state.settings.homeImage||'';
-  const bio=state.settings.homeBio||'';
-  box.innerHTML=(img||bio)?`<div class="home-brand-card">${img?`<img src="${img}" alt="صورة المنصة">`:''}${bio?`<p>${bio}</p>`:''}</div>`:'';
-}
-async function uploadHomeImageFile(){
-  const file=document.getElementById('homeImageFile')?.files?.[0];
-  if(!file)return alert('اختر صورة أولاً');
-  try{
-    const path='home_images/home_'+Date.now()+'_'+file.name.replace(/\s+/g,'_');
-    const ref=storage.ref().child(path);
-    await ref.put(file);
-    const url=await ref.getDownloadURL();
-    state.settings.homeImage=url;
-    if(document.getElementById('homeImg'))homeImg.value=url;
-    save();
-    updateHomeDynamic();
-    alert('تم رفع صورة الواجهة وتطبيقها على صفحة التسجيل');
-    adminHomeAppearance();
-  }catch(e){
-    console.error(e);
-    alert('تعذر رفع الصورة. تأكد من تفعيل Firebase Storage Rules.');
-  }
-}
-function saveHomeAppearance(){
-  state.settings.homeImage=(document.getElementById('homeImg')?.value||'').trim();
-  state.settings.homeBio=(document.getElementById('homeBio')?.value||'').trim();
-  save();
-  updateHomeDynamic();
-  alert('تم تطبيق صورة المنصة والبايو على الواجهة الرئيسية');
-  adminHomeAppearance();
-}
-function startExamGuard(exam){
-  examGuardActive=true;
-  examWarnings=0;
-  examGuardMaxWarnings=+exam.maxWarnings||3;
-  document.addEventListener('visibilitychange', handleExamVisibility);
-  window.addEventListener('blur', handleExamBlur);
-  window.addEventListener('contextmenu', blockExamContext);
-  window.addEventListener('copy', blockExamCopy);
-  window.addEventListener('paste', blockExamCopy);
-}
-function stopExamGuard(){
-  examGuardActive=false;
-  document.removeEventListener('visibilitychange', handleExamVisibility);
-  window.removeEventListener('blur', handleExamBlur);
-  window.removeEventListener('contextmenu', blockExamContext);
-  window.removeEventListener('copy', blockExamCopy);
-  window.removeEventListener('paste', blockExamCopy);
-}
-function blockExamContext(e){
-  if(examGuardActive){e.preventDefault();recordExamWarning('محاولة فتح القائمة/نسخ');}
-}
-function blockExamCopy(e){
-  if(examGuardActive){e.preventDefault();recordExamWarning('محاولة نسخ أو لصق');}
-}
-function handleExamVisibility(){
-  if(examGuardActive && document.hidden)recordExamWarning('الخروج من صفحة الاختبار');
-}
-function handleExamBlur(){
-  if(examGuardActive)recordExamWarning('مغادرة نافذة الاختبار');
-}
-function recordExamWarning(reason){
-  if(!examGuardActive)return;
-  examWarnings++;
-  const warn=document.getElementById('examWarningsBox');
-  if(warn)warn.innerHTML=`تنبيهات منع الغش: ${examWarnings}/${examGuardMaxWarnings} — ${reason}`;
-  if(examWarnings>=examGuardMaxWarnings){
-    stopExamGuard();
-    alert('تم تسليم الاختبار تلقائياً بسبب تكرار مغادرة صفحة الاختبار.');
-    submitExam();
-  }
-}
-function shuffleArray(arr){
-  return [...arr].sort(()=>Math.random()-0.5);
-}
-
 async function startApp(){
   await loadCloudState();
   startRealtimeSync();
-  ensureInit();setTimeout(updateHomeDynamic,500);
+  ensureInit();setTimeout(updateHomeDynamic,700);
   updateUI();
   if(user) updateNotificationBadges();
   if(user){

@@ -1116,6 +1116,23 @@ function sendAttendanceResponse(sessionId){
 }
 function teacherAttendanceStatsHTML(subjectId){const rows=subjectSmartHonorRows(subjectId);return rows.length?rows.map(r=>`<div class=\"file-item\"><b>👤 ${r.name}</b><span> / حضور: ${r.present} | غياب: ${r.absent} | تأخير: ${r.late}</span></div>`).join(''):`<div class='empty'>لا توجد بيانات حضور</div>`;}
 
+function adminMessages(){
+  setActivePanel('adminMessages');jumpToWorkspace('adminMain');
+  const msgs=(state.messages||[]).filter(msgVisible).filter(msgVisible);
+  const students=msgs.filter(isStudentMsg);
+  const parents=msgs.filter(isParentMsg);
+  adminMain.innerHTML=`<div class="page-title-card"><h2>رسائل التواصل</h2><p>رسائل الطلاب وأولياء الأمور</p></div>
+  <div class="panel">
+    <h3>رسائل الطلاب</h3>
+    <button class="danger" onclick="clearAdminStudentMessages()">تحديد الكل وحذف رسائل الطلاب</button>
+    ${students.length?students.map(m=>`<div class="message-card"><b>${m.fromName||m.studentName||m.name||m.sender||'طالب'}</b><p>${m.text||m.body||m.message||''}</p><span>${m.date||m.createdAt||''}</span><br><button class="danger" onclick="deleteSingleMessage('${m.id}','adminMessages')">حذف</button></div>`).join(''):`<div class="empty">لا توجد رسائل طلاب</div>`}
+  </div>
+  <div class="panel">
+    <h3>رسائل أولياء الأمور</h3>
+    <button class="danger" onclick="clearAdminParentMessages()">تحديد الكل وحذف رسائل أولياء الأمور</button>
+    ${parents.length?parents.map(m=>`<div class="message-card"><b>${m.fromName||m.parentName||m.name||m.sender||'ولي أمر'}</b><p>${m.text||m.body||m.message||''}</p><span>${m.date||m.createdAt||''}</span><br><button class="danger" onclick="deleteSingleMessage('${m.id}','adminMessages')">حذف</button></div>`).join(''):`<div class="empty">لا توجد رسائل أولياء أمور</div>`}
+  </div>`;
+}
 function adminHome(){setActivePanel('adminHome');const d=adminDashboardStats();adminMain.innerHTML=`<h2>لوحة المدير</h2>
 <div class="dash-grid">
   <div class="dash-card"><b>${d.students}</b><span>الطلاب</span></div>
@@ -1224,7 +1241,27 @@ function currentTeacher(){return teacherById(user?.id)}function currentSubject()
   </div>
   <div class="panel"><h3>الاختبارات الحالية</h3><button class="danger" onclick="clearTeacherVisibleExams()">تفريغ الاختبارات الظاهرة</button>${ex.length?ex.map(e=>`<div class="file-item"><div><b>${e.title}</b><br><span class="badge">${e.questions?.length||0} سؤال</span><span class="badge">${e.total||0} درجة</span>${e.hasEssay?`<span class="badge">يحتاج تصحيح مقالي</span>`:''}</div><div><button onclick="teacherExamResults('${e.id}')">نتائج وتصحيح</button><button class="danger" onclick="deleteExamVisible('${e.id}')">إخفاء</button></div></div>`).join(''):`<div class="empty">لا توجد اختبارات</div>`}</div>`;
   if(typeof renderAdvancedQuestions==='function')renderAdvancedQuestions();
-}function addQuestion(){if(!qText.value.trim())return alert('اكتب السؤال');let q={type:qType.value,text:qText.value.trim(),options:qOptions.value.split(/[،,]/).map(x=>x.trim()).filter(Boolean),answer:qAnswer.value.trim(),points:+qPoints.value||1};if(q.type==='tf'&&!['صح','خطأ'].includes(q.answer))return alert('إجابة صح وخطأ يجب أن تكون صح أو خطأ');if(q.type==='list')q.answer=q.options;if(q.type==='essay')q.answer='';examBuild.push(q);qText.value=qOptions.value=qAnswer.value=qPoints.value='';renderBuild()}function renderBuild(){if(!document.getElementById('qBuild'))return;const total=examBuild.reduce((a,b)=>a+b.points,0);qBuild.innerHTML=(examBuild.length?examBuild.map((q,i)=>`<div class="file-item"><b>${i+1}- ${q.text}</b><span>${q.type} - ${q.points} درجة</span><button class="danger" onclick="examBuild.splice(${i},1);renderBuild()">حذف</button></div>`).join(''):`<div class='empty'>لا توجد أسئلة</div>`)+`<div class="notice">الدرجة الكلية: ${total}</div>`}function saveExam(){const sub=currentSubject();if(!exTitle.value.trim()||!examBuild.length)return alert('أكمل الاختبار');const total=examBuild.reduce((a,b)=>a+b.points,0);const newExam={id:uid('exam'),title:exTitle.value.trim(),subjectId:sub.id,teacherId:user.id,minutes:+exMinutes.value||20,total,questions:[...examBuild]};state.exams.push(newExam);logActivity({source:'الاختبارات',action:'إضافة اختبار جديد: '+newExam.title,subjectId:sub.id,subjectName:sub.name,teacherId:user.id,teacherName:user.name,icon:'📝'});{const targets=state.enrollments.filter(e=>e.subjectId===sub.id&&e.status==='approved').map(e=>'student:'+e.studentId);addNotification(targets,{source:'الاختبارات',title:'اختبار جديد: '+newExam.title,body:'تمت إضافة اختبار جديد في المادة',subjectId:sub.id,subjectName:sub.name,teacherId:user.id,teacherName:user.name,icon:'📝'});}save();teacherExams()}function teacherStudents(){setActivePanel('teacherStudents');jumpToWorkspace('teacherMain');const sub=currentSubject(),rows=subjectSmartHonorRows(sub?.id||'');teacherMain.innerHTML=`<div class="page-title-card"><h2>الطلاب والمستويات</h2><p>${sub?.name||''} - ${sub?.grade||''}</p></div><div class="student-card-list">${rows.length?rows.map((r,i)=>`<div class="student-level-card"><h3>${i+1}. ${r.name}</h3><span class="badge">${r.level}</span><span class="badge">${r.avg}%</span><span class="badge">${r.xp} XP</span><p>الحضور: ${r.attendanceRate}% | الواجبات: ${r.homeworkRate}%</p><button onclick="teacherStudentFullPage('${r.studentId}')">فتح الملف</button><button class="danger" onclick="deleteStudentEnrollment('${r.studentId}')">حذف من المادة</button></div>`).join(''):`<div class='empty'>لا يوجد طلاب أو نتائج بعد</div>`}</div>`;}function teacherRequests(){setActivePanel('teacherRequests');jumpToWorkspace('teacherMain');const sub=currentSubject(),req=state.enrollRequests.filter(r=>r.subjectId===sub?.id&&r.status==='pending');teacherMain.innerHTML=`<h2>طلبات دخول المادة</h2>${req.length?req.map(r=>{const st=state.students.find(s=>s.id===r.studentId);return `<div class="file-item"><div><b>${st?.name}</b><br>${st?.grade}<br>${r.date}</div><button class="green" onclick="approveEnroll('${r.id}')">قبول</button><button class="danger" onclick="rejectEnroll('${r.id}')">رفض</button></div>`}).join(''):`<div class='panel empty'>لا توجد طلبات</div>`}`}function approveEnroll(id){const r=state.enrollRequests.find(x=>x.id===id);if(!r)return;r.status='approved';logActivity({source:'المواد',action:'قبول طالب في مادة',studentId:r.studentId,subjectId:r.subjectId,icon:'✅'});if(!state.enrollments.some(e=>e.studentId===r.studentId&&e.subjectId===r.subjectId))state.enrollments.push({id:uid('en'),studentId:r.studentId,subjectId:r.subjectId,status:'approved',date:new Date().toLocaleString('ar-IQ')});{const sub=subjectById(r.subjectId);addNotification('student:'+r.studentId,{source:'المواد',title:'تم قبول دخول المادة',body:'تمت الموافقة على دخولك إلى المادة',subjectId:r.subjectId,subjectName:sub?.name||'',teacherId:user.id,teacherName:user.name,icon:'✅'});}save();teacherRequests()}function rejectEnroll(id){const r=state.enrollRequests.find(x=>x.id===id);if(r){r.status='rejected';save();teacherRequests()}}function teacherMessages(){setActivePanel('teacherMessages');jumpToWorkspace('teacherMain');const sub=currentSubject(),ens=state.enrollments.filter(e=>e.subjectId===sub?.id&&e.status==='approved'),ms=state.messages.filter(m=>m.teacherId===user.id&&m.subjectId===sub?.id);teacherMain.innerHTML=`<h2>رسائل الطلاب</h2><div class="panel"><select id="tmStudent">${ens.map(e=>{const st=state.students.find(s=>s.id===e.studentId);return `<option value="${e.studentId}">${st?.name}</option>`}).join('')}</select><textarea id="tmText" placeholder="رسالة للطالب"></textarea><button onclick="teacherSendStudent()">إرسال</button></div><div class="chat">${ms.length?ms.map(m=>renderMsg(m,user.id)).join(''):`<div class='empty'>لا توجد رسائل</div>`}</div>`}function teacherSendStudent(){if(!tmText.value.trim())return alert('اكتب الرسالة');const sub=currentSubject();logActivity({source:'رسائل الأستاذ',action:'إرسال رسالة لطالب',studentId:tmStudent.value,subjectId:sub.id,subjectName:sub.name,teacherId:user.id,teacherName:user.name,icon:'💬'});state.messages.push({id:uid('msg'),fromId:user.id,fromName:user.name,toId:tmStudent.value,teacherId:user.id,subjectId:sub.id,text:tmText.value.trim(),date:new Date().toLocaleString('ar-IQ')});addNotification('student:'+tmStudent.value,{source:'رسائل الأستاذ',title:'رسالة جديدة من الأستاذ',body:tmText.value.trim(),subjectId:sub.id,subjectName:sub.name,teacherId:user.id,teacherName:user.name,icon:'💬'});save();teacherMessages()}function teacherParentMessages(){setActivePanel('teacherParentMessages');jumpToWorkspace('teacherMain');const sub=currentSubject(),ms=state.parentMessages.filter(m=>m.teacherId===user.id&&m.subjectId===sub?.id);teacherMain.innerHTML=`<h2>رسائل أولياء الأمور</h2><div class="chat">${ms.length?ms.map(m=>`<div class="msg"><b>${m.parentName}</b><p>${m.text}</p><button onclick="replyParentMsg('${m.id}')">رد</button>${m.reply?`<p><b>ردك:</b> ${m.reply}</p>`:''}</div>`).join(''):`<div class='empty'>لا توجد رسائل</div>`}</div>`}function replyParentMsg(id){const text=prompt('اكتب الرد');if(!text)return;const m=state.parentMessages.find(x=>x.id===id);m.reply=text;m.replyDate=new Date().toLocaleString('ar-IQ');save();teacherParentMessages()}
+}function addQuestion(){if(!qText.value.trim())return alert('اكتب السؤال');let q={type:qType.value,text:qText.value.trim(),options:qOptions.value.split(/[،,]/).map(x=>x.trim()).filter(Boolean),answer:qAnswer.value.trim(),points:+qPoints.value||1};if(q.type==='tf'&&!['صح','خطأ'].includes(q.answer))return alert('إجابة صح وخطأ يجب أن تكون صح أو خطأ');if(q.type==='list')q.answer=q.options;if(q.type==='essay')q.answer='';examBuild.push(q);qText.value=qOptions.value=qAnswer.value=qPoints.value='';renderBuild()}function renderBuild(){if(!document.getElementById('qBuild'))return;const total=examBuild.reduce((a,b)=>a+b.points,0);qBuild.innerHTML=(examBuild.length?examBuild.map((q,i)=>`<div class="file-item"><b>${i+1}- ${q.text}</b><span>${q.type} - ${q.points} درجة</span><button class="danger" onclick="examBuild.splice(${i},1);renderBuild()">حذف</button></div>`).join(''):`<div class='empty'>لا توجد أسئلة</div>`)+`<div class="notice">الدرجة الكلية: ${total}</div>`}function saveExam(){const sub=currentSubject();if(!exTitle.value.trim()||!examBuild.length)return alert('أكمل الاختبار');const total=examBuild.reduce((a,b)=>a+b.points,0);const newExam={id:uid('exam'),title:exTitle.value.trim(),subjectId:sub.id,teacherId:user.id,minutes:+exMinutes.value||20,total,questions:[...examBuild]};state.exams.push(newExam);logActivity({source:'الاختبارات',action:'إضافة اختبار جديد: '+newExam.title,subjectId:sub.id,subjectName:sub.name,teacherId:user.id,teacherName:user.name,icon:'📝'});{const targets=state.enrollments.filter(e=>e.subjectId===sub.id&&e.status==='approved').map(e=>'student:'+e.studentId);addNotification(targets,{source:'الاختبارات',title:'اختبار جديد: '+newExam.title,body:'تمت إضافة اختبار جديد في المادة',subjectId:sub.id,subjectName:sub.name,teacherId:user.id,teacherName:user.name,icon:'📝'});}save();teacherExams()}function teacherStudents(){setActivePanel('teacherStudents');jumpToWorkspace('teacherMain');const sub=currentSubject(),rows=subjectSmartHonorRows(sub?.id||'');teacherMain.innerHTML=`<div class="page-title-card"><h2>الطلاب والمستويات</h2><p>${sub?.name||''} - ${sub?.grade||''}</p></div><div class="student-card-list">${rows.length?rows.map((r,i)=>`<div class="student-level-card"><h3>${i+1}. ${r.name}</h3><span class="badge">${r.level}</span><span class="badge">${r.avg}%</span><span class="badge">${r.xp} XP</span><p>الحضور: ${r.attendanceRate}% | الواجبات: ${r.homeworkRate}%</p><button onclick="teacherStudentFullPage('${r.studentId}')">فتح الملف</button><button class="danger" onclick="deleteStudentEnrollment('${r.studentId}')">حذف من المادة</button></div>`).join(''):`<div class='empty'>لا يوجد طلاب أو نتائج بعد</div>`}</div>`;}function teacherRequests(){setActivePanel('teacherRequests');jumpToWorkspace('teacherMain');const sub=currentSubject(),req=state.enrollRequests.filter(r=>r.subjectId===sub?.id&&r.status==='pending');teacherMain.innerHTML=`<h2>طلبات دخول المادة</h2>${req.length?req.map(r=>{const st=state.students.find(s=>s.id===r.studentId);return `<div class="file-item"><div><b>${st?.name}</b><br>${st?.grade}<br>${r.date}</div><button class="green" onclick="approveEnroll('${r.id}')">قبول</button><button class="danger" onclick="rejectEnroll('${r.id}')">رفض</button></div>`}).join(''):`<div class='panel empty'>لا توجد طلبات</div>`}`}function approveEnroll(id){const r=state.enrollRequests.find(x=>x.id===id);if(!r)return;r.status='approved';logActivity({source:'المواد',action:'قبول طالب في مادة',studentId:r.studentId,subjectId:r.subjectId,icon:'✅'});if(!state.enrollments.some(e=>e.studentId===r.studentId&&e.subjectId===r.subjectId))state.enrollments.push({id:uid('en'),studentId:r.studentId,subjectId:r.subjectId,status:'approved',date:new Date().toLocaleString('ar-IQ')});{const sub=subjectById(r.subjectId);addNotification('student:'+r.studentId,{source:'المواد',title:'تم قبول دخول المادة',body:'تمت الموافقة على دخولك إلى المادة',subjectId:r.subjectId,subjectName:sub?.name||'',teacherId:user.id,teacherName:user.name,icon:'✅'});}save();teacherRequests()}function rejectEnroll(id){const r=state.enrollRequests.find(x=>x.id===id);if(r){r.status='rejected';save();teacherRequests()}}function teacherMessages(){
+  setActivePanel('teacherMessages');jumpToWorkspace('teacherMain');
+  const sub=currentSubject?.();
+  const msgs=(state.messages||[]).filter(msgVisible).filter(m=>{
+    const related=!sub || m.subjectId===sub.id || m.teacherId===user.id || m.to===('teacher:'+user.id) || m.target===('teacher:'+user.id);
+    return msgVisible(m)&&related;
+  });
+  const students=msgs.filter(isStudentMsg);
+  const parents=msgs.filter(isParentMsg);
+  teacherMain.innerHTML=`<div class="page-title-card"><h2>الرسائل</h2><p>رسائل الطلاب وأولياء الأمور</p></div>
+  <div class="panel">
+    <h3>رسائل الطلاب</h3>
+    <button class="danger" onclick="clearTeacherStudentMessages()">تحديد الكل وحذف رسائل الطلاب</button>
+    ${students.length?students.map(m=>`<div class="message-card"><b>${m.fromName||m.studentName||m.name||m.sender||'طالب'}</b><p>${m.text||m.body||m.message||''}</p><span>${m.date||m.createdAt||''}</span><br><button class="danger" onclick="deleteSingleMessage('${m.id}','teacherMessages')">حذف</button></div>`).join(''):`<div class="empty">لا توجد رسائل طلاب</div>`}
+  </div>
+  <div class="panel">
+    <h3>رسائل أولياء الأمور</h3>
+    <button class="danger" onclick="clearTeacherParentMessages()">تحديد الكل وحذف رسائل أولياء الأمور</button>
+    ${parents.length?parents.map(m=>`<div class="message-card"><b>${m.fromName||m.parentName||m.name||m.sender||'ولي أمر'}</b><p>${m.text||m.body||m.message||''}</p><span>${m.date||m.createdAt||''}</span><br><button class="danger" onclick="deleteSingleMessage('${m.id}','teacherMessages')">حذف</button></div>`).join(''):`<div class="empty">لا توجد رسائل أولياء أمور</div>`}
+  </div>`;
+}function teacherSendStudent(){if(!tmText.value.trim())return alert('اكتب الرسالة');const sub=currentSubject();logActivity({source:'رسائل الأستاذ',action:'إرسال رسالة لطالب',studentId:tmStudent.value,subjectId:sub.id,subjectName:sub.name,teacherId:user.id,teacherName:user.name,icon:'💬'});state.messages.push({id:uid('msg'),fromId:user.id,fromName:user.name,toId:tmStudent.value,teacherId:user.id,subjectId:sub.id,text:tmText.value.trim(),date:new Date().toLocaleString('ar-IQ')});addNotification('student:'+tmStudent.value,{source:'رسائل الأستاذ',title:'رسالة جديدة من الأستاذ',body:tmText.value.trim(),subjectId:sub.id,subjectName:sub.name,teacherId:user.id,teacherName:user.name,icon:'💬'});save();teacherMessages()}function teacherParentMessages(){setActivePanel('teacherParentMessages');jumpToWorkspace('teacherMain');const sub=currentSubject(),ms=state.parentMessages.filter(m=>m.teacherId===user.id&&m.subjectId===sub?.id);teacherMain.innerHTML=`<h2>رسائل أولياء الأمور</h2><div class="chat">${ms.length?ms.map(m=>`<div class="msg"><b>${m.parentName}</b><p>${m.text}</p><button onclick="replyParentMsg('${m.id}')">رد</button>${m.reply?`<p><b>ردك:</b> ${m.reply}</p>`:''}</div>`).join(''):`<div class='empty'>لا توجد رسائل</div>`}</div>`}function replyParentMsg(id){const text=prompt('اكتب الرد');if(!text)return;const m=state.parentMessages.find(x=>x.id===id);m.reply=text;m.replyDate=new Date().toLocaleString('ar-IQ');save();teacherParentMessages()}
 function teacherExamResults(examId){
   const exam=state.exams.find(e=>e.id===examId);if(!exam)return;
   const rows=state.results.filter(r=>r.examId===examId);
@@ -2064,6 +2101,67 @@ function clearAdminVisibleMessages(){
   clearVisibleItems(state.messages||[],m=>true,'تفريغ رسائل التواصل');
   save();
   if(typeof adminMessages==='function')adminMessages();
+}
+
+
+/* ===== Clear Student/Parent Messages Visible Only ===== */
+function msgVisible(m){return !m || (m.hidden!==true && m.deleted!==true)}
+function hideMsg(m,reason='إخفاء الرسالة'){
+  if(!m)return;
+  m.hidden=true;
+  m.deleted=true;
+  m.hiddenReason=reason;
+  m.hiddenAt=new Date().toLocaleString('ar-IQ');
+}
+function isParentMsg(m){
+  const txt=((m.source||'')+' '+(m.type||'')+' '+(m.role||'')+' '+(m.fromRole||'')+' '+(m.category||'')).toLowerCase();
+  return txt.includes('parent') || txt.includes('ولي') || txt.includes('أولياء') || txt.includes('ولي الأمر');
+}
+function isStudentMsg(m){
+  return !isParentMsg(m);
+}
+function clearAdminStudentMessages(){
+  if(!confirm('حذف جميع رسائل الطلاب الظاهرة؟ ستختفي من الواجهة فقط.'))return;
+  (state.messages||[]).forEach(m=>{if(isStudentMsg(m))hideMsg(m,'تفريغ رسائل الطلاب من المدير')});
+  save();
+  if(typeof adminMessages==='function')adminMessages();
+  else if(typeof adminStudentMessages==='function')adminStudentMessages();
+}
+function clearAdminParentMessages(){
+  if(!confirm('حذف جميع رسائل أولياء الأمور الظاهرة؟ ستختفي من الواجهة فقط.'))return;
+  (state.messages||[]).forEach(m=>{if(isParentMsg(m))hideMsg(m,'تفريغ رسائل أولياء الأمور من المدير')});
+  save();
+  if(typeof adminParentMessages==='function')adminParentMessages();
+  else if(typeof adminMessages==='function')adminMessages();
+}
+function clearTeacherStudentMessages(){
+  const sub=currentSubject?.();
+  if(!confirm('حذف جميع رسائل الطلاب الظاهرة لدى المدرس؟'))return;
+  (state.messages||[]).forEach(m=>{
+    const related=!sub || m.subjectId===sub.id || m.teacherId===user.id || m.to===('teacher:'+user.id) || m.target===('teacher:'+user.id);
+    if(related && isStudentMsg(m))hideMsg(m,'تفريغ رسائل الطلاب من المدرس');
+  });
+  save();
+  if(typeof teacherMessages==='function')teacherMessages();
+}
+function clearTeacherParentMessages(){
+  const sub=currentSubject?.();
+  if(!confirm('حذف جميع رسائل أولياء الأمور الظاهرة لدى المدرس؟'))return;
+  (state.messages||[]).forEach(m=>{
+    const related=!sub || m.subjectId===sub.id || m.teacherId===user.id || m.to===('teacher:'+user.id) || m.target===('teacher:'+user.id);
+    if(related && isParentMsg(m))hideMsg(m,'تفريغ رسائل أولياء الأمور من المدرس');
+  });
+  save();
+  if(typeof teacherParentMessages==='function')teacherParentMessages();
+  else if(typeof teacherMessages==='function')teacherMessages();
+}
+function deleteSingleMessage(id,rerender=''){
+  const m=(state.messages||[]).find(x=>x.id===id);
+  if(m)hideMsg(m,'حذف رسالة واحدة');
+  save();
+  if(rerender && typeof window[rerender]==='function')window[rerender]();
+  else if(user?.role==='admin' && typeof adminMessages==='function')adminMessages();
+  else if(user?.role==='teacher' && typeof teacherMessages==='function')teacherMessages();
 }
 
 async function startApp(){

@@ -449,6 +449,23 @@ nav a{
   font-weight:800;
 }
 
+
+/* ===== Admin Teacher Edit/Delete ===== */
+.teacher-admin-card{
+  background:#fff;
+  border:1px solid #e7edf9;
+  border-radius:20px;
+  padding:16px;
+  margin:10px 0;
+  box-shadow:0 8px 22px rgba(15,23,42,.06);
+}
+.teacher-admin-actions{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-top:10px;
+}
+
 </style>
 
 <link rel="manifest" href="manifest.json">
@@ -582,7 +599,7 @@ function updateUI(){
   if(document.getElementById('smartBackFloat')) smartBackFloat.classList.toggle('hidden',!logged);
   document.querySelectorAll('.auth').forEach(a=>a.classList.toggle('hidden',!logged));
   if(logged) updateNotificationBadges();
-}function logout(){user=null;localStorage.removeItem(USER_STORE);updateUI();showPage('home')}function ensureInit(){studentGrade.innerHTML=gradeOptions();teacherLoginGrade.innerHTML=gradeOptions();teacherLoginSubject.innerHTML=subjectOptions();teacherLoginGrade.onchange=()=>teacherLoginSubject.innerHTML=subjectOptions()}function setUser(u){user=u;localStorage.setItem(USER_STORE,JSON.stringify(u));updateUI()}function loginStudent(){const name=studentName.value.trim(),grade=studentGrade.value,code=studentCode.value.trim();if(!name||!grade||!code)return alert('أكمل بيانات الطالب');if(code!==state.settings.studentCode)return alert('رمز الطالب غير صحيح');let s=state.students.find(x=>same(x.name,name)&&same(x.grade,grade));if(!s){s={id:uid('stu'),name,grade,phone:'',lastLogin:new Date().toLocaleString('ar-IQ')};state.students.push(s)}else s.lastLogin=new Date().toLocaleString('ar-IQ');save();setUser({role:'student',name,grade,id:s.id});studentDashboard()}function loginParent(){const name=parentName.value.trim(),code=parentCode.value.trim();if(!name||!code)return alert('أكمل بيانات ولي الأمر');let p=state.parents.find(x=>same(x.name,name)&&x.code===code);if(!p&&code===state.settings.parentGlobalCode){p={id:uid('par'),name,code,students:[]};state.parents.push(p);save()}if(!p)return alert('رمز ولي الأمر غير صحيح');setUser({role:'parent',name,id:p.id});showPage('parentPanel');parentWelcome.textContent='مرحباً '+name}function loginTeacher(){const name=teacherName.value.trim(),grade=teacherLoginGrade.value,subject=teacherLoginSubject.value,code=teacherCode.value.trim();if(!name||!grade||!subject||!code)return alert('أكمل بيانات المدرس');const t=state.teachers.find(x=>same(x.name,name)&&same(x.grade,grade)&&same(x.subject,subject)&&x.code===code&&x.active!==false);if(!t)return alert('بيانات المدرس غير مطابقة لما أضافه المدير');setUser({role:'teacher',name,grade,subject,id:t.id});showPage('teacher');teacherHome()}function loginAdmin(){if(adminCode.value.trim()!==state.settings.adminCode)return alert('رمز المدير غير صحيح');setUser({role:'admin',name:'مدير المنصة'});showPage('admin');adminHome()}function sendContact(){if(!contactName.value.trim()||!contactTitle.value.trim()||!contactBody.value.trim())return alert('أكمل الرسالة');state.contactMessages.unshift({id:uid('contact'),name:contactName.value.trim(),title:contactTitle.value.trim(),body:contactBody.value.trim(),date:new Date().toLocaleString('ar-IQ'),reply:''});save();alert('تم إرسال الرسالة');contactName.value=contactTitle.value=contactBody.value=''}function subjectIdBy(subject,grade){let s=state.subjects.find(x=>same(x.name,subject)&&same(x.grade,grade));return s?.id||''}function teacherFor(subject,grade){return state.teachers.find(t=>same(t.subject,subject)&&same(t.grade,grade)&&t.active!==false)}function subjectById(id){return state.subjects.find(s=>s.id===id)}function teacherById(id){return state.teachers.find(t=>t.id===id)}function activeSubscriptionFor(studentId,subjectId){const p=state.payments.filter(x=>x.studentId===studentId&&x.subjectId===subjectId&&x.status==='approved').sort((a,b)=>new Date(b.endDate)-new Date(a.endDate))[0];if(!p)return null;if(new Date(p.endDate+'T23:59:59')<new Date())return null;return p}function daysLeft(studentId,subjectId){const s=activeSubscriptionFor(studentId,subjectId);if(!s)return 0;return Math.max(0,Math.ceil((new Date(s.endDate+'T23:59:59')-new Date())/(1000*60*60*24)))}function studentApprovedEnrollments(studentId){return state.enrollments.filter(e=>e.studentId===studentId&&e.status==='approved')}function avgForStudent(studentId){const r=state.results.filter(x=>x.studentId===studentId);return r.length?Math.round(r.reduce((a,b)=>a+b.percent,0)/r.length):0}function studentSubjectStats(studentId,subjectId){
+}function logout(){user=null;localStorage.removeItem(USER_STORE);updateUI();showPage('home')}function ensureInit(){studentGrade.innerHTML=gradeOptions();teacherLoginGrade.innerHTML=gradeOptions();teacherLoginSubject.innerHTML=subjectOptions();teacherLoginGrade.onchange=()=>teacherLoginSubject.innerHTML=subjectOptions()}function setUser(u){user=u;localStorage.setItem(USER_STORE,JSON.stringify(u));updateUI()}function loginStudent(){const name=studentName.value.trim(),grade=studentGrade.value,code=studentCode.value.trim();if(!name||!grade||!code)return alert('أكمل بيانات الطالب');if(code!==state.settings.studentCode)return alert('رمز الطالب غير صحيح');let s=state.students.find(x=>same(x.name,name)&&same(x.grade,grade));if(!s){s={id:uid('stu'),name,grade,phone:'',lastLogin:new Date().toLocaleString('ar-IQ')};state.students.push(s)}else s.lastLogin=new Date().toLocaleString('ar-IQ');save();setUser({role:'student',name,grade,id:s.id});studentDashboard()}function loginParent(){const name=parentName.value.trim(),code=parentCode.value.trim();if(!name||!code)return alert('أكمل بيانات ولي الأمر');let p=state.parents.find(x=>same(x.name,name)&&x.code===code);if(!p&&code===state.settings.parentGlobalCode){p={id:uid('par'),name,code,students:[]};state.parents.push(p);save()}if(!p)return alert('رمز ولي الأمر غير صحيح');setUser({role:'parent',name,id:p.id});showPage('parentPanel');parentWelcome.textContent='مرحباً '+name}function loginTeacher(){const name=teacherName.value.trim(),grade=teacherLoginGrade.value,subject=teacherLoginSubject.value,code=teacherCode.value.trim();if(!name||!grade||!subject||!code)return alert('أكمل بيانات المدرس');const t=state.teachers.find(x=>same(x.name,name)&&same(x.grade,grade)&&same(x.subject,subject)&&x.code===code&&x.active!==false);if(!t)return alert('بيانات المدرس غير مطابقة لما أضافه المدير');setUser({role:'teacher',name,grade,subject,id:t.id});showPage('teacher');teacherHome()}function loginAdmin(){if(adminCode.value.trim()!==state.settings.adminCode)return alert('رمز المدير غير صحيح');setUser({role:'admin',name:'مدير المنصة'});showPage('admin');adminHome()}function sendContact(){if(!contactName.value.trim()||!contactTitle.value.trim()||!contactBody.value.trim())return alert('أكمل الرسالة');state.contactMessages.unshift({id:uid('contact'),name:contactName.value.trim(),title:contactTitle.value.trim(),body:contactBody.value.trim(),date:new Date().toLocaleString('ar-IQ'),reply:''});save();alert('تم إرسال الرسالة');contactName.value=contactTitle.value=contactBody.value=''}function subjectIdBy(subject,grade){let s=state.subjects.find(x=>same(x.name,subject)&&same(x.grade,grade));return s?.id||''}function teacherFor(subject,grade){return state.teachers.filter(teacherVisible).find(t=>same(t.subject,subject)&&same(t.grade,grade)&&t.active!==false)}function subjectById(id){return state.subjects.find(s=>s.id===id)}function teacherById(id){return state.teachers.filter(teacherVisible).find(t=>t.id===id)}function activeSubscriptionFor(studentId,subjectId){const p=state.payments.filter(x=>x.studentId===studentId&&x.subjectId===subjectId&&x.status==='approved').sort((a,b)=>new Date(b.endDate)-new Date(a.endDate))[0];if(!p)return null;if(new Date(p.endDate+'T23:59:59')<new Date())return null;return p}function daysLeft(studentId,subjectId){const s=activeSubscriptionFor(studentId,subjectId);if(!s)return 0;return Math.max(0,Math.ceil((new Date(s.endDate+'T23:59:59')-new Date())/(1000*60*60*24)))}function studentApprovedEnrollments(studentId){return state.enrollments.filter(e=>e.studentId===studentId&&e.status==='approved')}function avgForStudent(studentId){const r=state.results.filter(x=>x.studentId===studentId);return r.length?Math.round(r.reduce((a,b)=>a+b.percent,0)/r.length):0}function studentSubjectStats(studentId,subjectId){
  const rs=state.results.filter(r=>r.studentId===studentId&&r.subjectId===subjectId);
  const totalExams=state.exams.filter(e=>e.subjectId===subjectId).length;
  const completed=rs.length;
@@ -1131,6 +1148,32 @@ function adminMessages(){
     <h3>رسائل أولياء الأمور</h3>
     <button class="danger" onclick="clearAdminParentMessages()">تحديد الكل وحذف رسائل أولياء الأمور</button>
     ${parents.length?parents.map(m=>`<div class="message-card"><b>${m.fromName||m.parentName||m.name||m.sender||'ولي أمر'}</b><p>${m.text||m.body||m.message||''}</p><span>${m.date||m.createdAt||''}</span><br><button class="danger" onclick="deleteSingleMessage('${m.id}','adminMessages')">حذف</button></div>`).join(''):`<div class="empty">لا توجد رسائل أولياء أمور</div>`}
+  </div>`;
+}
+function adminTeachers(){
+  setActivePanel('adminTeachers');jumpToWorkspace('adminMain');
+  const visible=(state.teachers||[]).filter(teacherVisible);
+  adminMain.innerHTML=`<div class="page-title-card"><h2>المدرسون</h2><p>إدارة المدرسين وتعديل الأكواد</p></div>
+  <div class="panel">
+    <h3>إضافة مدرس</h3>
+    <input id="tName" placeholder="اسم المدرس الثلاثي">
+    <input id="tSubject" placeholder="المادة">
+    <input id="tGrade" placeholder="الصف">
+    <input id="tCode" placeholder="كود الدخول">
+    <button class="green" onclick="addTeacher()">إضافة المدرس</button>
+  </div>
+  <div class="panel">
+    <h3>قائمة المدرسين</h3>
+    <button class="gold" onclick="restoreHiddenTeachersAdmin()">استرجاع المدرسين المخفيين</button>
+    ${visible.length?visible.map(t=>`<div class="teacher-admin-card">
+      <b>${t.name}</b>
+      <p>${t.subject||''} - ${t.grade||''}</p>
+      <span class="badge">الكود: ${t.code||t.password||''}</span>
+      <div class="teacher-admin-actions">
+        <button onclick="editTeacherCodeAdmin('${t.id}')">تعديل الكود</button>
+        <button class="danger" onclick="deleteTeacherAdmin('${t.id}')">حذف المدرس</button>
+      </div>
+    </div>`).join(''):`<div class="empty">لا يوجد مدرسون ظاهرون</div>`}
   </div>`;
 }
 function adminHome(){setActivePanel('adminHome');const d=adminDashboardStats();adminMain.innerHTML=`<h2>لوحة المدير</h2>
@@ -2162,6 +2205,40 @@ function deleteSingleMessage(id,rerender=''){
   if(rerender && typeof window[rerender]==='function')window[rerender]();
   else if(user?.role==='admin' && typeof adminMessages==='function')adminMessages();
   else if(user?.role==='teacher' && typeof teacherMessages==='function')teacherMessages();
+}
+
+
+/* ===== Admin Teacher Delete + Edit Code ===== */
+function teacherVisible(t){return !t || (t.hidden!==true && t.deleted!==true)}
+function deleteTeacherAdmin(id){
+  const t=state.teachers.find(x=>x.id===id);
+  if(!t)return;
+  if(!confirm('حذف المدرس من الواجهة؟ سيحتاج لإضافته من جديد، وتبقى البيانات السابقة محفوظة كأرشيف.'))return;
+  t.hidden=true;
+  t.deleted=true;
+  t.deletedAt=new Date().toLocaleString('ar-IQ');
+  save();
+  adminTeachers();
+}
+function editTeacherCodeAdmin(id){
+  const t=state.teachers.find(x=>x.id===id);
+  if(!t)return;
+  const current=t.code||t.password||'';
+  const code=prompt('اكتب الكود الجديد للمدرس:', current);
+  if(code===null)return;
+  if(!code.trim())return alert('لا يمكن ترك الكود فارغاً');
+  t.code=code.trim();
+  t.password=code.trim();
+  t.updatedAt=new Date().toLocaleString('ar-IQ');
+  save();
+  alert('تم تعديل كود المدرس');
+  adminTeachers();
+}
+function restoreHiddenTeachersAdmin(){
+  if(!confirm('إظهار جميع المدرسين المخفيين مرة أخرى؟'))return;
+  (state.teachers||[]).forEach(t=>{t.hidden=false;t.deleted=false;});
+  save();
+  adminTeachers();
 }
 
 async function startApp(){

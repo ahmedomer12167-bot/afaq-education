@@ -382,11 +382,11 @@ nav a{
 .essay-box{background:#fff8df;border:1px solid #ffe08a;border-radius:16px;padding:12px;margin:8px 0}
 
 
-/* ===== Safe Home Branding ===== */
+/* ===== Simple Home Branding Base64 Safe ===== */
 .home-brand-card{
-  max-width:720px;
+  max-width:740px;
   margin:18px auto 0;
-  background:rgba(255,255,255,.94);
+  background:rgba(255,255,255,.96);
   border:1px solid #dbeafe;
   border-radius:32px;
   padding:22px;
@@ -400,7 +400,6 @@ nav a{
   border-radius:28px;
   display:block;
   margin:0 auto 14px;
-  box-shadow:0 14px 30px rgba(15,23,42,.12);
 }
 .home-brand-card p{
   font-size:18px;
@@ -943,15 +942,16 @@ function clearMyNotifications(){
 function clearActivityLog(){if(confirm('تفريغ سجل النشاط؟')){state.activityLog=[];save();adminActivityLog();}}
 function adminHomeAppearance(){
   setActivePanel('adminHomeAppearance');jumpToWorkspace('adminMain');
-  adminMain.innerHTML=`<div class="page-title-card"><h2>واجهة المنصة الرئيسية</h2><p>الصورة والبايو يظهران في صفحة التسجيل الرئيسية</p></div>
+  adminMain.innerHTML=`<div class="page-title-card"><h2>واجهة المنصة الرئيسية</h2><p>اختر صورة وبايو ليظهرا في صفحة التسجيل</p></div>
   <div class="panel">
     <div class="home-photo-upload">
-      <label>رفع صورة الواجهة من الجهاز</label>
+      <label>اختيار صورة الواجهة من الجهاز</label>
       <input id="homeImageFile" type="file" accept="image/*">
-      <button class="green" onclick="uploadHomeImageFile()">رفع الصورة وتطبيقها</button>
+      <button class="green" onclick="uploadHomeImageFile()">اختيار وتطبيق الصورة</button>
+      <p class="muted">يفضل أن تكون الصورة أقل من 900KB.</p>
     </div>
-    <label>رابط صورة الواجهة</label>
-    <input id="homeImg" value="${state.settings.homeImage||''}" placeholder="يظهر رابط الصورة هنا بعد الرفع">
+    <label>رابط/كود صورة الواجهة</label>
+    <textarea id="homeImg" rows="3" placeholder="يمكن وضع رابط مباشر أو سيتم ملؤه تلقائياً بعد اختيار الصورة">${state.settings.homeImage||''}</textarea>
     <label>بايو الواجهة</label>
     <textarea id="homeBio" rows="4" placeholder="اكتب نبذة عن المنصة">${state.settings.homeBio||''}</textarea>
     <button class="green" onclick="saveHomeAppearance()">حفظ وتطبيق على الواجهة</button>
@@ -1711,21 +1711,20 @@ let advancedExamQuestions=[];
 function ensureFinalGradesArray(){
   if(!Array.isArray(state.finalExamGrades))state.finalExamGrades=[];
 }
-async async function uploadHomeImageFile(){
+async function uploadHomeImageFile(){
   const file=document.getElementById('homeImageFile')?.files?.[0];
   if(!file)return alert('اختر صورة أولاً');
-  try{
-    const path='home_images/home_'+Date.now()+'_'+file.name.replace(/\s+/g,'_');
-    const ref=storage.ref().child(path);
-    await ref.put(file);
-    const url=await ref.getDownloadURL();
-    state.settings.homeImage=url;
+  if(file.size>900000)return alert('اختَر صورة أصغر من 900KB حتى تُحفظ بسرعة داخل قاعدة البيانات');
+  const reader=new FileReader();
+  reader.onload=function(){
+    state.settings.homeImage=reader.result;
     const inp=document.getElementById('homeImg');
-    if(inp)inp.value=url;
+    if(inp)inp.value=reader.result;
     save();updateHomeDynamic();
-    alert('تم رفع صورة الواجهة وتطبيقها');
+    alert('تم اختيار الصورة وتطبيقها على واجهة التسجيل');
     adminHomeAppearance();
-  }catch(e){console.error(e);alert('تعذر رفع الصورة. تأكد من Firebase Storage Rules أو استخدم رابط صورة مباشر.');}
+  };
+  reader.readAsDataURL(file);
 }
 
 function addAdvancedQuestion(){
@@ -1874,7 +1873,7 @@ function finalGradeLevel(v){
 async function startApp(){
   await loadCloudState();
   startRealtimeSync();
-  ensureInit();setTimeout(updateHomeDynamic,700);
+  ensureInit();setTimeout(updateHomeDynamic,900);
   updateUI();
   if(user) updateNotificationBadges();
   if(user){

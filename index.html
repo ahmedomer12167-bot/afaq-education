@@ -24,7 +24,7 @@
 <section id="contact" class="page hidden"><div class="title"><h2>تواصل معنا</h2></div><div class="panel"><input id="contactName" placeholder="اسمك"><input id="contactPhone" placeholder="رقم الهاتف"><textarea id="contactText" rows="5" placeholder="الرسالة"></textarea><button class="green" onclick="sendContact()">إرسال</button></div></section>
 <section id="admin" class="shell page hidden"><aside><h3>لوحة المدير</h3><button onclick="adminHome()">📊 الرئيسية</button><button onclick="adminSubjects()">📚 المواد والمدرسون</button><button onclick="adminStudents()">👨‍🎓 الطلاب</button><button onclick="adminPayments()">💳 الاشتراكات</button><button onclick="adminResults()">📈 النتائج</button><button onclick="adminNotifications()">🔔 الإشعارات</button><button onclick="adminMessages()">💬 الرسائل</button><button onclick="adminBackup()">💾 النسخ الاحتياطي</button><button onclick="adminSystem()">⚙️ إدارة النظام</button><button onclick="adminAppearance()">🎨 واجهة المنصة</button></aside><main id="adminMain"></main></section>
 <section id="teacher" class="shell page hidden"><aside><h3>لوحة المدرس</h3><button onclick="teacherHome()">🏠 الرئيسية</button><button onclick="teacherStudents()">👨‍🎓 الطلاب</button><button onclick="teacherMaterialRequests()">🔐 طلبات فتح المادة</button><button onclick="teacherLessons()">📁 الدروس</button><button onclick="teacherExams()">📝 الاختبارات</button><button onclick="teacherHomework()">📌 الواجبات</button><button onclick="teacherAttendance()">✅ الحضور</button><button onclick="teacherFinalGrades()">🏁 النتائج النهائية</button><button onclick="teacherMessages()">💬 الرسائل</button><button onclick="teacherNotifications()">🔔 التنبيهات</button><button onclick="teacherLevels()">🏆 مستويات الطلبة</button></aside><main id="teacherMain"></main></section>
-<section id="student" class="page hidden"><h2 id="studentWelcome">لوحة الطالب</h2><div id="studentStats" class="stats"></div><div class="panel"><div class="row"><button onclick="studentSubjects()">📚 موادي</button><button onclick="studentExams()">📝 اختباراتي</button><button onclick="studentResults()">📊 نتائجي</button><button onclick="studentNotifications()">🔔 إشعاراتي</button><button class="gold" onclick="studentSubscription()">💳 اشتراكي</button></div></div><div id="studentPanel" class="panel"></div></section>
+<section id="student" class="page hidden"><h2 id="studentWelcome">لوحة الطالب</h2><div id="studentStats" class="stats"></div><div class="panel"><div class="row"><button onclick="studentSubjects()">📚 موادي</button><button onclick="studentExams()">📝 اختباراتي</button><button onclick="studentResults()">📊 نتائجي</button><button onclick="studentNotifications()">🔔 إشعاراتي</button><button onclick="studentAttendance()">📌 الحضور</button><button class="gold" onclick="studentSubscription()">💳 اشتراكي</button></div></div><div id="studentPanel" class="panel"></div></section>
 <section id="parent" class="page hidden"><h2 id="parentWelcome">لوحة ولي الأمر</h2><div class="panel"><input id="parentStudentSearch" placeholder="اسم الطالب الثلاثي"><button onclick="parentFindStudent()">بحث</button></div><div id="parentPanel" class="panel"></div></section>
 <section id="room" class="page hidden"><div class="title"><h2 id="roomTitle">المادة</h2><p id="roomSub"></p></div><div class="panel"><div class="row"><button onclick="roomTab('lessons')">📁 الدروس</button><button onclick="roomTab('homework')">📌 الواجبات</button><button onclick="roomTab('exams')">📝 الاختبارات</button><button onclick="roomTab('results')">📊 النتائج</button></div></div><div id="roomContent" class="panel"></div></section>
 <section id="examPage" class="page hidden"><div id="examArea" class="panel"></div></section>
@@ -415,6 +415,272 @@ function teacherLevels(){
   const scored=students.map(s=>{const res=state.results.filter(r=>r.studentId===s.id&&r.subjectId===sub.id);const att=state.attendance.filter(a=>a.studentId===s.id&&a.subjectId===sub.id&&a.status==='present').length;const hw=(state.homeworkAnswers||[]).filter(h=>h.studentId===s.id&&h.subjectId===sub.id).length;const avg=res.length?Math.round(res.reduce((a,b)=>a+(+b.percent||0),0)/res.length):0;const points=avg+att*3+hw*4;const level=points>=95?'ممتاز':points>=80?'جيد جداً':points>=65?'جيد':points>=50?'متوسط':'مبتدئ';return {s,points,level,avg,att,hw}}).sort((a,b)=>b.points-a.points);
   teacherMain.innerHTML=`<div class="title"><h2>مستويات الطلبة</h2></div><div class="panel">${scored.length?scored.map((x,i)=>`<div class="item"><div><b>${i+1}. ${esc(x.s.name)}</b><br><span class="badge">${x.level}</span><span class="badge">اختبارات ${x.avg}%</span><span class="badge">حضور ${x.att}</span><span class="badge">واجبات ${x.hw}</span></div><b>${x.points}</b></div>`).join(''):'<div class="empty">لا يوجد طلاب</div>'}</div>`;
 }
+
+
+/* ===== HOMEWORK GRADING COMPLETE ===== */
+function ensureHomeworkAnswers(){state.homeworkAnswers=Array.isArray(state.homeworkAnswers)?state.homeworkAnswers:[]}
+function homeworkById(id){return state.homeworks.find(h=>h.id===id)}
+function teacherHomework(){
+  ensureHomeworkAnswers();
+  const sub=teacherSubject();
+  const arr=state.homeworks.filter(h=>v(h)&&h.subjectId===sub?.id);
+  teacherMain.innerHTML=`<div class="title"><h2>الواجبات</h2></div>
+  <div class="panel">
+    <h3>إضافة واجب</h3>
+    <input id="hwTitle" placeholder="عنوان الواجب">
+    <textarea id="hwText" placeholder="تفاصيل الواجب"></textarea>
+    <input id="hwMaxGrade" type="number" value="10" placeholder="درجة الواجب الكاملة">
+    <input id="hwDeadline" type="datetime-local">
+    <button onclick="addHomework()">إضافة واجب</button>
+  </div>
+  <div class="panel">
+    <h3>الواجبات المنشورة</h3>
+    ${arr.length?arr.map(h=>{
+      const answers=state.homeworkAnswers.filter(a=>a.homeworkId===h.id&&a.hidden!==true&&a.deleted!==true);
+      const students=teacherStudentsList();
+      return `<div class="item"><div>
+        <b>${esc(h.title)}</b>
+        <p>${esc(h.text||'')}</p>
+        <span class="badge">الدرجة: ${esc(h.maxGrade||10)}</span>
+        <span class="badge">يغلق: ${esc(h.deadline||'غير محدد')}</span>
+        <span class="badge">المرسلين: ${answers.length}</span>
+        <span class="badge">غير المرسلين: ${Math.max(0,students.length-answers.length)}</span>
+      </div>
+      <div>
+        <button onclick="showHomeworkAnswers('${h.id}')">عرض الإجابات وتصحيحها</button>
+        <button class="danger" onclick="delHomework('${h.id}')">حذف</button>
+      </div></div>`;
+    }).join(''):'<div class="empty">لا توجد واجبات</div>'}
+  </div>`;
+}
+function addHomework(){
+  const sub=teacherSubject();
+  if(!hwTitle.value.trim())return alert('اكتب عنوان الواجب');
+  state.homeworks.push({id:uid('hw'),subjectId:sub.id,title:hwTitle.value.trim(),text:hwText.value.trim(),maxGrade:+hwMaxGrade.value||10,deadline:hwDeadline.value,date:new Date().toLocaleString('ar-IQ')});
+  notify('subject:'+sub.id,'واجب جديد','تمت إضافة واجب: '+hwTitle.value.trim(),'📌');
+  save();teacherHomework();
+}
+function showHomeworkAnswers(homeworkId){
+  ensureHomeworkAnswers();
+  const h=homeworkById(homeworkId);
+  const answers=state.homeworkAnswers.filter(a=>a.homeworkId===homeworkId&&a.hidden!==true&&a.deleted!==true);
+  const students=teacherStudentsList();
+  const sentIds=new Set(answers.map(a=>a.studentId));
+  const missing=students.filter(s=>!sentIds.has(s.id));
+  teacherMain.innerHTML=`<div class="title"><h2>تصحيح الواجبات</h2><p>${esc(h.title)} - الدرجة الكاملة ${esc(h.maxGrade||10)}</p></div>
+  <div class="panel">
+    <h3>الإجابات المرسلة</h3>
+    ${answers.length?answers.map(a=>`<div class="item"><div>
+      <b>${esc(a.studentName||studentById(a.studentId)?.name||'طالب')}</b>
+      <p>${esc(a.answer||'')}</p>
+      <span class="badge">تاريخ الإرسال: ${esc(a.date||'')}</span>
+      <span class="badge">${a.onTime?'في الموعد':'متأخر'}</span>
+      <span class="badge">الدرجة الحالية: ${a.grade!==undefined?esc(a.grade)+' / '+esc(h.maxGrade||10):'غير مصحح'}</span>
+      ${a.feedback?`<p><b>ملاحظة:</b> ${esc(a.feedback)}</p>`:''}
+    </div>
+    <div>
+      <input id="hwGrade_${a.id}" type="number" min="0" max="${h.maxGrade||10}" value="${a.grade!==undefined?a.grade:''}" placeholder="الدرجة">
+      <textarea id="hwFeedback_${a.id}" placeholder="ملاحظة للطالب">${esc(a.feedback||'')}</textarea>
+      <button class="green" onclick="saveHomeworkGrade('${a.id}')">حفظ التصحيح</button>
+    </div></div>`).join(''):'<div class="empty">لا توجد إجابات مرسلة</div>'}
+  </div>
+  <div class="panel">
+    <h3>الطلاب غير المرسلين</h3>
+    ${missing.length?missing.map(s=>`<div class="item"><b>${esc(s.name)}</b><span class="badge">لم يرسل الواجب</span></div>`).join(''):'<div class="empty">كل الطلاب أرسلوا الواجب</div>'}
+  </div>`;
+}
+function saveHomeworkGrade(answerId){
+  ensureHomeworkAnswers();
+  const a=state.homeworkAnswers.find(x=>x.id===answerId);
+  if(!a)return;
+  const h=homeworkById(a.homeworkId);
+  const grade=+document.getElementById('hwGrade_'+answerId).value;
+  if(isNaN(grade)||grade<0||grade>(+h.maxGrade||10))return alert('اكتب درجة صحيحة');
+  a.grade=grade;
+  a.maxGrade=+h.maxGrade||10;
+  a.feedback=document.getElementById('hwFeedback_'+answerId).value.trim();
+  a.correctedAt=new Date().toLocaleString('ar-IQ');
+  notify('student:'+a.studentId,'تم تصحيح الواجب','تم تصحيح واجب '+h.title+' درجتك '+grade+' / '+(h.maxGrade||10),'📌');
+  save();
+  alert('تم حفظ درجة الواجب');
+  showHomeworkAnswers(a.homeworkId);
+}
+function submitHomework(id){
+  ensureHomeworkAnswers();
+  const h=state.homeworks.find(x=>x.id===id);
+  if(!h)return;
+  if(h.deadline&&new Date(h.deadline).getTime()<Date.now())return alert('انتهى موعد التسليم');
+  if(state.homeworkAnswers.some(a=>a.homeworkId===id&&a.studentId===user.id&&a.hidden!==true&&a.deleted!==true))return alert('أرسلت هذا الواجب مسبقاً');
+  state.homeworkAnswers.push({id:uid('hwa'),homeworkId:id,subjectId:h.subjectId,studentId:user.id,studentName:user.name,answer:document.getElementById('hwa_'+id).value,date:new Date().toLocaleString('ar-IQ'),onTime:true,status:'submitted'});
+  notify('subject:'+h.subjectId,'تسليم واجب',user.name+' أرسل حل الواجب '+h.title,'📌');
+  save();alert('تم إرسال الحل');roomTab('homework');
+}
+function studentHomeworkGradesForSubject(subjectId){
+  ensureHomeworkAnswers();
+  const answers=state.homeworkAnswers.filter(a=>a.studentId===user.id&&a.subjectId===subjectId&&a.hidden!==true&&a.deleted!==true);
+  if(!answers.length)return '<div class="empty">لا توجد واجبات مصححة</div>';
+  return answers.map(a=>{const h=homeworkById(a.homeworkId);return `<div class="item"><div><b>${esc(h?.title||'واجب')}</b><br><span class="badge">${a.grade!==undefined?'الدرجة: '+esc(a.grade)+' / '+esc(a.maxGrade||h?.maxGrade||10):'بانتظار التصحيح'}</span><span class="badge">${a.onTime?'في الموعد':'متأخر'}</span>${a.feedback?`<p><b>ملاحظة المدرس:</b> ${esc(a.feedback)}</p>`:''}</div></div>`}).join('');
+}
+function roomTab(tab){
+  const s=subjectById(currentSubjectId);
+  if(tab==='lessons'){
+    const arr=state.lessons.filter(l=>v(l)&&l.subjectId===s.id);
+    roomContent.innerHTML=arr.length?arr.map(l=>`<div class="item"><div><b>${esc(l.title)}</b><p>${esc(l.desc||'')}</p></div>${l.fileData?`<button onclick="openDataFile('${l.id}')">فتح الملف</button>`:''}${l.url?`<a href="${esc(l.url)}" target="_blank"><button>فتح الرابط</button></a>`:''}</div>`).join(''):'<div class="empty">لا توجد دروس</div>';
+  }else if(tab==='homework'){
+    const arr=state.homeworks.filter(h=>v(h)&&h.subjectId===s.id);
+    roomContent.innerHTML=`<h3>الواجبات</h3>${arr.length?arr.map(h=>{const closed=h.deadline&&new Date(h.deadline).getTime()<Date.now();const ans=(state.homeworkAnswers||[]).find(a=>a.homeworkId===h.id&&a.studentId===user.id&&a.hidden!==true&&a.deleted!==true);return `<div class="item"><div><b>${esc(h.title)}</b><p>${esc(h.text)}</p><span class="badge">الدرجة الكاملة: ${esc(h.maxGrade||10)}</span><span class="badge">${closed?'انتهى التسليم':'متاح للتسليم'}</span>${ans?`<span class="badge">تم الإرسال</span><span class="badge">${ans.grade!==undefined?'درجتك: '+esc(ans.grade)+' / '+esc(ans.maxGrade||h.maxGrade||10):'بانتظار التصحيح'}</span>`:''}</div><div>${closed||ans?'':`<textarea id="hwa_${h.id}" placeholder="اكتب الحل"></textarea><button onclick="submitHomework('${h.id}')">إرسال الحل</button>`}</div></div>`}).join(''):'<div class="empty">لا توجد واجبات</div>'}<h3>درجات الواجبات</h3>${studentHomeworkGradesForSubject(s.id)}`;
+  }else if(tab==='exams'){
+    const arr=state.exams.filter(e=>v(e)&&e.subjectId===s.id);
+    roomContent.innerHTML=arr.length?arr.map(e=>`<div class="item"><b>${esc(e.title)}</b><span class="badge">${e.minutes||30} دقيقة</span><button onclick="startExam('${e.id}')">بدء</button></div>`).join(''):'<div class="empty">لا توجد اختبارات</div>';
+  }else{
+    studentResultsForSubject(s.id);
+  }
+}
+function teacherStudentProfile(id){
+  const sub=teacherSubject(),s=studentById(id);
+  const res=state.results.filter(r=>r.studentId===id&&r.subjectId===sub.id);
+  const final=state.finalGrades.find(f=>f.studentId===id&&f.subjectId===sub.id);
+  const att=state.attendance.filter(a=>a.studentId===id&&a.subjectId===sub.id);
+  const hwa=(state.homeworkAnswers||[]).filter(a=>a.studentId===id&&a.subjectId===sub.id&&a.hidden!==true&&a.deleted!==true);
+  const present=att.filter(a=>a.status==='present').length,absent=att.filter(a=>a.status==='absent').length;
+  const examAvg=res.length?Math.round(res.reduce((a,b)=>a+(+b.percent||0),0)/res.length):0;
+  const hwAvg=hwa.length?Math.round(hwa.reduce((sum,a)=>sum+((+a.grade||0)/(+a.maxGrade||10)*100),0)/hwa.length):0;
+  const totalAvg=Math.round(examAvg*.6 + (present+absent?present/(present+absent)*100:0)*.2 + hwAvg*.2);
+  const level=totalAvg>=90?'ممتاز':totalAvg>=75?'جيد جداً':totalAvg>=65?'جيد':totalAvg>=50?'متوسط':'مبتدئ';
+  teacherMain.innerHTML=`<div class="title"><h2>ملف الطالب</h2><p>${esc(s.name)} - ${esc(sub.name)}</p></div><div class="grid"><div class="panel"><h3>المستوى</h3><div class="stat"><b>${level}</b><span>${totalAvg}%</span></div></div><div class="panel"><h3>الحضور</h3><div class="item"><b>حاضر</b><span>${present}</span></div><div class="item"><b>غائب</b><span>${absent}</span></div></div><div class="panel"><h3>الاختبارات</h3>${res.length?res.map(r=>`<div class="item"><b>${esc(r.examTitle)}</b><span>${r.score}/${r.total}</span></div>`).join(''):'<div class="empty">لا توجد اختبارات</div>'}</div><div class="panel"><h3>الواجبات</h3>${hwa.length?hwa.map(a=>{const h=homeworkById(a.homeworkId);return `<div class="item"><b>${esc(h?.title||'واجب')}</b><span>${a.grade!==undefined?esc(a.grade)+' / '+esc(a.maxGrade||h?.maxGrade||10):'بانتظار التصحيح'}</span></div>`}).join(''):'<div class="empty">لا توجد واجبات</div>'}</div><div class="panel"><h3>النتيجة النهائية</h3><div class="item"><b>${esc(sub.name)}</b><span>${final?final.grade+'/100':'غير محددة'}</span></div></div></div>`;
+}
+function teacherLevels(){
+  const sub=teacherSubject();const students=teacherStudentsList();
+  const scored=students.map(s=>{const res=state.results.filter(r=>r.studentId===s.id&&r.subjectId===sub.id);const att=state.attendance.filter(a=>a.studentId===s.id&&a.subjectId===sub.id);const present=att.filter(a=>a.status==='present').length;const hwa=(state.homeworkAnswers||[]).filter(h=>h.studentId===s.id&&h.subjectId===sub.id&&h.hidden!==true&&h.deleted!==true);const examAvg=res.length?Math.round(res.reduce((a,b)=>a+(+b.percent||0),0)/res.length):0;const attAvg=att.length?Math.round(present/att.length*100):0;const hwAvg=hwa.length?Math.round(hwa.reduce((sum,a)=>sum+((+a.grade||0)/(+a.maxGrade||10)*100),0)/hwa.length):0;const points=Math.round(examAvg*.6+attAvg*.2+hwAvg*.2);const level=points>=90?'ممتاز':points>=80?'جيد جداً':points>=65?'جيد':points>=50?'متوسط':'مبتدئ';return {s,points,level,examAvg,attAvg,hwAvg}}).sort((a,b)=>b.points-a.points);
+  teacherMain.innerHTML=`<div class="title"><h2>مستويات الطلبة</h2><p>الاختبارات 60% - الحضور 20% - الواجبات 20%</p></div><div class="panel">${scored.length?scored.map((x,i)=>`<div class="item"><div><b>${i+1}. ${esc(x.s.name)}</b><br><span class="badge">${x.level}</span><span class="badge">اختبارات ${x.examAvg}%</span><span class="badge">حضور ${x.attAvg}%</span><span class="badge">واجبات ${x.hwAvg}%</span></div><b>${x.points}%</b></div>`).join(''):'<div class="empty">لا يوجد طلاب</div>'}</div>`;
+}
+function studentResults(){
+  ensureHomeworkAnswers();
+  const arr=state.results.filter(r=>r.studentId===user.id),finals=state.finalGrades.filter(f=>f.studentId===user.id),hwa=state.homeworkAnswers.filter(a=>a.studentId===user.id&&a.hidden!==true&&a.deleted!==true);
+  studentPanel.innerHTML=`<h3>نتائجي</h3><h4>النتائج النهائية</h4>${finals.length?finals.map(f=>`<div class="item"><b>${esc(subjectById(f.subjectId)?.name||'')}</b><span>${esc(f.grade)}/100</span></div>`).join(''):'<div class="empty">لا توجد نتائج نهائية</div>'}<h4>نتائج الاختبارات</h4>${arr.length?arr.map(r=>`<div class="item"><b>${esc(r.examTitle)}</b><span>${r.score}/${r.total}</span></div>`).join(''):'<div class="empty">لا توجد نتائج اختبارات</div>'}<h4>درجات الواجبات</h4>${hwa.length?hwa.map(a=>{const h=homeworkById(a.homeworkId);return `<div class="item"><b>${esc(h?.title||'واجب')}</b><span>${a.grade!==undefined?esc(a.grade)+' / '+esc(a.maxGrade||h?.maxGrade||10):'بانتظار التصحيح'}</span></div>`}).join(''):'<div class="empty">لا توجد درجات واجبات</div>'}`;
+}
+
+
+/* ===== ATTENDANCE VISIBILITY FIX FOR STUDENT ===== */
+function ensureAttendanceSessions(){
+  state.attendanceSessions=Array.isArray(state.attendanceSessions)?state.attendanceSessions:[];
+  state.attendance=Array.isArray(state.attendance)?state.attendance:[];
+}
+function activeAttendanceSessionsForStudent(){
+  ensureAttendanceSessions();
+  const subjectIds=state.enrollments.filter(e=>v(e)&&e.studentId===user.id&&e.status==='approved').map(e=>e.subjectId);
+  return state.attendanceSessions.filter(s=>v(s)&&subjectIds.includes(s.subjectId)&&Date.now()<s.endAt);
+}
+function studentAttendance(){
+  ensureAttendanceSessions();
+  const sessions=activeAttendanceSessionsForStudent();
+  studentPanel.innerHTML=`<h3>الحضور</h3>
+  <div class="note">تظهر هنا جلسات الحضور النشطة الخاصة بموادك المفتوحة.</div>
+  ${sessions.length?sessions.map(s=>{
+    const sub=subjectById(s.subjectId);
+    const marked=state.attendance.find(a=>a.sessionId===s.id&&a.studentId===user.id);
+    const left=Math.max(0,s.endAt-Date.now());
+    const total=(+s.minutes||5)*60000;
+    const pct=Math.max(0,Math.round(left/total*100));
+    const m=Math.floor(left/60000),sec=Math.floor((left%60000)/1000);
+    return `<div class="item"><div><b>${esc(sub?.name||'مادة')} - ${esc(s.title)}</b><br>
+      <span class="badge">متبقي ${m}:${String(sec).padStart(2,'0')}</span>
+      <div class="progress-wrap"><div class="progress-bar" style="width:${pct}%"></div></div>
+      <span class="badge">${marked?'تم تسجيلك: '+marked.status:'لم تسجل بعد'}</span>
+    </div><div>${marked?'':`<button class="green" onclick="markAttendance('${s.id}')">تسجيل الحضور</button>`}</div></div>`;
+  }).join(''):'<div class="empty">لا توجد جلسات حضور نشطة الآن</div>'}`;
+}
+function studentAttendanceBox(subjectId){
+  ensureAttendanceSessions();
+  const sessions=state.attendanceSessions.filter(s=>v(s)&&s.subjectId===subjectId&&Date.now()<s.endAt);
+  if(!sessions.length)return '';
+  return `<h3>تسجيل الحضور النشط</h3>`+sessions.map(s=>{
+    const marked=state.attendance.find(a=>a.sessionId===s.id&&a.studentId===user.id);
+    const left=Math.max(0,s.endAt-Date.now());
+    const total=(+s.minutes||5)*60000;
+    const pct=Math.max(0,Math.round(left/total*100));
+    const m=Math.floor(left/60000),sec=Math.floor((left%60000)/1000);
+    return `<div class="note"><b>${esc(s.title)}</b><br><span>متبقي ${m}:${String(sec).padStart(2,'0')}</span><div class="progress-wrap"><div class="progress-bar" style="width:${pct}%"></div></div>${marked?`<span class="badge">تم تسجيلك: ${marked.status}</span>`:`<button onclick="markAttendance('${s.id}')">تسجيل الحضور</button>`}</div>`;
+  }).join('');
+}
+function createAttendanceSession(){
+  ensureAttendanceSessions();
+  const sub=teacherSubject();
+  const mins=+attMinutes.value||5;
+  const session={id:uid('atts'),subjectId:sub.id,title:attTitle.value||'محاضرة',minutes:mins,startAt:Date.now(),endAt:Date.now()+mins*60000,status:'open',date:new Date().toLocaleString('ar-IQ')};
+  state.attendanceSessions.unshift(session);
+  notify('subject:'+sub.id,'تسجيل حضور جديد','تم فتح تسجيل حضور: '+session.title+' لمدة '+mins+' دقائق','✅');
+  notify('students','تسجيل حضور جديد','تم فتح تسجيل حضور في مادة '+sub.name,'✅');
+  save();
+  alert('تم إرسال جلسة الحضور للطلاب');
+  teacherAttendance();
+}
+function markAttendance(sessionId){
+  ensureAttendanceSessions();
+  const sess=state.attendanceSessions.find(x=>x.id===sessionId);
+  if(!sess)return;
+  if(Date.now()>sess.endAt)return alert('انتهى وقت الحضور');
+  if(state.attendance.some(a=>a.sessionId===sessionId&&a.studentId===user.id))return alert('تم تسجيل حضورك مسبقاً');
+  state.attendance.push({id:uid('att'),sessionId,subjectId:sess.subjectId,studentId:user.id,studentName:user.name,status:'present',date:new Date().toLocaleString('ar-IQ')});
+  notify('subject:'+sess.subjectId,'تسجيل حضور',user.name+' سجل حضوره في '+sess.title,'✅');
+  save();
+  alert('تم تسجيل الحضور');
+  if(document.getElementById('studentPanel')&&!document.getElementById('student').classList.contains('hidden'))studentAttendance();
+}
+function autoMarkAbsencesForSubject(subjectId){
+  ensureAttendanceSessions();
+  const sessions=state.attendanceSessions.filter(s=>v(s)&&s.subjectId===subjectId&&Date.now()>s.endAt);
+  const students=teacherStudentsList();
+  sessions.forEach(sess=>{
+    students.forEach(st=>{
+      if(!state.attendance.some(a=>a.sessionId===sess.id&&a.studentId===st.id)){
+        state.attendance.push({id:uid('att'),sessionId:sess.id,subjectId:sess.subjectId,studentId:st.id,studentName:st.name,status:'absent',date:new Date().toLocaleString('ar-IQ'),auto:true});
+      }
+    });
+  });
+  save();
+}
+function teacherAttendance(){
+  ensureAttendanceSessions();
+  const sub=teacherSubject();
+  autoMarkAbsencesForSubject(sub.id);
+  const sessions=state.attendanceSessions.filter(a=>v(a)&&a.subjectId===sub?.id);
+  teacherMain.innerHTML=`<div class="title"><h2>الحضور</h2></div>
+  <div class="panel"><input id="attTitle" placeholder="عنوان المحاضرة"><input id="attMinutes" type="number" value="5" placeholder="مدة التسجيل بالدقائق"><button onclick="createAttendanceSession()">إرسال جلسة حضور</button></div>
+  <div class="panel">${sessions.length?sessions.map(a=>`<div class="item"><div><b>${esc(a.title)}</b><br><span class="badge">${Date.now()<a.endAt?'نشطة':'منتهية'}</span><span class="badge">تنتهي: ${new Date(a.endAt).toLocaleString('ar-IQ')}</span></div><button onclick="attendanceReport('${a.id}')">تقرير</button></div>`).join(''):'<div class="empty">لا توجد جلسات حضور</div>'}</div>`;
+}
+function attendanceReport(sessionId){
+  ensureAttendanceSessions();
+  const sess=state.attendanceSessions.find(x=>x.id===sessionId);
+  const students=teacherStudentsList();
+  const rows=students.map(s=>{const a=state.attendance.find(x=>x.sessionId===sessionId&&x.studentId===s.id);return `<div class="item"><b>${esc(s.name)}</b><span class="badge">${a?a.status:'غائب'}</span></div>`}).join('');
+  teacherMain.innerHTML=`<div class="title"><h2>تقرير الحضور</h2><p>${esc(sess?.title||'')}</p></div><div class="panel">${rows||'<div class="empty">لا يوجد طلاب</div>'}</div>`;
+}
+function openRoom(id){
+  currentSubjectId=id;
+  const s=subjectById(id);
+  show('room');
+  roomTitle.textContent=s.name;
+  roomSub.textContent=s.grade;
+  roomTab('lessons');
+}
+function roomTab(tab){
+  const s=subjectById(currentSubjectId);
+  if(tab==='lessons'){
+    const arr=state.lessons.filter(l=>v(l)&&l.subjectId===s.id);
+    roomContent.innerHTML=studentAttendanceBox(s.id)+(arr.length?arr.map(l=>`<div class="item"><div><b>${esc(l.title)}</b><p>${esc(l.desc||'')}</p></div>${l.fileData?`<button onclick="openDataFile('${l.id}')">فتح الملف</button>`:''}${l.url?`<a href="${esc(l.url)}" target="_blank"><button>فتح الرابط</button></a>`:''}</div>`).join(''):'<div class="empty">لا توجد دروس</div>');
+  }else if(tab==='homework'){
+    const arr=state.homeworks.filter(h=>v(h)&&h.subjectId===s.id);
+    roomContent.innerHTML=studentAttendanceBox(s.id)+`<h3>الواجبات</h3>${arr.length?arr.map(h=>{const closed=h.deadline&&new Date(h.deadline).getTime()<Date.now();const ans=(state.homeworkAnswers||[]).find(a=>a.homeworkId===h.id&&a.studentId===user.id&&a.hidden!==true&&a.deleted!==true);return `<div class="item"><div><b>${esc(h.title)}</b><p>${esc(h.text)}</p><span class="badge">الدرجة الكاملة: ${esc(h.maxGrade||10)}</span><span class="badge">${closed?'انتهى التسليم':'متاح للتسليم'}</span>${ans?`<span class="badge">تم الإرسال</span><span class="badge">${ans.grade!==undefined?'درجتك: '+esc(ans.grade)+' / '+esc(ans.maxGrade||h.maxGrade||10):'بانتظار التصحيح'}</span>`:''}</div><div>${closed||ans?'':`<textarea id="hwa_${h.id}" placeholder="اكتب الحل"></textarea><button onclick="submitHomework('${h.id}')">إرسال الحل</button>`}</div></div>`}).join(''):'<div class="empty">لا توجد واجبات</div>'}<h3>درجات الواجبات</h3>${studentHomeworkGradesForSubject(s.id)}`;
+  }else if(tab==='exams'){
+    const arr=state.exams.filter(e=>v(e)&&e.subjectId===s.id);
+    roomContent.innerHTML=studentAttendanceBox(s.id)+(arr.length?arr.map(e=>`<div class="item"><b>${esc(e.title)}</b><span class="badge">${e.minutes||30} دقيقة</span><button onclick="startExam('${e.id}')">بدء</button></div>`).join(''):'<div class="empty">لا توجد اختبارات</div>');
+  }else{
+    studentResultsForSubject(s.id);
+  }
+}
+/* refresh active attendance countdown every few seconds while student page is open */
+setInterval(()=>{try{if(user&&user.role==='student'&&!document.getElementById('student').classList.contains('hidden')&&studentPanel.innerHTML.includes('الحضور'))studentAttendance()}catch(e){}},5000);
 
 load();applyAppearance();topUpdate();if(user)goHome();
 </script>

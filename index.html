@@ -504,10 +504,11 @@ nav a{
 .admin-row-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 
 
-/* ===== SAFE PATCH: payments + archive ===== */
-.safe-clean-card{background:#fff;border:1px solid #e7edf9;border-radius:22px;padding:16px;margin:12px 0;box-shadow:0 10px 24px rgba(15,23,42,.06)}
-.safe-clean-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
-.safe-note{background:#fff8df;border:1px solid #ffe08a;border-radius:16px;padding:12px;margin:10px 0;color:#7c4a00;font-weight:800}
+/* ===== FINAL STABLE SYNC PATCH ===== */
+.final-card{background:#fff;border:1px solid #e7edf9;border-radius:22px;padding:16px;margin:12px 0;box-shadow:0 10px 24px rgba(15,23,42,.06)}
+.final-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.final-note{background:#fff8df;border:1px solid #ffe08a;border-radius:16px;padding:12px;margin:10px 0;color:#7c4a00;font-weight:800}
+.final-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin:12px 0}
 
 </style>
 
@@ -2629,375 +2630,340 @@ if ("serviceWorker" in navigator) {
 
 
 <script>
-/* ===== SAFE PATCH FINAL - DO NOT MOVE ===== */
+/* ===== FINAL STABLE SYNC PATCH - SAFE OVERRIDES ONLY ===== */
 (function(){
-  function ready(fn){ if(document.readyState!=='loading') fn(); else document.addEventListener('DOMContentLoaded',fn); }
-
-  window.safeVisiblePayment = function(p){
-    return !!p && p.hidden!==true && p.deleted!==true && p.status!=='removed' && p.status!=='rejected';
-  };
-
-  window.safePendingPayments = function(){
-    window.state.payments = Array.isArray(window.state.payments) ? window.state.payments : [];
-    return window.state.payments.filter(function(p){ return safeVisiblePayment(p) && p.status === 'pending'; });
-  };
-
-  window.safeApprovedPayments = function(){
-    window.state.payments = Array.isArray(window.state.payments) ? window.state.payments : [];
-    return window.state.payments.filter(function(p){ return safeVisiblePayment(p) && p.status === 'approved'; });
-  };
-
-  window.safeBackup = function(label){
+  function safeArr(name){ state[name]=Array.isArray(state[name])?state[name]:[]; return state[name]; }
+  function vTeacher(t){ return !!t && t.hidden!==true && t.deleted!==true && t.active!==false; }
+  function vSubject(s){ return !!s && s.hidden!==true && s.deleted!==true; }
+  function vPay(p){ return !!p && p.hidden!==true && p.deleted!==true && p.status!=='removed' && p.status!=='rejected'; }
+  function esc(v){ return String(v ?? '').replace(/[&<>"']/g, function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]}); }
+  function byId(arr,id){ return (arr||[]).find(x=>x.id===id); }
+  function paymentSubject(p){ return byId(state.subjects,p.subjectId) || {name:p.subjectName||'',grade:p.grade||''}; }
+  function backup(label){
     try{
-      window.state.backups = Array.isArray(window.state.backups) ? window.state.backups : [];
-      window.state.backups.unshift({
-        id: uid('backup'),
-        label: label,
-        date: new Date().toLocaleString('ar-IQ'),
-        data: JSON.stringify(window.state)
-      });
-      if(window.state.backups.length > 10) window.state.backups = window.state.backups.slice(0,10);
-    }catch(e){ console.warn(e); }
+      state.backups=Array.isArray(state.backups)?state.backups:[];
+      state.backups.unshift({id:uid('backup'),label,date:new Date().toLocaleString('ar-IQ'),data:JSON.stringify(state)});
+      if(state.backups.length>10) state.backups=state.backups.slice(0,10);
+    }catch(e){console.warn(e)}
+  }
+  function subjectCode(s){ return s.code || s.subjectCode || s.joinCode || ''; }
+  function teacherForSubject(subjectId){
+    const s=byId(state.subjects,subjectId);
+    if(!s)return null;
+    return safeArr('teachers').find(t=>vTeacher(t) && (t.id===s.teacherId || (same(t.subject,s.name)&&same(t.grade,s.grade))));
+  }
+  function visibleTeachers(){ return safeArr('teachers').filter(vTeacher); }
+  function visibleSubjects(){ return safeArr('subjects').filter(vSubject); }
+  function pendingPayments(){ return safeArr('payments').filter(p=>vPay(p)&&p.status==='pending'); }
+  function approvedPayments(){ return safeArr('payments').filter(p=>vPay(p)&&p.status==='approved'); }
+
+  window.visibleTeacher = vTeacher;
+  window.visibleSubject = vSubject;
+  window.subjectCodeOf = subjectCode;
+  window.subjectTeacher = teacherForSubject;
+
+  window.subjectById = function(id){ return byId(state.subjects,id); };
+  window.teacherById = function(id){ return visibleTeachers().find(t=>t.id===id); };
+  window.currentTeacher = function(){ return user ? teacherById(user.id) : null; };
+  window.currentSubject = function(){
+    const t=currentTeacher();
+    if(!t)return null;
+    return visibleSubjects().find(s=>s.teacherId===t.id || (same(s.name,t.subject)&&same(s.grade,t.grade))) || null;
+  };
+
+  window.ensureInit = function(){
+    try{
+      const teacherGrades=[...new Set(visibleTeachers().map(t=>t.grade).filter(Boolean).concat(grades()))];
+      const currentGrade = teacherLoginGrade?.value || teacherGrades[0] || '';
+      if(window.studentGrade) studentGrade.innerHTML = gradeOptions(studentGrade.value||'');
+      if(window.teacherLoginGrade){
+        teacherLoginGrade.innerHTML = teacherGrades.map(g=>`<option value="${esc(g)}" ${same(g,currentGrade)?'selected':''}>${esc(g)}</option>`).join('');
+      }
+      function fillSubjects(){
+        const g=teacherLoginGrade?.value || currentGrade;
+        const list=[...new Set(visibleTeachers().filter(t=>!g||same(t.grade,g)).map(t=>t.subject).filter(Boolean).concat(subjectsList()))];
+        const old=teacherLoginSubject?.value || list[0] || '';
+        if(window.teacherLoginSubject){
+          teacherLoginSubject.innerHTML=list.map(s=>`<option value="${esc(s)}" ${same(s,old)?'selected':''}>${esc(s)}</option>`).join('');
+        }
+      }
+      fillSubjects();
+      if(window.teacherLoginGrade) teacherLoginGrade.onchange=fillSubjects;
+    }catch(e){console.warn(e)}
+  };
+
+  window.loginTeacher = function(){
+    const name=(teacherName?.value||'').trim();
+    const grade=teacherLoginGrade?.value||'';
+    const subject=teacherLoginSubject?.value||'';
+    const code=(teacherCode?.value||'').trim();
+    if(!name||!grade||!subject||!code)return alert('أكمل بيانات المدرس');
+    const t=visibleTeachers().find(x=>same(x.name,name)&&same(x.grade,grade)&&same(x.subject,subject)&&String(x.code||x.password||'').trim()===code);
+    if(!t)return alert('بيانات المدرس غير مطابقة لما أضافه المدير');
+    setUser({role:'teacher',name:t.name,grade:t.grade,subject:t.subject,id:t.id});
+    showPage('teacher');
+    teacherHome();
+  };
+
+  window.addLinkedTeacherSubject = function(){
+    const name=(document.getElementById('linkTeacherName')?.value||'').trim();
+    const subject=(document.getElementById('linkSubjectName')?.value||'').trim();
+    const grade=(document.getElementById('linkGrade')?.value||'').trim();
+    const teacherCode=(document.getElementById('linkTeacherCode')?.value||'').trim();
+    const subCode=(document.getElementById('linkSubjectCode')?.value||'').trim();
+    if(!name||!subject||!grade||!teacherCode||!subCode)return alert('أكمل اسم المدرس والمادة والصف وكود المدرس وكود المادة');
+    state.teachers=safeArr('teachers'); state.subjects=safeArr('subjects');
+    let t=state.teachers.find(x=>vTeacher(x)&&same(x.name,name)&&same(x.grade,grade)&&same(x.subject,subject));
+    if(!t){
+      t={id:uid('teacher'),name,subject,grade,code:teacherCode,password:teacherCode,active:true,createdAt:new Date().toLocaleString('ar-IQ')};
+      state.teachers.push(t);
+    }else{
+      t.code=teacherCode;t.password=teacherCode;t.subject=subject;t.grade=grade;t.active=true;t.hidden=false;t.deleted=false;
+    }
+    let s=state.subjects.find(x=>vSubject(x)&&same(x.name,subject)&&same(x.grade,grade));
+    if(!s){
+      s={id:uid('sub'),name:subject,grade,code:subCode,subjectCode:subCode,joinCode:subCode,teacherId:t.id,teacherName:t.name,createdAt:new Date().toLocaleString('ar-IQ')};
+      state.subjects.push(s);
+    }else{
+      s.code=subCode;s.subjectCode=subCode;s.joinCode=subCode;s.teacherId=t.id;s.teacherName=t.name;s.hidden=false;s.deleted=false;
+    }
+    save(); ensureInit(); adminSubjects();
+  };
+
+  window.addTeacherAdminFixed = function(){
+    const name=(document.getElementById('tName')?.value||'').trim();
+    const subject=(document.getElementById('tSubject')?.value||'').trim();
+    const grade=(document.getElementById('tGrade')?.value||'').trim();
+    const code=(document.getElementById('tCode')?.value||'').trim();
+    if(!name||!subject||!grade||!code)return alert('أكمل اسم المدرس والمادة والصف وكود المدرس');
+    state.teachers=safeArr('teachers');
+    let t=state.teachers.find(x=>same(x.name,name)&&same(x.grade,grade)&&same(x.subject,subject));
+    if(!t){ t={id:uid('teacher'),name,subject,grade,code,password:code,active:true,createdAt:new Date().toLocaleString('ar-IQ')}; state.teachers.push(t); }
+    else { t.name=name;t.subject=subject;t.grade=grade;t.code=code;t.password=code;t.active=true;t.hidden=false;t.deleted=false; }
+    save(); ensureInit(); adminSubjects();
+  };
+
+  window.addSubjectAdminFixed = function(){
+    const name=(document.getElementById('subName')?.value||'').trim();
+    const grade=(document.getElementById('subGrade')?.value||'').trim();
+    const code=(document.getElementById('subCode')?.value||'').trim();
+    const teacherId=(document.getElementById('subTeacherId')?.value||'').trim();
+    if(!name||!grade||!code)return alert('اكتب اسم المادة والصف وكود المادة');
+    state.subjects=safeArr('subjects');
+    const t=byId(state.teachers,teacherId);
+    let s=state.subjects.find(x=>same(x.name,name)&&same(x.grade,grade));
+    if(!s){ s={id:uid('sub'),name,grade,createdAt:new Date().toLocaleString('ar-IQ')}; state.subjects.push(s); }
+    s.code=code;s.subjectCode=code;s.joinCode=code;s.teacherId=teacherId||'';s.teacherName=t?t.name:'';s.hidden=false;s.deleted=false;
+    if(t){t.subject=name;t.grade=grade;}
+    save(); adminSubjects();
+  };
+
+  window.editTeacherCodeAdmin = function(id){
+    const t=byId(state.teachers,id); if(!t)return;
+    const c=prompt('كود المدرس الجديد:', t.code||t.password||'');
+    if(c===null)return;
+    if(!c.trim())return alert('لا يمكن ترك الكود فارغاً');
+    t.code=c.trim();t.password=c.trim();save();ensureInit();adminSubjects();
+  };
+
+  window.editTeacherAdminFixed = function(id){
+    const t=byId(state.teachers,id); if(!t)return;
+    const n=prompt('اسم المدرس:',t.name||''); if(n===null)return;
+    const s=prompt('المادة:',t.subject||''); if(s===null)return;
+    const g=prompt('الصف:',t.grade||''); if(g===null)return;
+    const c=prompt('كود المدرس:',t.code||t.password||''); if(c===null)return;
+    if(!n.trim()||!s.trim()||!g.trim()||!c.trim())return alert('لا يمكن ترك الحقول فارغة');
+    t.name=n.trim();t.subject=s.trim();t.grade=g.trim();t.code=c.trim();t.password=c.trim();t.hidden=false;t.deleted=false;t.active=true;
+    safeArr('subjects').forEach(sub=>{ if(sub.teacherId===id){sub.teacherName=t.name;sub.name=t.subject;sub.grade=t.grade;} });
+    save();ensureInit();adminSubjects();
+  };
+
+  window.deleteTeacherAdmin = function(id){
+    const t=byId(state.teachers,id); if(!t)return;
+    if(!confirm('حذف المدرس من الواجهة وإخفاء مواده المرتبطة؟'))return;
+    t.hidden=true;t.deleted=true;t.active=false;t.deletedAt=new Date().toLocaleString('ar-IQ');
+    safeArr('subjects').forEach(s=>{ if(s.teacherId===id || (same(s.name,t.subject)&&same(s.grade,t.grade))){s.hidden=true;s.deleted=true;s.deletedAt=new Date().toLocaleString('ar-IQ');} });
+    save();ensureInit();adminSubjects();
+  };
+
+  window.editSubjectAdminFixed = function(id){
+    const s=byId(state.subjects,id); if(!s)return;
+    const n=prompt('اسم المادة:',s.name||''); if(n===null)return;
+    const g=prompt('الصف:',s.grade||''); if(g===null)return;
+    const c=prompt('كود المادة:',subjectCode(s)); if(c===null)return;
+    if(!n.trim()||!g.trim()||!c.trim())return alert('لا يمكن ترك الحقول فارغة');
+    s.name=n.trim();s.grade=g.trim();s.code=c.trim();s.subjectCode=c.trim();s.joinCode=c.trim();s.hidden=false;s.deleted=false;
+    const t=byId(state.teachers,s.teacherId); if(t){t.subject=s.name;t.grade=s.grade;}
+    save();adminSubjects();
+  };
+
+  window.deleteSubjectAdminFixed = function(id){
+    const s=byId(state.subjects,id); if(!s)return;
+    if(!confirm('حذف المادة من الواجهة؟ ستختفي من الطالب والمدرس وتبقى النتائج محفوظة.'))return;
+    s.hidden=true;s.deleted=true;s.deletedAt=new Date().toLocaleString('ar-IQ');
+    safeArr('enrollments').forEach(e=>{if(e.subjectId===id){e.hidden=true;e.deleted=true;e.status='removed';}});
+    safeArr('enrollRequests').forEach(e=>{if(e.subjectId===id){e.hidden=true;e.deleted=true;e.status='removed';}});
+    save();adminSubjects();
+  };
+
+  window.linkTeacherToSubject = function(subjectId,teacherId){
+    const s=byId(state.subjects,subjectId), t=byId(state.teachers,teacherId);
+    if(!s||!t)return;
+    s.teacherId=t.id;s.teacherName=t.name;t.subject=s.name;t.grade=s.grade;t.hidden=false;t.deleted=false;t.active=true;
+    save();ensureInit();adminSubjects();
+  };
+
+  window.restoreHiddenTeachersAdmin = function(){
+    if(!confirm('استرجاع المدرسين والمواد المخفية؟'))return;
+    safeArr('teachers').forEach(t=>{t.hidden=false;t.deleted=false;t.active=true;});
+    safeArr('subjects').forEach(s=>{s.hidden=false;s.deleted=false;});
+    save();ensureInit();adminSubjects();
+  };
+
+  window.adminSubjects = function(){
+    setActivePanel('adminSubjects'); jumpToWorkspace('adminMain');
+    const teachers=visibleTeachers(), subjects=visibleSubjects();
+    adminMain.innerHTML=`<div class="page-title-card"><h2>المواد والمدرسون</h2><p>إضافة المدرس وربطه بالمادة والصف مع كود المدرس وكود المادة</p></div>
+    <div class="final-note">أي مدرس تضيفه هنا يستطيع تسجيل الدخول بنفس الاسم والصف والمادة وكود المدرس.</div>
+    <div class="final-grid">
+      <div class="final-card"><h3>إضافة كاملة وربط مباشر</h3>
+        <input id="linkTeacherName" placeholder="اسم المدرس الثلاثي">
+        <input id="linkSubjectName" placeholder="المادة التي يدرسها">
+        <input id="linkGrade" placeholder="الصف الذي يدرسه">
+        <input id="linkTeacherCode" placeholder="كود دخول المدرس">
+        <input id="linkSubjectCode" placeholder="كود تسجيل المادة للطالب">
+        <button class="green" onclick="addLinkedTeacherSubject()">إضافة وربط</button>
+      </div>
+      <div class="final-card"><h3>إضافة مادة فقط</h3>
+        <input id="subName" placeholder="اسم المادة">
+        <input id="subGrade" placeholder="الصف">
+        <input id="subCode" placeholder="كود المادة">
+        <select id="subTeacherId"><option value="">بدون مدرس</option>${teachers.map(t=>`<option value="${esc(t.id)}">${esc(t.name)} - ${esc(t.subject)} - ${esc(t.grade)}</option>`).join('')}</select>
+        <button class="green" onclick="addSubjectAdminFixed()">إضافة المادة</button>
+      </div>
+      <div class="final-card"><h3>إضافة مدرس فقط</h3>
+        <input id="tName" placeholder="اسم المدرس">
+        <input id="tSubject" placeholder="المادة">
+        <input id="tGrade" placeholder="الصف">
+        <input id="tCode" placeholder="كود المدرس">
+        <button class="green" onclick="addTeacherAdminFixed()">إضافة المدرس</button>
+      </div>
+    </div>
+    <div class="final-grid">
+      <div class="final-card"><h3>المدرسون الظاهرون (${teachers.length})</h3><button class="gold" onclick="restoreHiddenTeachersAdmin()">استرجاع المخفي</button>
+        ${teachers.length?teachers.map(t=>`<div class="file-item"><div><b>${esc(t.name)}</b><br><span class="badge">${esc(t.subject)}</span><span class="badge">${esc(t.grade)}</span><span class="badge">كود: ${esc(t.code||t.password||'')}</span></div><div><button onclick="editTeacherAdminFixed('${t.id}')">تعديل</button><button onclick="editTeacherCodeAdmin('${t.id}')">تعديل الكود</button><button class="danger" onclick="deleteTeacherAdmin('${t.id}')">حذف</button></div></div>`).join(''):'<div class="empty">لا يوجد مدرسون</div>'}
+      </div>
+      <div class="final-card"><h3>المواد الظاهرة (${subjects.length})</h3>
+        ${subjects.length?subjects.map(s=>{const linked=teacherForSubject(s.id);return `<div class="file-item"><div><b>${esc(s.name)}</b><br><span class="badge">${esc(s.grade)}</span><span class="badge">كود المادة: ${esc(subjectCode(s))}</span><span class="badge">المدرس: ${esc(linked?linked.name:'غير مربوط')}</span><select onchange="if(this.value)linkTeacherToSubject('${s.id}',this.value)"><option value="">ربط/تغيير المدرس</option>${teachers.map(t=>`<option value="${esc(t.id)}" ${linked&&linked.id===t.id?'selected':''}>${esc(t.name)}</option>`).join('')}</select></div><div><button onclick="editSubjectAdminFixed('${s.id}')">تعديل</button><button class="danger" onclick="deleteSubjectAdminFixed('${s.id}')">حذف</button></div></div>`}).join(''):'<div class="empty">لا توجد مواد</div>'}
+      </div>
+    </div>`;
   };
 
   window.adminPayments = function(){
-    setActivePanel('adminPayments');
-    jumpToWorkspace('adminMain');
-
-    var pend = safePendingPayments();
-    var approved = safeApprovedPayments();
-
-    adminMain.innerHTML =
-      '<div class="page-title-card"><h2>الاشتراكات</h2><p>إدارة طلبات الاشتراك والتفعيل والتنظيف من زر واحد فقط</p></div>' +
-
-      '<div class="panel"><h3>طلبات قيد الموافقة</h3>' +
-      (pend.length ? pend.map(function(p){
-        return '<div class="safe-clean-card">' +
-          '<b>' + (p.studentName || 'طالب') + '</b>' +
-          '<p>' + (p.subjectName || '') + '</p>' +
-          '<span class="badge">' + (p.amount || '') + '</span>' +
-          '<span class="badge">' + (p.phone || '') + '</span>' +
-          '<span class="badge">' + (p.date || p.paymentDate || p.createdAt || '') + '</span>' +
-          (p.note ? '<p>' + p.note + '</p>' : '') +
-          '<div class="safe-clean-actions">' +
-            '<button class="green" onclick="approvePaymentWithAdminDays(\'' + p.id + '\')">موافقة وتحديد المدة</button>' +
-            '<button class="danger" onclick="rejectPaymentRequest(\'' + p.id + '\')">حذف الطلب</button>' +
-          '</div></div>';
-      }).join('') : '<div class="empty">لا توجد طلبات</div>') +
-      '</div>' +
-
-      '<div class="panel"><h3>اشتراكات مفعلة</h3>' +
-      '<button class="danger" onclick="clearPaymentsHistoryOnly()">تفريغ سجل الاشتراكات القديمة</button>' +
-      '<div class="safe-note">زر التفريغ يخفي السجل من الواجهة فقط ولا يحذف بيانات الطالب أو نتائجه.</div>' +
-      (approved.length ? approved.map(function(p){
-        return '<div class="safe-clean-card">' +
-          '<b>' + (p.studentName || 'طالب') + '</b>' +
-          '<p>' + (p.subjectName || '') + '</p>' +
-          '<span class="badge">' + (p.amount || '') + '</span>' +
-          '<span class="badge">' + (p.days || '') + ' يوم</span>' +
-          '<span class="badge">ينتهي ' + (p.endDate || 'غير محدد') + '</span>' +
-          '<div class="safe-clean-actions">' +
-            '<button class="danger" onclick="hidePaymentRecord(\'' + p.id + '\')">حذف من السجل فقط</button>' +
-            '<button class="danger" onclick="deletePaymentAndRemoveStudentFromSubjects(\'' + p.id + '\')">حذف اشتراك الطالب وإخراجه من المواد</button>' +
-          '</div></div>';
-      }).join('') : '<div class="empty">لا توجد اشتراكات مفعلة</div>') +
-      '</div>';
-
-    setTimeout(ensureSinglePaymentButton, 200);
+    setActivePanel('adminPayments'); jumpToWorkspace('adminMain');
+    const pend=pendingPayments(), approved=approvedPayments();
+    adminMain.innerHTML=`<div class="page-title-card"><h2>الاشتراكات</h2><p>إدارة طلبات الاشتراك والتفعيل والتنظيف من زر واحد</p></div>
+    <div class="panel"><h3>طلبات قيد الموافقة</h3>
+      ${pend.length?pend.map(p=>`<div class="final-card"><b>${esc(p.studentName||'طالب')}</b><p>${esc(p.subjectName||'')}</p><span class="badge">${esc(p.amount||'')}</span><span class="badge">${esc(p.phone||'')}</span><span class="badge">${esc(p.date||p.paymentDate||p.createdAt||'')}</span>${p.note?`<p>${esc(p.note)}</p>`:''}<div class="final-actions"><button class="green" onclick="approvePaymentWithAdminDays('${p.id}')">موافقة وتحديد المدة</button><button class="danger" onclick="rejectPaymentRequest('${p.id}')">حذف الطلب</button></div></div>`).join(''):'<div class="empty">لا توجد طلبات</div>'}
+    </div>
+    <div class="panel"><h3>اشتراكات مفعلة</h3><button class="danger" onclick="clearPaymentsHistoryOnly()">تفريغ سجل الاشتراكات القديمة</button><div class="final-note">التفريغ يخفي السجل فقط ولا يحذف الطالب أو نتائجه.</div>
+      ${approved.length?approved.map(p=>`<div class="final-card"><b>${esc(p.studentName||'طالب')}</b><p>${esc(p.subjectName||'')}</p><span class="badge">${esc(p.amount||'')}</span><span class="badge">${esc(p.days||'')} يوم</span><span class="badge">ينتهي ${esc(p.endDate||'غير محدد')}</span><div class="final-actions"><button class="danger" onclick="hidePaymentRecord('${p.id}')">حذف من السجل فقط</button><button class="danger" onclick="deletePaymentAndRemoveStudentFromSubjects('${p.id}')">حذف اشتراك الطالب وإخراجه من المواد</button></div></div>`).join(''):'<div class="empty">لا توجد اشتراكات مفعلة</div>'}
+    </div>`;
   };
 
   window.approvePaymentWithAdminDays = function(id){
-    var p = (window.state.payments || []).find(function(x){ return x.id === id; });
-    if(!p) return alert('لم يتم العثور على طلب الاشتراك');
-
-    var daysText = prompt('حدد مدة الاشتراك بالأيام:', (window.state.settings && window.state.settings.defaultSubscriptionDays) || 30);
-    if(daysText === null) return;
-    var days = parseInt(daysText, 10);
-    if(!days || days < 1) return alert('اكتب مدة صحيحة بالأيام');
-
-    var start = todayISO();
-    var end = new Date();
-    end.setDate(end.getDate() + days);
-
-    p.status = 'approved';
-    p.days = days;
-    p.approvedAt = new Date().toLocaleString('ar-IQ');
-    p.startDate = start;
-    p.endDate = end.toISOString().slice(0,10);
-    p.active = true;
-
-    window.state.enrollments = Array.isArray(window.state.enrollments) ? window.state.enrollments : [];
-    var exists = window.state.enrollments.some(function(e){
-      return e.studentId === p.studentId && e.subjectId === p.subjectId && e.status === 'approved' && e.hidden !== true && e.deleted !== true;
-    });
-
-    if(!exists && p.subjectId){
-      window.state.enrollments.push({
-        id: uid('enr'),
-        studentId: p.studentId,
-        studentName: p.studentName,
-        subjectId: p.subjectId,
-        subjectName: p.subjectName,
-        status: 'approved',
-        date: new Date().toLocaleString('ar-IQ')
-      });
+    const p=byId(state.payments,id); if(!p)return alert('لم يتم العثور على الطلب');
+    const daysText=prompt('حدد مدة الاشتراك بالأيام:', state.settings?.defaultSubscriptionDays||30);
+    if(daysText===null)return;
+    const days=parseInt(daysText,10);
+    if(!days||days<1)return alert('اكتب مدة صحيحة');
+    const start=todayISO(), end=new Date(); end.setDate(end.getDate()+days);
+    p.status='approved';p.days=days;p.startDate=start;p.endDate=end.toISOString().slice(0,10);p.active=true;p.approvedAt=new Date().toLocaleString('ar-IQ');
+    if(p.subjectId && !safeArr('enrollments').some(e=>e.studentId===p.studentId&&e.subjectId===p.subjectId&&e.status==='approved'&&e.hidden!==true&&e.deleted!==true)){
+      state.enrollments.push({id:uid('enr'),studentId:p.studentId,studentName:p.studentName,subjectId:p.subjectId,subjectName:p.subjectName,status:'approved',date:new Date().toLocaleString('ar-IQ')});
     }
-
-    addNotification('student:' + p.studentId, {
-      source:'الاشتراكات',
-      title:'تم تفعيل اشتراكك',
-      body:'تم تفعيل الاشتراك لمدة ' + days + ' يوم',
-      subjectId:p.subjectId,
-      subjectName:p.subjectName,
-      icon:'💳'
-    });
-
-    save();
-    alert('تمت الموافقة وتفعيل الاشتراك');
-    adminPayments();
+    addNotification('student:'+p.studentId,{source:'الاشتراكات',title:'تم تفعيل اشتراكك',body:`تم التفعيل لمدة ${days} يوم`,icon:'💳'});
+    save(); alert('تم التفعيل'); adminPayments();
   };
 
   window.rejectPaymentRequest = function(id){
-    var p = (window.state.payments || []).find(function(x){ return x.id === id; });
-    if(!p) return;
-    if(!confirm('حذف طلب الاشتراك من الواجهة؟')) return;
-    p.hidden = true;
-    p.deleted = true;
-    p.status = 'rejected';
-    p.hiddenAt = new Date().toLocaleString('ar-IQ');
-    save();
-    adminPayments();
+    const p=byId(state.payments,id); if(!p)return;
+    if(!confirm('حذف طلب الاشتراك؟'))return;
+    p.hidden=true;p.deleted=true;p.status='rejected';save();adminPayments();
   };
-
   window.hidePaymentRecord = function(id){
-    var p = (window.state.payments || []).find(function(x){ return x.id === id; });
-    if(!p) return;
-    if(!confirm('حذف هذا الاشتراك من السجل الظاهر فقط؟ لا يتم حذف بيانات الطالب.')) return;
-    p.hidden = true;
-    p.deleted = true;
-    p.hiddenReason = 'حذف اشتراك من السجل الظاهر';
-    p.hiddenAt = new Date().toLocaleString('ar-IQ');
-    save();
-    adminPayments();
+    const p=byId(state.payments,id); if(!p)return;
+    if(!confirm('حذف من السجل فقط؟'))return;
+    p.hidden=true;p.deleted=true;p.hiddenReason='حذف من السجل';save();adminPayments();
   };
-
   window.clearPaymentsHistoryOnly = function(){
-    var word = prompt('لتفريغ سجل الاشتراكات الظاهر فقط اكتب: تفريغ');
-    if(word !== 'تفريغ') return alert('تم إلغاء العملية');
-    safeBackup('نسخة قبل تفريغ سجل الاشتراكات');
-    (window.state.payments || []).forEach(function(p){
-      if(safeVisiblePayment(p) && p.status === 'approved'){
-        p.hidden = true;
-        p.deleted = true;
-        p.hiddenReason = 'تفريغ سجل الاشتراكات';
-        p.hiddenAt = new Date().toLocaleString('ar-IQ');
-      }
-    });
-    save();
-    alert('تم تفريغ سجل الاشتراكات من الواجهة فقط بدون حذف بيانات الطلاب.');
-    adminPayments();
+    const w=prompt('لتفريغ سجل الاشتراكات اكتب: تفريغ');
+    if(w!=='تفريغ')return alert('تم إلغاء العملية');
+    backup('قبل تفريغ سجل الاشتراكات');
+    safeArr('payments').forEach(p=>{if(vPay(p)&&p.status==='approved'){p.hidden=true;p.deleted=true;p.hiddenReason='تفريغ سجل الاشتراكات';}});
+    save();alert('تم التفريغ');adminPayments();
   };
-
   window.deletePaymentAndRemoveStudentFromSubjects = function(id){
-    var p = (window.state.payments || []).find(function(x){ return x.id === id; });
-    if(!p) return;
-    if(!confirm('حذف اشتراك الطالب وإخراجه من المواد المسجل بها؟ ستبقى النتائج القديمة محفوظة.')) return;
-
-    var sid = p.studentId;
-    p.hidden = true;
-    p.deleted = true;
-    p.status = 'removed';
-    p.hiddenReason = 'حذف اشتراك الطالب وإخراجه من المواد';
-    p.hiddenAt = new Date().toLocaleString('ar-IQ');
-
-    (window.state.enrollments || []).forEach(function(e){
-      if(e.studentId === sid){
-        e.hidden = true;
-        e.deleted = true;
-        e.status = 'removed';
-        e.hiddenReason = 'تم حذف اشتراك الطالب';
-      }
-    });
-
-    (window.state.enrollRequests || []).forEach(function(r){
-      if(r.studentId === sid){
-        r.hidden = true;
-        r.deleted = true;
-        r.status = 'removed';
-      }
-    });
-
-    addNotification('student:' + sid, {
-      source:'الاشتراكات',
-      title:'تم إيقاف اشتراكك',
-      body:'تم حذف الاشتراك وإخراجك من المواد المسجل بها.',
-      icon:'⚠️'
-    });
-
-    save();
-    alert('تم حذف الاشتراك وإخراج الطالب من المواد المسجل بها.');
-    adminPayments();
+    const p=byId(state.payments,id); if(!p)return;
+    if(!confirm('حذف اشتراك الطالب وإخراجه من المواد؟'))return;
+    p.hidden=true;p.deleted=true;p.status='removed';
+    safeArr('enrollments').forEach(e=>{if(e.studentId===p.studentId){e.hidden=true;e.deleted=true;e.status='removed';}});
+    safeArr('enrollRequests').forEach(r=>{if(r.studentId===p.studentId){r.hidden=true;r.deleted=true;r.status='removed';}});
+    addNotification('student:'+p.studentId,{source:'الاشتراكات',title:'تم إيقاف اشتراكك',body:'تم إخراجك من المواد المسجل بها.',icon:'⚠️'});
+    save();adminPayments();
   };
 
   window.sendPayment = function(){
-    var subjectId = (document.getElementById('paySubject') || {}).value || '';
-    var phone = ((document.getElementById('payPhone') || {}).value || '').trim();
-    var amount = ((document.getElementById('payAmount') || {}).value || '').trim();
-    var date = ((document.getElementById('payDate') || {}).value || todayISO()).trim();
-    var note = ((document.getElementById('payNote') || {}).value || '').trim();
-    var subject = subjectById(subjectId);
-
-    if(!subjectId) return alert('اختر المادة');
-    if(!phone) return alert('اكتب رقم الهاتف');
-    if(!amount) return alert('اكتب مبلغ الاشتراك');
-
-    window.state.payments = Array.isArray(window.state.payments) ? window.state.payments : [];
-
-    var old = window.state.payments.find(function(p){
-      return safeVisiblePayment(p) && p.studentId === user.id && p.subjectId === subjectId && p.status === 'pending';
-    });
-    if(old) return alert('لديك طلب اشتراك قيد الموافقة لهذه المادة');
-
-    window.state.payments.unshift({
-      id: uid('pay'),
-      studentId: user.id,
-      studentName: user.name,
-      subjectId: subjectId,
-      subjectName: subject ? subject.name : '',
-      grade: user.grade,
-      phone: phone,
-      amount: amount,
-      date: date,
-      note: note,
-      status: 'pending',
-      createdAt: new Date().toLocaleString('ar-IQ')
-    });
-
-    addNotification('admin', {
-      source:'الاشتراكات',
-      title:'طلب اشتراك جديد',
-      body:user.name + ' - ' + (subject ? subject.name : '') + ' - ' + amount,
-      studentId:user.id,
-      studentName:user.name,
-      subjectId:subjectId,
-      subjectName:subject ? subject.name : '',
-      icon:'💳'
-    });
-
-    save();
-    alert('تم إرسال طلب الاشتراك إلى المدير');
-    studentSubscription();
+    const subjectId=paySubject?.value||'', phone=(payPhone?.value||'').trim(), amount=(payAmount?.value||'').trim(), date=(payDate?.value||todayISO()).trim(), note=(payNote?.value||'').trim();
+    const sub=subjectById(subjectId);
+    if(!subjectId)return alert('اختر المادة');
+    if(!phone)return alert('اكتب رقم الهاتف');
+    if(!amount)return alert('اكتب مبلغ الاشتراك');
+    if(safeArr('payments').some(p=>vPay(p)&&p.studentId===user.id&&p.subjectId===subjectId&&p.status==='pending'))return alert('لديك طلب قيد الموافقة لهذه المادة');
+    state.payments.unshift({id:uid('pay'),studentId:user.id,studentName:user.name,subjectId,subjectName:sub?.name||'',grade:user.grade,phone,amount,date,note,status:'pending',createdAt:new Date().toLocaleString('ar-IQ')});
+    addNotification('admin',{source:'الاشتراكات',title:'طلب اشتراك جديد',body:`${user.name} - ${sub?.name||''} - ${amount}`,studentId:user.id,studentName:user.name,subjectId,subjectName:sub?.name||'',icon:'💳'});
+    save();alert('تم إرسال طلب الاشتراك إلى المدير');studentSubscription();
   };
 
   window.studentSubscription = function(){
-    setActivePanel('studentSubscription');
-    jumpToWorkspace('studentPanel');
-
-    var subs = (window.state.subjects || []).filter(function(s){
-      return s.hidden !== true && s.deleted !== true && s.grade === user.grade;
-    });
-
-    studentPanel.innerHTML =
-      '<h3>طلب اشتراك</h3>' +
-      '<div class="notice">أرسل طلب الاشتراك إلى المدير، والمدير هو الذي يحدد مدة الاشتراك عند الموافقة.</div>' +
-      '<div class="panel">' +
-        '<div class="notice">رقم بطاقة الماستر كارد: <b>' + ((window.state.settings && window.state.settings.masterCard) || '0000 0000 0000 0000') + '</b></div>' +
-        '<select id="paySubject">' + subs.map(function(s){ return '<option value="' + s.id + '">' + s.name + ' - ' + s.grade + '</option>'; }).join('') + '</select>' +
-        '<input id="payPhone" placeholder="رقم الهاتف">' +
-        '<input id="payAmount" placeholder="المبلغ">' +
-        '<input id="payDate" type="date" value="' + todayISO() + '">' +
-        '<input id="payNote" placeholder="ملاحظة أو رقم الوصل">' +
-        '<button class="gold" onclick="sendPayment()">إرسال إلى المدير</button>' +
-      '</div>';
+    setActivePanel('studentSubscription');jumpToWorkspace('studentPanel');
+    const subs=visibleSubjects().filter(s=>same(s.grade,user.grade));
+    studentPanel.innerHTML=`<h3>طلب اشتراك</h3><div class="final-note">المدير هو الذي يحدد مدة الاشتراك عند الموافقة.</div><div class="panel"><div class="notice">رقم بطاقة الماستر كارد: <b>${esc(state.settings?.masterCard||'0000 0000 0000 0000')}</b></div><select id="paySubject">${subs.map(s=>`<option value="${s.id}">${esc(s.name)} - ${esc(s.grade)}</option>`).join('')}</select><input id="payPhone" placeholder="رقم الهاتف"><input id="payAmount" placeholder="المبلغ"><input id="payDate" type="date" value="${todayISO()}"><input id="payNote" placeholder="ملاحظة أو رقم الوصل"><button class="gold" onclick="sendPayment()">إرسال إلى المدير</button></div>`;
   };
 
   window.adminArchiveManagement = function(){
-    setActivePanel('adminArchiveManagement');
-    jumpToWorkspace('adminMain');
-
-    var hiddenCount = function(arr){
-      return Array.isArray(arr) ? arr.filter(function(x){
-        return x && (x.hidden===true || x.deleted===true || x.status==='removed' || x.status==='rejected');
-      }).length : 0;
-    };
-
-    adminMain.innerHTML =
-      '<div class="page-title-card"><h2>إدارة الأرشيف</h2><p>تنظيف البيانات القديمة بأمان</p></div>' +
-      '<div class="smart-grid">' +
-        '<div class="smart-stat"><b>' + hiddenCount(window.state.payments) + '</b><span>اشتراكات مؤرشفة</span></div>' +
-        '<div class="smart-stat"><b>' + hiddenCount(window.state.messages) + '</b><span>رسائل مؤرشفة</span></div>' +
-        '<div class="smart-stat"><b>' + hiddenCount(window.state.notifications) + '</b><span>إشعارات مؤرشفة</span></div>' +
-        '<div class="smart-stat"><b>' + hiddenCount(window.state.exams) + '</b><span>اختبارات مؤرشفة</span></div>' +
-      '</div>' +
-      '<div class="safe-clean-card"><h3>تفريغ الأرشيف فقط</h3><div class="safe-note">يحذف العناصر المخفية من التخزين، ولا يمس البيانات الظاهرة.</div><button class="danger" onclick="clearArchiveOnlyStable()">تفريغ الأرشيف</button></div>' +
-      '<div class="safe-clean-card"><h3>بدء سنة دراسية جديدة</h3><div class="safe-note">يمسح الاختبارات والحضور والواجبات والرسائل القديمة مع إبقاء الطلاب والمدرسين والمواد.</div><button class="gold" onclick="startNewSchoolYearStable()">بدء سنة جديدة</button></div>';
+    setActivePanel('adminArchiveManagement');jumpToWorkspace('adminMain');
+    const hc=arr=>Array.isArray(arr)?arr.filter(x=>x&&(x.hidden===true||x.deleted===true||x.status==='removed'||x.status==='rejected')).length:0;
+    adminMain.innerHTML=`<div class="page-title-card"><h2>إدارة الأرشيف</h2><p>تنظيف البيانات القديمة بأمان</p></div><div class="smart-grid"><div class="smart-stat"><b>${hc(state.payments)}</b><span>اشتراكات مؤرشفة</span></div><div class="smart-stat"><b>${hc(state.messages)}</b><span>رسائل مؤرشفة</span></div><div class="smart-stat"><b>${hc(state.notifications)}</b><span>إشعارات مؤرشفة</span></div><div class="smart-stat"><b>${hc(state.exams)}</b><span>اختبارات مؤرشفة</span></div></div><div class="final-card"><h3>تفريغ الأرشيف فقط</h3><div class="final-note">يحذف العناصر المخفية فقط ولا يمس الظاهرة.</div><button class="danger" onclick="clearArchiveOnlyStable()">تفريغ الأرشيف</button></div><div class="final-card"><h3>بدء سنة دراسية جديدة</h3><div class="final-note">يمسح الاختبارات والحضور والواجبات والرسائل مع إبقاء الطلاب والمدرسين والمواد.</div><button class="gold" onclick="startNewSchoolYearStable()">بدء سنة جديدة</button></div>`;
   };
-
-  window.hardRemoveHiddenFrom = function(arr){
-    if(!Array.isArray(arr)) return [];
-    return arr.filter(function(x){
-      return !(x && (x.hidden===true || x.deleted===true || x.status==='removed' || x.status==='rejected'));
-    });
-  };
-
+  window.hardRemoveHiddenFrom = arr => !Array.isArray(arr)?[]:arr.filter(x=>!(x&&(x.hidden===true||x.deleted===true||x.status==='removed'||x.status==='rejected')));
   window.clearArchiveOnlyStable = function(){
-    var word = prompt('لتأكيد تفريغ الأرشيف اكتب: أرشيف');
-    if(word !== 'أرشيف') return alert('تم إلغاء العملية');
-    safeBackup('نسخة قبل تفريغ الأرشيف');
-    ['payments','messages','notifications','exams','homeworks','lectures','files','calendarEvents','libraryItems','questionBank','enrollRequests','activityLog'].forEach(function(k){
-      window.state[k] = hardRemoveHiddenFrom(window.state[k]);
-    });
-    save();
-    alert('تم تفريغ الأرشيف');
-    adminArchiveManagement();
+    const w=prompt('لتأكيد تفريغ الأرشيف اكتب: أرشيف'); if(w!=='أرشيف')return alert('تم إلغاء العملية');
+    backup('قبل تفريغ الأرشيف');
+    ['payments','messages','notifications','exams','homeworks','lectures','files','calendarEvents','libraryItems','questionBank','enrollRequests','activityLog'].forEach(k=>{state[k]=hardRemoveHiddenFrom(state[k]);});
+    save();alert('تم تفريغ الأرشيف');adminArchiveManagement();
   };
-
   window.startNewSchoolYearStable = function(){
-    var word = prompt('لبدء سنة جديدة اكتب: سنة جديدة');
-    if(word !== 'سنة جديدة') return alert('تم إلغاء العملية');
-    safeBackup('نسخة قبل بدء سنة جديدة');
-    window.state.attendance = [];
-    window.state.attendanceSessions = [];
-    window.state.attendanceResponses = [];
-    window.state.homeworks = [];
-    window.state.homeworkSubmissions = [];
-    window.state.exams = [];
-    window.state.results = [];
-    window.state.finalExamGrades = [];
-    window.state.messages = [];
-    window.state.notifications = [];
-    window.state.activityLog = [];
-    window.state.calendarEvents = [];
-    window.state.libraryItems = [];
-    window.state.questionBank = [];
-    window.state.xpLog = [];
-    window.state.achievements = [];
-    window.state.enrollRequests = [];
-    save();
-    alert('تم بدء سنة دراسية جديدة');
-    adminArchiveManagement();
+    const w=prompt('لبدء سنة جديدة اكتب: سنة جديدة'); if(w!=='سنة جديدة')return alert('تم إلغاء العملية');
+    backup('قبل بدء سنة جديدة');
+    ['attendance','attendanceSessions','attendanceResponses','homeworks','homeworkSubmissions','exams','results','finalExamGrades','messages','notifications','activityLog','calendarEvents','libraryItems','questionBank','xpLog','achievements','enrollRequests'].forEach(k=>{state[k]=[];});
+    save();alert('تم بدء سنة جديدة');adminArchiveManagement();
   };
 
-  window.ensureSinglePaymentButton = function(){
+  window.ensureFinalButtons = function(){
     try{
-      var btns = Array.from(document.querySelectorAll('button')).filter(function(b){ return b.textContent.includes('الاشتراكات'); });
-      btns.forEach(function(b,i){ if(i>0) b.remove(); });
-
-      if(user && user.role === 'admin' && !document.querySelector('[data-archive-btn="1"]')){
-        var ref = Array.from(document.querySelectorAll('button')).find(function(b){ return b.textContent.includes('الإعدادات'); }) ||
-                  Array.from(document.querySelectorAll('button')).find(function(b){ return b.textContent.includes('واجهة المنصة'); });
-        if(ref && ref.parentElement){
-          var btn = document.createElement('button');
-          btn.setAttribute('data-archive-btn','1');
-          btn.innerHTML = '🗄️ إدارة الأرشيف';
-          btn.onclick = adminArchiveManagement;
-          ref.parentElement.insertBefore(btn, ref);
+      const payBtns=[...document.querySelectorAll('button')].filter(b=>b.textContent.includes('الاشتراكات'));
+      payBtns.forEach((b,i)=>{if(i>0)b.remove();});
+      if(user&&user.role==='admin'&&!document.querySelector('[data-archive-btn="1"]')){
+        const ref=[...document.querySelectorAll('button')].find(b=>b.textContent.includes('الإعدادات'))||[...document.querySelectorAll('button')].find(b=>b.textContent.includes('واجهة المنصة'));
+        if(ref&&ref.parentElement){
+          const btn=document.createElement('button');btn.dataset.archiveBtn='1';btn.innerHTML='🗄️ إدارة الأرشيف';btn.onclick=adminArchiveManagement;ref.parentElement.insertBefore(btn,ref);
         }
       }
     }catch(e){}
   };
-
-  ready(function(){ setInterval(ensureSinglePaymentButton, 1200); });
+  setInterval(()=>{ensureFinalButtons(); if(window.teacherLoginGrade && !teacherLoginGrade.options.length) ensureInit();},1200);
+  setTimeout(()=>{ensureInit();ensureFinalButtons();},500);
 })();
 </script>
 

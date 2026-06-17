@@ -840,151 +840,422 @@ if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.se
 setTimeout(startFirebaseRealtime,500);
 
 
-/* ===== FIREBASE REAL SYNC FIX - NO CONFLICT VERSION ===== */
-var afaqSyncConfig = {
-  apiKey: "AIzaSyAercsM1RjeL-GTMCBafeSN7W1aph9hvRw",
-  authDomain: "afaq-education-99de3.firebaseapp.com",
-  projectId: "afaq-education-99de3",
-  storageBucket: "afaq-education-99de3.firebasestorage.app",
-  messagingSenderId: "23291110528",
-  appId: "1:23291110528:web:6c9f597e73889e526cb265",
-  measurementId: "G-4GC33J93L9"
-};
+/* ===== AFAQ STABLE ADDITIONS: DRIVE LESSONS + ATTENDANCE + HOMEWORK GRADING + EXAM TIMER + SMART NOTIFICATIONS + LEADERBOARD ===== */
 
-var afaqSyncDb = null;
-var afaqSyncReady = false;
-var afaqSyncApplyingRemote = false;
-var afaqSyncUnsubscribe = null;
-
-try{
-  if(window.firebase){
-    if(!firebase.apps.length){
-      firebase.initializeApp(afaqSyncConfig);
-    }
-    afaqSyncDb = firebase.firestore();
-    try{ firebase.analytics(); }catch(e){}
-    afaqSyncReady = true;
-  }
-}catch(e){
-  console.warn("Firebase init error:", e);
+function ensureExtraArrays(){
+  state.homeworkAnswers = Array.isArray(state.homeworkAnswers) ? state.homeworkAnswers : [];
+  state.attendanceSessions = Array.isArray(state.attendanceSessions) ? state.attendanceSessions : [];
+  state.attendance = Array.isArray(state.attendance) ? state.attendance : [];
+  state.finalGrades = Array.isArray(state.finalGrades) ? state.finalGrades : [];
+  state.notifications = Array.isArray(state.notifications) ? state.notifications : [];
 }
 
-function afaqSyncMergeState(remoteState){
-  const base = def();
-  const merged = Object.assign(base, remoteState || {});
-  Object.keys(base).forEach(k=>{
-    if(merged[k] === undefined) merged[k] = base[k];
+function driveOpenUrl(url){
+  url = String(url || '').trim();
+  if(!url) return '';
+  return url;
+}
+function lessonIconByUrl(url){
+  url = String(url || '').toLowerCase();
+  if(url.includes('youtube') || url.includes('youtu.be') || url.includes('video')) return '▶️ مشاهدة الفيديو';
+  if(url.includes('.jpg') || url.includes('.jpeg') || url.includes('.png') || url.includes('image')) return '🖼️ عرض الصورة';
+  if(url.includes('.doc') || url.includes('document')) return '📝 فتح المستند';
+  if(url.includes('.pdf') || url.includes('drive.google')) return '📄 فتح الملف';
+  return '📎 فتح الرابط';
+}
+
+/* دروس Google Drive منظمة */
+function teacherLessons(){
+  ensureExtraArrays();
+  const sub=teacherSubject();
+  const arr=state.lessons.filter(l=>v(l)&&l.subjectId===sub?.id);
+  teacherMain.innerHTML=`<div class="title"><h2>الدروس وملفات Google Drive</h2><p>ارفع الملف على Google Drive واجعل المشاركة: أي شخص لديه الرابط / مشاهد</p></div>
+  <div class="panel">
+    <input id="lessonTitle" placeholder="عنوان الدرس">
+    <input id="lessonChapter" placeholder="الفصل / الوحدة">
+    <textarea id="lessonDesc" placeholder="وصف مختصر"></textarea>
+    <input id="lessonUrl" placeholder="رابط Google Drive أو رابط فيديو">
+    <button class="green" onclick="addLesson()">نشر الدرس</button>
+  </div>
+  <div class="panel">
+    <h3>الدروس المنشورة</h3>
+    ${arr.length?arr.map(l=>`<div class="item"><div>
+      <b>${esc(l.title)}</b><br>
+      <span class="badge">${esc(l.chapter||'بدون فصل')}</span>
+      <p>${esc(l.desc||'')}</p>
+    </div><div>
+      ${l.url?`<a href="${esc(driveOpenUrl(l.url))}" target="_blank"><button>${lessonIconByUrl(l.url)}</button></a>`:''}
+      <button class="danger" onclick="delLesson('${l.id}')">حذف</button>
+    </div></div>`).join(''):'<div class="empty">لا توجد دروس</div>'}
+  </div>`;
+}
+function addLesson(){
+  const sub=teacherSubject();
+  if(!sub) return alert('لا توجد مادة مربوطة بك');
+  if(!lessonTitle.value.trim()) return alert('اكتب عنوان الدرس');
+  if(!lessonUrl.value.trim()) return alert('ضع رابط Google Drive');
+  state.lessons.push({
+    id:uid('les'),
+    subjectId:sub.id,
+    title:lessonTitle.value.trim(),
+    chapter:lessonChapter.value.trim(),
+    desc:lessonDesc.value.trim(),
+    url:lessonUrl.value.trim(),
+    date:new Date().toLocaleString('ar-IQ')
   });
+  notify('subject:'+sub.id,'درس جديد','تم نشر درس: '+lessonTitle.value.trim(),'📚');
+  notify('students','درس جديد','تم نشر درس جديد في مادة '+sub.name,'📚');
+  save();
+  teacherLessons();
+}
 
-  [
-    'subjects','teachers','students','parents','enrollments','materialRequests',
-    'payments','lessons','exams','results','finalGrades','homeworks',
-    'homeworkAnswers','attendance','attendanceSessions','messages',
-    'notifications','activity','backups'
-  ].forEach(k=>{
-    if(!Array.isArray(merged[k])) merged[k] = [];
+/* اختبارات بمؤقت ومحاولة واحدة */
+function teacherExams(){
+  ensureExtraArrays();
+  const sub=teacherSubject();
+  const arr=state.exams.filter(e=>v(e)&&e.subjectId===sub?.id);
+  teacherMain.innerHTML=`<div class="title"><h2>الاختبارات</h2></div>
+  <div class="panel">
+    <input id="exTitle" placeholder="عنوان الاختبار">
+    <input id="exMinutes" type="number" value="30" placeholder="مدة الاختبار بالدقائق">
+    <input id="exTotalGrade" type="number" value="100" placeholder="الدرجة الكاملة">
+    <button class="green" onclick="createExam()">إنشاء اختبار</button>
+  </div>
+  <div class="panel">${arr.length?arr.map(e=>`<div class="item"><div>
+    <b>${esc(e.title)}</b><br>
+    <span class="badge">${esc(e.minutes||30)} دقيقة</span>
+    <span class="badge">${esc(e.totalGrade||100)} درجة</span>
+    <span class="badge">${(e.questions||[]).length} أسئلة</span>
+  </div><div>
+    <button onclick="editExam('${e.id}')">تعديل الأسئلة</button>
+    <button onclick="essayCorrections('${e.id}')">تصحيح المقالي</button>
+    <button class="danger" onclick="delExam('${e.id}')">حذف</button>
+  </div></div>`).join(''):'<div class="empty">لا توجد اختبارات</div>'}</div>`;
+}
+function createExam(){
+  const sub=teacherSubject();
+  if(!sub) return alert('لا توجد مادة مربوطة بك');
+  if(!exTitle.value.trim()) return alert('اكتب عنوان الاختبار');
+  state.exams.push({
+    id:uid('exam'),
+    subjectId:sub.id,
+    title:exTitle.value.trim(),
+    minutes:+exMinutes.value||30,
+    totalGrade:+exTotalGrade.value||100,
+    questions:[],
+    date:new Date().toLocaleString('ar-IQ')
   });
-
-  merged.settings = Object.assign(base.settings || {}, merged.settings || {});
-  return merged;
+  notify('subject:'+sub.id,'اختبار جديد','تم إنشاء اختبار: '+exTitle.value.trim(),'📝');
+  save();teacherExams();
+}
+function editExam(id){
+  const e=state.exams.find(x=>x.id===id);
+  e.questions=Array.isArray(e.questions)?e.questions:[];
+  teacherMain.innerHTML=`<div class="title"><h2>${esc(e.title)}</h2><p>${e.minutes||30} دقيقة - ${e.totalGrade||100} درجة</p></div>
+  <div class="panel">
+    <select id="qType"><option value="mcq">اختيار متعدد</option><option value="tf">صح وخطأ</option><option value="blank">فراغ</option><option value="essay">مقالي</option></select>
+    <input id="qText" placeholder="نص السؤال">
+    <input id="qOptions" placeholder="الخيارات مفصولة بفواصل - للاختيار المتعدد فقط">
+    <input id="qAnswer" placeholder="الإجابة الصحيحة">
+    <input id="qPoints" type="number" value="1" placeholder="درجة السؤال">
+    <button class="green" onclick="addQuestion('${id}')">إضافة سؤال</button>
+  </div>
+  <div class="panel">${e.questions.length?e.questions.map((q,i)=>`<div class="item"><div>
+    <b>${i+1}. ${esc(q.text)}</b><br><span class="badge">${esc(q.type)}</span><span class="badge">${q.points} درجة</span>
+  </div><button class="danger" onclick="removeQuestion('${id}',${i})">حذف</button></div>`).join(''):'<div class="empty">لا توجد أسئلة</div>'}</div>`;
+}
+function addQuestion(id){
+  const e=state.exams.find(x=>x.id===id);
+  e.questions=Array.isArray(e.questions)?e.questions:[];
+  if(!qText.value.trim()) return alert('اكتب السؤال');
+  e.questions.push({
+    type:qType.value,
+    text:qText.value.trim(),
+    options:qOptions.value.split(',').map(x=>x.trim()).filter(Boolean),
+    answer:qAnswer.value.trim(),
+    points:+qPoints.value||1
+  });
+  save();editExam(id);
+}
+function startExam(id){
+  const e=state.exams.find(x=>x.id===id);
+  if(!e) return;
+  if(state.results.some(r=>r.studentId===user.id&&r.examId===id)) return alert('تم حل هذا الاختبار مسبقاً');
+  currentExamId=id;
+  const end=Date.now()+(+e.minutes||30)*60000;
+  sessionStorage.setItem('examEnd_'+id,String(end));
+  show('examPage');
+  examArea.innerHTML=`<div class="title"><h2>${esc(e.title)}</h2><p>محاولة واحدة فقط - يمنع النسخ واللصق</p></div>
+  <div class="progress-wrap"><div id="examBar" class="progress-bar"></div></div>
+  <div id="examTime" class="note"></div>
+  <div id="examQuestions" oncopy="return false" onpaste="return false" oncut="return false" oncontextmenu="return false">
+    ${(e.questions||[]).map((q,i)=>`<div class="q locked-input"><b>${i+1}. ${esc(q.text)}</b>${renderAnswer(q,i)}</div>`).join('')}
+  </div>
+  <button class="green" onclick="submitExam()">تسليم الاختبار</button>`;
+  examTick();
+}
+function examTick(){
+  const e=state.exams.find(x=>x.id===currentExamId);
+  if(!e || !document.getElementById('examTime')) return;
+  const end=+sessionStorage.getItem('examEnd_'+currentExamId);
+  const left=end-Date.now();
+  const total=(+e.minutes||30)*60000;
+  if(left<=0){examTime.textContent='انتهى وقت الاختبار';submitExam(true);return}
+  const m=Math.floor(left/60000),s=Math.floor((left%60000)/1000);
+  examTime.textContent='الوقت المتبقي: '+m+':'+String(s).padStart(2,'0');
+  examBar.style.width=Math.max(0,Math.round(left/total*100))+'%';
+  setTimeout(examTick,1000);
+}
+function submitExam(auto=false){
+  const e=state.exams.find(x=>x.id===currentExamId);
+  if(!e) return;
+  if(state.results.some(r=>r.studentId===user.id&&r.examId===e.id)) return;
+  let score=0,total=0,essayPending=false,answers=[];
+  (e.questions||[]).forEach((q,i)=>{
+    total+=+q.points||1;
+    let ans='';
+    if(q.type==='mcq'||q.type==='tf'){const r=document.querySelector(`input[name=q${i}]:checked`);ans=r?r.value:''}
+    else ans=document.getElementById('ans'+i)?.value||'';
+    let correct=false;
+    if(q.type==='essay'){essayPending=true}
+    else if(same(ans,q.answer)){score+=(+q.points||1);correct=true}
+    answers.push({q:i,answer:ans,correct,points:+q.points||1,type:q.type});
+  });
+  const percent=total?Math.round(score/total*100):0;
+  state.results.push({id:uid('res'),studentId:user.id,studentName:user.name,subjectId:e.subjectId,examId:e.id,examTitle:e.title,score,total,percent,answers,essayPending,date:new Date().toLocaleString('ar-IQ')});
+  notify('subject:'+e.subjectId,'تم حل اختبار',user.name+' قام بحل اختبار '+e.title,'📝');
+  save();
+  alert((auto?'انتهى الوقت وتم تسليم الاختبار. ':'تم تسليم الاختبار. ')+'درجتك الأولية: '+score+'/'+total);
+  studentDashboard();
+}
+function essayCorrections(examId){
+  const e=state.exams.find(x=>x.id===examId);
+  const list=state.results.filter(r=>r.examId===examId&&r.essayPending);
+  teacherMain.innerHTML=`<div class="title"><h2>تصحيح المقالي</h2><p>${esc(e?.title||'')}</p></div><div class="panel">${
+    list.length?list.map(r=>`<div class="item"><div><b>${esc(r.studentName||studentById(r.studentId)?.name||'طالب')}</b><br><span class="badge">${r.score}/${r.total}</span></div><div><input id="essay_${r.id}" type="number" placeholder="درجة المقالي"><button class="green" onclick="saveEssayScore('${r.id}')">حفظ</button></div></div>`).join(''):'<div class="empty">لا توجد إجابات مقالية تنتظر التصحيح</div>'}</div>`;
+}
+function saveEssayScore(resultId){
+  const r=state.results.find(x=>x.id===resultId);
+  if(!r) return;
+  const add=+document.getElementById('essay_'+resultId).value||0;
+  r.score+=add;
+  r.percent=r.total?Math.round(r.score/r.total*100):0;
+  r.essayPending=false;
+  r.essayScore=add;
+  notify('student:'+r.studentId,'تم تصحيح الاختبار','تم اعتماد درجة اختبار '+r.examTitle,'✅');
+  save();alert('تم الحفظ');essayCorrections(r.examId);
 }
 
-var afaqSyncOriginalSave = save;
+/* واجبات مع موعد وتصحيح */
+function teacherHomework(){
+  ensureExtraArrays();
+  const sub=teacherSubject();
+  const arr=state.homeworks.filter(h=>v(h)&&h.subjectId===sub?.id);
+  teacherMain.innerHTML=`<div class="title"><h2>الواجبات</h2></div>
+  <div class="panel">
+    <input id="hwTitle" placeholder="عنوان الواجب">
+    <textarea id="hwText" placeholder="تفاصيل الواجب"></textarea>
+    <input id="hwMaxGrade" type="number" value="10" placeholder="درجة الواجب الكاملة">
+    <input id="hwDeadline" type="datetime-local">
+    <button class="green" onclick="addHomework()">إضافة واجب</button>
+  </div>
+  <div class="panel">${arr.length?arr.map(h=>{
+    const answers=state.homeworkAnswers.filter(a=>a.homeworkId===h.id&&v(a));
+    return `<div class="item"><div><b>${esc(h.title)}</b><p>${esc(h.text||'')}</p><span class="badge">الدرجة: ${h.maxGrade||10}</span><span class="badge">المرسلين: ${answers.length}</span><span class="badge">يغلق: ${esc(h.deadline||'غير محدد')}</span></div><div><button onclick="showHomeworkAnswers('${h.id}')">تصحيح الإجابات</button><button class="danger" onclick="delHomework('${h.id}')">حذف</button></div></div>`
+  }).join(''):'<div class="empty">لا توجد واجبات</div>'}</div>`;
+}
+function addHomework(){
+  const sub=teacherSubject();
+  if(!sub) return alert('لا توجد مادة مربوطة بك');
+  if(!hwTitle.value.trim()) return alert('اكتب عنوان الواجب');
+  state.homeworks.push({id:uid('hw'),subjectId:sub.id,title:hwTitle.value.trim(),text:hwText.value.trim(),maxGrade:+hwMaxGrade.value||10,deadline:hwDeadline.value,date:new Date().toLocaleString('ar-IQ')});
+  notify('subject:'+sub.id,'واجب جديد','تمت إضافة واجب: '+hwTitle.value.trim(),'📌');
+  save();teacherHomework();
+}
+function showHomeworkAnswers(homeworkId){
+  const h=state.homeworks.find(x=>x.id===homeworkId);
+  const answers=state.homeworkAnswers.filter(a=>a.homeworkId===homeworkId&&v(a));
+  teacherMain.innerHTML=`<div class="title"><h2>تصحيح الواجب</h2><p>${esc(h?.title||'')} - الدرجة ${h?.maxGrade||10}</p></div>
+  <div class="panel">${answers.length?answers.map(a=>`<div class="item"><div><b>${esc(a.studentName||studentById(a.studentId)?.name||'طالب')}</b><p>${esc(a.answer||'')}</p><span class="badge">${esc(a.date||'')}</span><span class="badge">${a.grade!==undefined?'الدرجة: '+a.grade+'/'+(h.maxGrade||10):'غير مصحح'}</span></div><div><input id="hwGrade_${a.id}" type="number" min="0" max="${h.maxGrade||10}" value="${a.grade!==undefined?a.grade:''}" placeholder="الدرجة"><textarea id="hwFeedback_${a.id}" placeholder="ملاحظة">${esc(a.feedback||'')}</textarea><button class="green" onclick="saveHomeworkGrade('${a.id}')">حفظ التصحيح</button></div></div>`).join(''):'<div class="empty">لا توجد إجابات</div>'}</div>`;
+}
+function saveHomeworkGrade(answerId){
+  const a=state.homeworkAnswers.find(x=>x.id===answerId);
+  const h=state.homeworks.find(x=>x.id===a.homeworkId);
+  const grade=+document.getElementById('hwGrade_'+answerId).value;
+  if(isNaN(grade)||grade<0||grade>(+h.maxGrade||10)) return alert('اكتب درجة صحيحة');
+  a.grade=grade;a.maxGrade=+h.maxGrade||10;a.feedback=document.getElementById('hwFeedback_'+answerId).value.trim();a.correctedAt=new Date().toLocaleString('ar-IQ');
+  notify('student:'+a.studentId,'تم تصحيح الواجب','درجتك في واجب '+h.title+' هي '+grade+'/'+(h.maxGrade||10),'📌');
+  save();showHomeworkAnswers(a.homeworkId);
+}
+function submitHomework(id){
+  ensureExtraArrays();
+  const h=state.homeworks.find(x=>x.id===id);
+  if(!h) return;
+  if(h.deadline&&new Date(h.deadline).getTime()<Date.now()) return alert('انتهى موعد التسليم');
+  if(state.homeworkAnswers.some(a=>a.homeworkId===id&&a.studentId===user.id&&v(a))) return alert('أرسلت هذا الواجب مسبقاً');
+  const val=document.getElementById('hwa_'+id)?.value||'';
+  if(!val.trim()) return alert('اكتب حل الواجب');
+  state.homeworkAnswers.push({id:uid('hwa'),homeworkId:id,subjectId:h.subjectId,studentId:user.id,studentName:user.name,answer:val,date:new Date().toLocaleString('ar-IQ'),onTime:true,status:'submitted'});
+  notify('subject:'+h.subjectId,'تسليم واجب',user.name+' أرسل واجب '+h.title,'📌');
+  save();alert('تم إرسال الحل');roomTab('homework');
+}
 
-save = function(){
-  afaqSyncOriginalSave();
-
-  if(afaqSyncReady && afaqSyncDb && !afaqSyncApplyingRemote){
-    afaqSyncDb.collection("afaq_platform").doc("main_state").set({
-      state: state,
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    }, { merge:true }).catch(err=>{
-      console.warn("Firebase save error:", err);
-      alert("تنبيه: لم يتم حفظ البيانات في Firebase. تأكد من قواعد Firestore والاتصال بالإنترنت.");
+/* حضور بجلسة وعداد */
+function teacherAttendance(){
+  ensureExtraArrays();
+  const sub=teacherSubject();
+  const sessions=state.attendanceSessions.filter(a=>v(a)&&a.subjectId===sub?.id);
+  autoMarkAbsencesForSubject(sub?.id);
+  teacherMain.innerHTML=`<div class="title"><h2>الحضور</h2></div>
+  <div class="panel"><input id="attTitle" placeholder="عنوان المحاضرة"><input id="attMinutes" type="number" value="5" placeholder="مدة التسجيل بالدقائق"><button class="green" onclick="createAttendanceSession()">إرسال جلسة حضور</button></div>
+  <div class="panel">${sessions.length?sessions.map(a=>`<div class="item"><div><b>${esc(a.title)}</b><br><span class="badge">${Date.now()<a.endAt?'نشطة':'منتهية'}</span><span class="badge">تنتهي: ${new Date(a.endAt).toLocaleString('ar-IQ')}</span></div><button onclick="attendanceReport('${a.id}')">تقرير</button></div>`).join(''):'<div class="empty">لا توجد جلسات حضور</div>'}</div>`;
+}
+function createAttendanceSession(){
+  const sub=teacherSubject();
+  if(!sub) return alert('لا توجد مادة مربوطة بك');
+  const mins=+attMinutes.value||5;
+  const session={id:uid('atts'),subjectId:sub.id,title:attTitle.value||'محاضرة',minutes:mins,startAt:Date.now(),endAt:Date.now()+mins*60000,status:'open',date:new Date().toLocaleString('ar-IQ')};
+  state.attendanceSessions.unshift(session);
+  notify('subject:'+sub.id,'تسجيل حضور جديد','تم فتح تسجيل حضور: '+session.title+' لمدة '+mins+' دقائق','✅');
+  notify('students','تسجيل حضور جديد','تم فتح تسجيل حضور في مادة '+sub.name,'✅');
+  save();teacherAttendance();
+}
+function activeAttendanceSessionsForStudent(){
+  ensureExtraArrays();
+  const subjectIds=state.enrollments.filter(e=>v(e)&&e.studentId===user.id&&e.status==='approved').map(e=>e.subjectId);
+  return state.attendanceSessions.filter(s=>v(s)&&subjectIds.includes(s.subjectId)&&Date.now()<s.endAt);
+}
+function studentAttendance(){
+  const sessions=activeAttendanceSessionsForStudent();
+  studentPanel.innerHTML=`<h3>الحضور</h3>${sessions.length?sessions.map(s=>{
+    const sub=subjectById(s.subjectId),marked=state.attendance.find(a=>a.sessionId===s.id&&a.studentId===user.id);
+    const left=Math.max(0,s.endAt-Date.now()),total=(+s.minutes||5)*60000,pct=Math.max(0,Math.round(left/total*100));
+    const m=Math.floor(left/60000),sec=Math.floor((left%60000)/1000);
+    return `<div class="item"><div><b>${esc(sub?.name||'مادة')} - ${esc(s.title)}</b><br><span class="badge">متبقي ${m}:${String(sec).padStart(2,'0')}</span><div class="progress-wrap"><div class="progress-bar" style="width:${pct}%"></div></div><span class="badge">${marked?'تم تسجيلك: حاضر':'لم تسجل بعد'}</span></div><div>${marked?'':`<button class="green" onclick="markAttendance('${s.id}')">تسجيل الحضور</button>`}</div></div>`;
+  }).join(''):'<div class="empty">لا توجد جلسات حضور نشطة الآن</div>'}`;
+}
+function studentAttendanceBox(subjectId){
+  const sessions=state.attendanceSessions.filter(s=>v(s)&&s.subjectId===subjectId&&Date.now()<s.endAt);
+  if(!sessions.length) return '';
+  return `<h3>تسجيل الحضور النشط</h3>`+sessions.map(s=>{
+    const marked=state.attendance.find(a=>a.sessionId===s.id&&a.studentId===user.id);
+    const left=Math.max(0,s.endAt-Date.now()),total=(+s.minutes||5)*60000,pct=Math.max(0,Math.round(left/total*100));
+    const m=Math.floor(left/60000),sec=Math.floor((left%60000)/1000);
+    return `<div class="note"><b>${esc(s.title)}</b><br><span>متبقي ${m}:${String(sec).padStart(2,'0')}</span><div class="progress-wrap"><div class="progress-bar" style="width:${pct}%"></div></div>${marked?`<span class="badge">تم تسجيلك: حاضر</span>`:`<button onclick="markAttendance('${s.id}')">تسجيل الحضور</button>`}</div>`;
+  }).join('');
+}
+function markAttendance(sessionId){
+  const sess=state.attendanceSessions.find(x=>x.id===sessionId);
+  if(!sess) return;
+  if(Date.now()>sess.endAt) return alert('انتهى وقت الحضور');
+  if(state.attendance.some(a=>a.sessionId===sessionId&&a.studentId===user.id)) return alert('تم تسجيل حضورك مسبقاً');
+  state.attendance.push({id:uid('att'),sessionId,subjectId:sess.subjectId,studentId:user.id,studentName:user.name,status:'present',date:new Date().toLocaleString('ar-IQ')});
+  notify('subject:'+sess.subjectId,'تسجيل حضور',user.name+' سجل حضوره في '+sess.title,'✅');
+  save();alert('تم تسجيل الحضور');
+  if(!document.getElementById('student').classList.contains('hidden')) studentAttendance();
+}
+function autoMarkAbsencesForSubject(subjectId){
+  if(!subjectId) return;
+  const sessions=state.attendanceSessions.filter(s=>v(s)&&s.subjectId===subjectId&&Date.now()>s.endAt);
+  const students=teacherStudentsList();
+  sessions.forEach(sess=>{
+    students.forEach(st=>{
+      if(!state.attendance.some(a=>a.sessionId===sess.id&&a.studentId===st.id)){
+        state.attendance.push({id:uid('att'),sessionId:sess.id,subjectId:sess.subjectId,studentId:st.id,studentName:st.name,status:'absent',date:new Date().toLocaleString('ar-IQ'),auto:true});
+      }
     });
-  }
-};
+  });
+}
+function attendanceReport(sessionId){
+  const sess=state.attendanceSessions.find(x=>x.id===sessionId);
+  const students=teacherStudentsList();
+  const rows=students.map(s=>{const a=state.attendance.find(x=>x.sessionId===sessionId&&x.studentId===s.id);return `<div class="item"><b>${esc(s.name)}</b><span class="badge">${a&&a.status==='present'?'حاضر':'غائب'}</span></div>`}).join('');
+  teacherMain.innerHTML=`<div class="title"><h2>تقرير الحضور</h2><p>${esc(sess?.title||'')}</p></div><div class="panel">${rows||'<div class="empty">لا يوجد طلاب</div>'}</div>`;
+}
 
-function afaqSyncRefreshCurrentView(){
+/* تبويبات المادة المطورة */
+function roomTab(tab){
+  const s=subjectById(currentSubjectId);
+  if(tab==='lessons'){
+    const arr=state.lessons.filter(l=>v(l)&&l.subjectId===s.id);
+    const groups={};
+    arr.forEach(l=>{const c=l.chapter||'بدون فصل';groups[c]=groups[c]||[];groups[c].push(l)});
+    roomContent.innerHTML=studentAttendanceBox(s.id)+(arr.length?Object.keys(groups).map(ch=>`<div class="panel"><h3>${esc(ch)}</h3>${groups[ch].map(l=>`<div class="item"><div><b>${esc(l.title)}</b><p>${esc(l.desc||'')}</p></div><a href="${esc(driveOpenUrl(l.url))}" target="_blank"><button>${lessonIconByUrl(l.url)}</button></a></div>`).join('')}</div>`).join(''):'<div class="empty">لا توجد دروس</div>');
+  }else if(tab==='homework'){
+    const arr=state.homeworks.filter(h=>v(h)&&h.subjectId===s.id);
+    roomContent.innerHTML=studentAttendanceBox(s.id)+`<h3>الواجبات</h3>${arr.length?arr.map(h=>{
+      const closed=h.deadline&&new Date(h.deadline).getTime()<Date.now();
+      const ans=state.homeworkAnswers.find(a=>a.homeworkId===h.id&&a.studentId===user.id&&v(a));
+      return `<div class="item"><div><b>${esc(h.title)}</b><p>${esc(h.text||'')}</p><span class="badge">الدرجة: ${h.maxGrade||10}</span><span class="badge">${closed?'انتهى التسليم':'متاح'}</span>${ans?`<span class="badge">${ans.grade!==undefined?'درجتك: '+ans.grade+'/'+(ans.maxGrade||h.maxGrade||10):'بانتظار التصحيح'}</span>`:''}</div><div>${closed||ans?'':`<textarea id="hwa_${h.id}" placeholder="اكتب الحل"></textarea><button class="green" onclick="submitHomework('${h.id}')">إرسال الحل</button>`}</div></div>`;
+    }).join(''):'<div class="empty">لا توجد واجبات</div>'}`;
+  }else if(tab==='exams'){
+    const arr=state.exams.filter(e=>v(e)&&e.subjectId===s.id);
+    roomContent.innerHTML=studentAttendanceBox(s.id)+(arr.length?arr.map(e=>`<div class="item"><div><b>${esc(e.title)}</b><br><span class="badge">${e.minutes||30} دقيقة</span><span class="badge">${e.totalGrade||100} درجة</span></div><button onclick="startExam('${e.id}')">بدء</button></div>`).join(''):'<div class="empty">لا توجد اختبارات</div>');
+  }else if(tab==='attendance'){
+    roomContent.innerHTML=studentAttendanceBox(s.id)||'<div class="empty">لا توجد جلسات حضور نشطة</div>';
+  }else studentResultsForSubject(s.id);
+}
+
+/* مركز التنبيهات */
+function targetsForStudent(){return ['all','students','student:'+user.id,'subject:'+currentSubjectId]}
+function targetsForTeacher(){const sub=teacherSubject();return ['all','teachers','teacher:'+user.id,sub?'subject:'+sub.id:'']}
+function renderNotificationsFor(targets,container){
+  const arr=state.notifications.filter(n=>targets.includes(n.target));
+  return `<button class="green" onclick="${container}Read()">قراءة الكل</button><button class="danger" onclick="${container}Clear()">تفريغ التنبيهات</button>`+(arr.length?arr.map(n=>`<div class="chat"><b>${esc(n.icon||'🔔')} ${esc(n.title)}</b><p>${esc(n.body||'')}</p><small>${esc(n.date||'')}</small></div>`).join(''):'<div class="empty">لا توجد تنبيهات</div>');
+}
+function studentNotifications(){const t=['all','students','student:'+user.id];studentPanel.innerHTML='<h3>إشعاراتي</h3>'+renderNotificationsFor(t,'studentNotify')}
+function studentNotifyRead(){state.notifications.forEach(n=>{if(['all','students','student:'+user.id].includes(n.target))n.read=true});save();studentNotifications()}
+function studentNotifyClear(){state.notifications=state.notifications.filter(n=>!['all','students','student:'+user.id].includes(n.target));save();studentNotifications()}
+function teacherNotifications(){const t=targetsForTeacher();teacherMain.innerHTML='<div class="title"><h2>التنبيهات</h2></div><div class="panel">'+renderNotificationsFor(t,'teacherNotify')+'</div>'}
+function teacherNotifyRead(){const t=targetsForTeacher();state.notifications.forEach(n=>{if(t.includes(n.target))n.read=true});save();teacherNotifications()}
+function teacherNotifyClear(){const t=targetsForTeacher();state.notifications=state.notifications.filter(n=>!t.includes(n.target));save();teacherNotifications()}
+
+/* مستويات الطلبة ولوحة الشرف */
+function teacherLevels(){
+  ensureExtraArrays();
+  const sub=teacherSubject();
+  const students=teacherStudentsList();
+  const scored=students.map(st=>{
+    const res=state.results.filter(r=>r.studentId===st.id&&r.subjectId===sub.id);
+    const att=state.attendance.filter(a=>a.studentId===st.id&&a.subjectId===sub.id);
+    const present=att.filter(a=>a.status==='present').length;
+    const hwa=state.homeworkAnswers.filter(a=>a.studentId===st.id&&a.subjectId===sub.id&&v(a));
+    const examAvg=res.length?Math.round(res.reduce((a,b)=>a+(+b.percent||0),0)/res.length):0;
+    const attAvg=att.length?Math.round(present/att.length*100):0;
+    const hwAvg=hwa.length?Math.round(hwa.reduce((sum,a)=>sum+((+a.grade||0)/(+a.maxGrade||10)*100),0)/hwa.length):0;
+    const points=Math.round(examAvg*.6+attAvg*.2+hwAvg*.2);
+    const level=points>=90?'ممتاز':points>=80?'جيد جداً':points>=65?'جيد':points>=50?'متوسط':'مبتدئ';
+    return {st,points,level,examAvg,attAvg,hwAvg};
+  }).sort((a,b)=>b.points-a.points);
+  teacherMain.innerHTML=`<div class="title"><h2>لوحة الشرف ومستويات الطلبة</h2><p>الاختبارات 60% - الحضور 20% - الواجبات 20%</p></div>
+  <div class="panel">${scored.length?scored.map((x,i)=>`<div class="item"><div><b>${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1+'.'} ${esc(x.st.name)}</b><br><span class="badge">${x.level}</span><span class="badge">اختبارات ${x.examAvg}%</span><span class="badge">حضور ${x.attAvg}%</span><span class="badge">واجبات ${x.hwAvg}%</span></div><b>${x.points}%</b></div>`).join(''):'<div class="empty">لا يوجد طلاب</div>'}</div>`;
+}
+function teacherStudentProfile(id){
+  const sub=teacherSubject(),s=studentById(id);
+  const res=state.results.filter(r=>r.studentId===id&&r.subjectId===sub.id);
+  const final=state.finalGrades.find(f=>f.studentId===id&&f.subjectId===sub.id);
+  const att=state.attendance.filter(a=>a.studentId===id&&a.subjectId===sub.id);
+  const hwa=state.homeworkAnswers.filter(a=>a.studentId===id&&a.subjectId===sub.id&&v(a));
+  const present=att.filter(a=>a.status==='present').length,absent=att.filter(a=>a.status==='absent').length;
+  teacherMain.innerHTML=`<div class="title"><h2>ملف الطالب</h2><p>${esc(s.name)} - ${esc(sub.name)}</p></div><div class="grid">
+    <div class="panel"><h3>الحضور</h3><div class="item"><b>حاضر</b><span>${present}</span></div><div class="item"><b>غائب</b><span>${absent}</span></div></div>
+    <div class="panel"><h3>الاختبارات</h3>${res.length?res.map(r=>`<div class="item"><b>${esc(r.examTitle)}</b><span>${r.score}/${r.total}</span></div>`).join(''):'<div class="empty">لا توجد اختبارات</div>'}</div>
+    <div class="panel"><h3>الواجبات</h3>${hwa.length?hwa.map(a=>{const h=state.homeworks.find(x=>x.id===a.homeworkId);return `<div class="item"><b>${esc(h?.title||'واجب')}</b><span>${a.grade!==undefined?a.grade+' / '+(a.maxGrade||h?.maxGrade||10):'بانتظار التصحيح'}</span></div>`}).join(''):'<div class="empty">لا توجد واجبات</div>'}</div>
+    <div class="panel"><h3>النتيجة النهائية</h3><div class="item"><b>${esc(sub.name)}</b><span>${final?final.grade+'/100':'غير محددة'}</span></div></div>
+  </div>`;
+}
+
+setInterval(()=>{
   try{
-    applyAppearance();
+    if(!user || user.role!=='student') return;
+    const studentVisible = !document.getElementById('student').classList.contains('hidden');
+    const roomVisible = !document.getElementById('room').classList.contains('hidden');
+    if(studentVisible && studentPanel.innerHTML.includes('الحضور')) studentAttendance();
+    if(roomVisible && currentSubjectId && roomContent.innerHTML.includes('تسجيل الحضور النشط')) roomTab('lessons');
+  }catch(e){}
+},1000);
 
-    if(!user) return;
-
-    const visiblePage = Array.from(document.querySelectorAll(".page"))
-      .find(p => !p.classList.contains("hidden"));
-
-    if(!visiblePage) return;
-
-    if(visiblePage.id === "admin") adminHome();
-    else if(visiblePage.id === "teacher") teacherHome();
-    else if(visiblePage.id === "student") studentDashboard();
-    else if(visiblePage.id === "parent") parentHome();
-    else if(visiblePage.id === "room" && currentSubjectId) roomTab("lessons");
-  }catch(e){
-    console.warn("Refresh view error:", e);
-  }
-}
-
-async function afaqStartSyncRealtime(){
-  if(!afaqSyncReady || !afaqSyncDb){
-    console.warn("Firebase غير متصل");
-    return;
-  }
-
-  const ref = afaqSyncDb.collection("afaq_platform").doc("main_state");
-
-  try{
-    const snap = await ref.get();
-
-    if(!snap.exists){
-      await ref.set({
-        state: state,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-      }, { merge:true });
-    }
-
-    if(afaqSyncUnsubscribe) afaqSyncUnsubscribe();
-
-    afaqSyncUnsubscribe = ref.onSnapshot(doc=>{
-      if(!doc.exists) return;
-
-      const data = doc.data() || {};
-      if(!data.state) return;
-
-      afaqSyncApplyingRemote = true;
-      state = afaqSyncMergeState(data.state);
-      localStorage.setItem(STORE, JSON.stringify(state));
-      afaqSyncApplyingRemote = false;
-
-      afaqSyncRefreshCurrentView();
-    }, err=>{
-      console.warn("Firebase realtime error:", err);
-    });
-
-    console.log("✅ منصة آفاق متزامنة الآن مع Firebase");
-  }catch(e){
-    console.warn("Firebase start error:", e);
-    alert("لم يتم تشغيل مزامنة Firebase. تأكد من تفعيل Firestore وقواعد القراءة والكتابة.");
-  }
-}
-
-function afaqSyncStatus(){
-  return afaqSyncReady ? "☁️ متصل بـ Firebase" : "⚠️ غير متصل بـ Firebase";
-}
-
-var afaqSyncOldAdminHome = adminHome;
-adminHome = function(){
-  afaqSyncOldAdminHome();
-  if(adminMain && !adminMain.innerHTML.includes("متصل بـ Firebase")){
-    adminMain.innerHTML =
-      '<div class="panel"><span class="firebase-state">'+afaqSyncStatus()+'</span><span class="firebase-state">تحديث تلقائي بين الأجهزة</span></div>'
-      + adminMain.innerHTML;
-  }
-};
-
-setTimeout(afaqStartSyncRealtime, 700);
+ensureExtraArrays();
 
 load();applyAppearance();topUpdate();if(user)goHome();
 </script>

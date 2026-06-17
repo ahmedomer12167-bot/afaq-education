@@ -503,6 +503,27 @@ nav a{
 .admin-row-card{background:#f8fbff;border:1px solid #dbeafe;border-radius:18px;padding:14px;margin:10px 0}
 .admin-row-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 
+
+/* ===== Archive Management ===== */
+.archive-danger-box{
+  background:#fff8df;
+  border:1px solid #ffe08a;
+  border-radius:22px;
+  padding:18px;
+  margin:14px 0;
+  color:#7c4a00;
+  font-weight:800;
+}
+.archive-action-card{
+  background:#fff;
+  border:1px solid #e7edf9;
+  border-radius:22px;
+  padding:18px;
+  margin:12px 0;
+  box-shadow:0 10px 26px rgba(15,23,42,.06);
+}
+.archive-action-card h3{margin-top:0;color:#071b49}
+
 </style>
 
 <link rel="manifest" href="manifest.json">
@@ -1202,22 +1223,12 @@ function adminTeachers(){
     </div>`).join(''):`<div class="empty">لا يوجد مدرسون ظاهرون</div>`}
   </div>`;
 }
-function adminHome(){setActivePanel('adminHome');const d=adminDashboardStats();adminMain.innerHTML=`<h2>لوحة المدير</h2>
-<div class="dash-grid">
-  <div class="dash-card"><b>${d.students}</b><span>الطلاب</span></div>
-  <div class="dash-card"><b>${d.teachers}</b><span>المدرسون</span></div>
-  <div class="dash-card"><b>${d.parents}</b><span>أولياء الأمور</span></div>
-  <div class="dash-card"><b>${d.subjects}</b><span>المواد</span></div>
-  <div class="dash-card"><b>${d.exams}</b><span>الاختبارات</span></div>
-  <div class="dash-card"><b>${d.results}</b><span>النتائج</span></div>
-  <div class="dash-card"><b>${d.activeSubs}</b><span>اشتراكات نشطة</span></div>
-  <div class="dash-card"><b>${d.pendingSubs}</b><span>طلبات اشتراك</span></div>
-  <div class="dash-card"><b>${d.messages}</b><span>الرسائل</span></div>
-</div>
-<div class="panel">
-  <h3>آخر نشاط في المنصة</h3>
-  ${recentActivityHTML(10)}
-</div>`;jumpToWorkspace('adminMain');}function adminSubjects(){
+function adminHome(){
+  setActivePanel('adminHome');jumpToWorkspace('adminMain');
+  adminMain.innerHTML=`<div class="page-title-card"><h2>لوحة المدير</h2><p>الأرقام هنا تحسب العناصر الظاهرة فقط، ولا تحتسب المحذوف أو المخفي.</p></div>
+  ${adminStatsCards()}
+  <div class="panel"><h3>آخر نشاط في المنصة</h3>${typeof recentActivityHTML==='function'?recentActivityHTML(10):'<div class="empty">لا يوجد نشاط</div>'}</div>`;
+}function adminSubjects(){
   setActivePanel('adminSubjects');jumpToWorkspace('adminMain');
   const teachers=(state.teachers||[]).filter(visibleTeacher);
   const subjects=(state.subjects||[]).filter(visibleSubject);
@@ -1248,21 +1259,30 @@ function adminHome(){setActivePanel('adminHome');const d=adminDashboardStats();a
     </div>
   </div>
   <div class="admin-manage-grid">
-    <div class="admin-manage-card"><h3>المدرسون الظاهرون (${teachers.length})</h3><button class="gold" onclick="restoreHiddenTeachersAdmin()">استرجاع المخفي</button>
+    <div class="admin-manage-card"><h3>المدرسون الظاهرون (${adminVisibleTeachers().length})</h3><button class="gold" onclick="restoreHiddenTeachersAdmin()">استرجاع المخفي</button>
       ${teachers.length?teachers.map(t=>`<div class="admin-row-card"><b>${t.name}</b><p>${t.subject||''} / ${t.grade||''}</p><span class="sync-badge">كود المدرس: ${t.code||t.password||''}</span><div class="admin-row-actions"><button onclick="editTeacherAdminFixed('${t.id}')">تعديل بيانات المدرس</button><button onclick="editTeacherCodeAdmin('${t.id}')">تعديل الكود</button><button class="danger" onclick="deleteTeacherAdmin('${t.id}')">حذف المدرس</button></div></div>`).join(''):'<div class="empty">لا يوجد مدرسون</div>'}
     </div>
-    <div class="admin-manage-card"><h3>المواد الظاهرة (${subjects.length})</h3>
+    <div class="admin-manage-card"><h3>المواد الظاهرة (${adminVisibleSubjects().length})</h3>
       ${subjects.length?subjects.map(s=>{const linked=subjectTeacher(s.id);return `<div class="admin-row-card"><b>${s.name}</b><p>${s.grade||''}</p><span class="sync-badge">كود المادة: ${subjectCodeOf(s)}</span><span class="sync-badge">المدرس: ${linked?linked.name:'غير مربوط'}</span><select onchange="if(this.value)linkTeacherToSubject('${s.id}',this.value)"><option value="">ربط/تغيير المدرس</option>${teachers.map(t=>`<option value="${t.id}" ${linked?.id===t.id?'selected':''}>${t.name}</option>`).join('')}</select><div class="admin-row-actions"><button onclick="editSubjectAdminFixed('${s.id}')">تعديل المادة/الكود</button><button class="danger" onclick="deleteSubjectAdminFixed('${s.id}')">حذف المادة</button></div></div>`}).join(''):'<div class="empty">لا توجد مواد</div>'}
     </div>
   </div>`;
-}function addAdminSubject(){const name=aSubName.value,grade=aSubGrade.value,code=aSubCode.value.trim(),icon=aSubIcon.value.trim()||'📚';if(!code)return alert('أدخل كود المادة');if(state.subjects.some(s=>same(s.name,name)&&same(s.grade,grade)))return alert('هذه المادة موجودة لهذا الصف');const newSubject={id:uid('sub'),name,grade,code,icon};state.subjects.push(newSubject);logActivity({source:'المواد',action:'إضافة مادة جديدة: '+name,subjectId:newSubject.id,subjectName:name,icon:'📚'});addNotification('admin',{source:'المواد',title:'تمت إضافة مادة جديدة',body:name+' - '+grade,subjectId:newSubject.id,subjectName:name,icon:'📚'});save();adminSubjects()}function addAdminTeacher(){const name=aTeacherName.value.trim(),grade=aTeacherGrade.value,subject=aTeacherSubject.value,code=aTeacherCode.value.trim();if(!name||!code)return alert('أكمل اسم المدرس والرمز');const sid=subjectIdBy(subject,grade);if(!sid)return alert('أضف المادة لهذا الصف أولاً');if(state.teachers.some(t=>same(t.subject,subject)&&same(t.grade,grade)&&t.active!==false))return alert('يوجد مدرس مفعل لهذه المادة والصف');const newTeacher={id:uid('teach'),name,grade,subject,code,active:true,bio:'',experience:'',photo:''};state.teachers.push(newTeacher);logActivity({source:'المدرسون',action:'إضافة مدرس جديد: '+name,teacherId:newTeacher.id,teacherName:name,icon:'👨‍🏫'});addNotification('admin',{source:'المدرسون',title:'تمت إضافة مدرس جديد',body:name+' - '+subject+' - '+grade,teacherId:newTeacher.id,teacherName:name,icon:'👨‍🏫'});save();adminSubjects()}function deleteSubject(id){if(confirm('حذف المادة؟')){state.subjects=state.subjects.filter(s=>s.id!==id);save();adminSubjects()}}function toggleTeacher(id){const t=teacherById(id);if(t){t.active=t.active===false;save();adminSubjects()}}function adminStudents(){setActivePanel('adminStudents');jumpToWorkspace('adminMain');const rows=state.students.map(s=>{const subs=studentSubjectsNames(s.id);return `<tr><td>${s.name}</td><td>${s.grade}</td><td>${subs.map(x=>x.name).join('، ')||'غير مسجل'}</td><td>${s.phone||''}</td><td>${parentNameForStudent(s.id)}</td><td>${subs.length}</td></tr>`}).join('');adminMain.innerHTML=`<div class="page-title-card"><h2>الطلاب</h2></div><div class="panel compact-table-wrap"><table><thead><tr><th>اسم الطالب الثلاثي</th><th>الصف</th><th>المادة المسجل بها</th><th>رقم الهاتف</th><th>ولي أمر الطالب</th><th>عدد المواد</th></tr></thead><tbody>${rows||`<tr><td colspan="6">لا يوجد طلاب</td></tr>`}</tbody></table></div>`;}function adminParents(){setActivePanel('adminParents');jumpToWorkspace('adminMain');adminMain.innerHTML=`<h2>أولياء الأمور</h2><div class="panel"><h3>إضافة / ربط ولي أمر</h3><input id="pName" placeholder="اسم ولي الأمر"><input id="pCode" placeholder="رمز ولي الأمر"><select id="pStudent">${state.students.map(s=>`<option value="${s.id}">${s.name} - ${s.grade}</option>`).join('')}</select><button onclick="addParentLink()">إضافة وربط</button></div><div class="panel">${state.parents.length?state.parents.map(p=>`<div class="file-item"><div><b>${p.name}</b><br>الأبناء: ${(p.students||[]).map(id=>state.students.find(s=>s.id===id)?.name).filter(Boolean).join('، ')||'لا يوجد'}</div></div>`).join(''):`<div class='empty'>لا يوجد أولياء أمور</div>`}</div>`}function addParentLink(){const name=pName.value.trim(),code=pCode.value.trim(),sid=pStudent.value;if(!name||!code||!sid)return alert('أكمل البيانات');let p=state.parents.find(x=>same(x.name,name)&&x.code===code);if(!p){p={id:uid('par'),name,code,students:[]};state.parents.push(p)}if(!p.students.includes(sid))p.students.push(sid);save();adminParents()}function adminPayments(){setActivePanel('adminPayments');jumpToWorkspace('adminMain');const pending=state.payments.filter(p=>p.status==='pending'),approved=state.payments.filter(p=>p.status==='approved');adminMain.innerHTML=`<h2>طلبات الاشتراك والتحويل</h2><div class="notice">رقم الماستر كارد: <b>${state.settings.masterCard}</b></div><div class="panel"><h3>طلبات قيد الموافقة</h3>${pending.length?pending.map(p=>{const s=state.students.find(x=>x.id===p.studentId),sub=subjectById(p.subjectId);return `<div class="file-item"><div><b>${s?.name}</b><br>${sub?.name} - ${sub?.grade}<br>الهاتف: ${p.phone}<br>المبلغ: ${p.amount}<br>التاريخ: ${p.payDate}</div><div><input id="days${p.id}" type="number" value="${state.settings.defaultSubscriptionDays}"><button class="green" onclick="approvePayment('${p.id}')">قبول</button><button class="danger" onclick="rejectPayment('${p.id}')">رفض</button></div></div>`}).join(''):`<div class='empty'>لا توجد طلبات</div>`}</div><div class="panel"><h3>اشتراكات مفعلة</h3>${approved.length?approved.map(p=>{const s=state.students.find(x=>x.id===p.studentId),sub=subjectById(p.subjectId);return `<div class="file-item"><b>${s?.name}</b><span>${sub?.name} - ينتهي ${p.endDate}</span></div>`}).join(''):`<div class='empty'>لا توجد اشتراكات</div>`}</div>`}function approvePayment(id){const p=state.payments.find(x=>x.id===id);if(!p)return;const days=+document.getElementById('days'+id).value||state.settings.defaultSubscriptionDays;const end=new Date();end.setDate(end.getDate()+days);p.status='approved';logActivity({source:'الاشتراكات',action:'تفعيل اشتراك طالب',studentId:p.studentId,subjectId:p.subjectId,icon:'💳'});p.days=days;p.startDate=todayISO();p.endDate=end.toISOString().slice(0,10);p.approvedAt=new Date().toLocaleString('ar-IQ');{const st=state.students.find(s=>s.id===p.studentId),sub=subjectById(p.subjectId);addNotification('student:'+p.studentId,{source:'الاشتراكات',title:'تم تفعيل اشتراكك',body:'تم تفعيل الاشتراك حتى '+p.endDate,subjectId:p.subjectId,subjectName:sub?.name||'',studentId:p.studentId,studentName:st?.name||'',icon:'💳'});}save();adminPayments()}function rejectPayment(id){const p=state.payments.find(x=>x.id===id);if(p){p.status='rejected';save();adminPayments()}}function adminResults(){
-  setActivePanel('adminResults');jumpToWorkspace('adminMain');
-  const rows=state.results.map(r=>{
-    const st=state.students.find(s=>s.id===r.studentId),sub=subjectById(r.subjectId);
-    const fg=(state.finalGrades||[]).find(g=>g.studentId===r.studentId&&g.subjectId===r.subjectId);
-    return `<tr><td>${st?.name||''}</td><td>${st?.grade||''}</td><td>${sub?.name||''}</td><td>${r.examTitle}</td><td>${r.score}/${r.total}</td><td>${fg?`${fg.grade}/100`:'غير محددة'}</td><td>${levelFromPercent(r.percent)}</td><td><button onclick="studentFullStatsPage('${r.studentId}','${r.subjectId}')">إحصائيات</button></td></tr>`;
+}function addAdminSubject(){const name=aSubName.value,grade=aSubGrade.value,code=aSubCode.value.trim(),icon=aSubIcon.value.trim()||'📚';if(!code)return alert('أدخل كود المادة');if(state.subjects.some(s=>same(s.name,name)&&same(s.grade,grade)))return alert('هذه المادة موجودة لهذا الصف');const newSubject={id:uid('sub'),name,grade,code,icon};state.subjects.push(newSubject);logActivity({source:'المواد',action:'إضافة مادة جديدة: '+name,subjectId:newSubject.id,subjectName:name,icon:'📚'});addNotification('admin',{source:'المواد',title:'تمت إضافة مادة جديدة',body:name+' - '+grade,subjectId:newSubject.id,subjectName:name,icon:'📚'});save();adminSubjects()}function addAdminTeacher(){const name=aTeacherName.value.trim(),grade=aTeacherGrade.value,subject=aTeacherSubject.value,code=aTeacherCode.value.trim();if(!name||!code)return alert('أكمل اسم المدرس والرمز');const sid=subjectIdBy(subject,grade);if(!sid)return alert('أضف المادة لهذا الصف أولاً');if(state.teachers.some(t=>same(t.subject,subject)&&same(t.grade,grade)&&t.active!==false))return alert('يوجد مدرس مفعل لهذه المادة والصف');const newTeacher={id:uid('teach'),name,grade,subject,code,active:true,bio:'',experience:'',photo:''};state.teachers.push(newTeacher);logActivity({source:'المدرسون',action:'إضافة مدرس جديد: '+name,teacherId:newTeacher.id,teacherName:name,icon:'👨‍🏫'});addNotification('admin',{source:'المدرسون',title:'تمت إضافة مدرس جديد',body:name+' - '+subject+' - '+grade,teacherId:newTeacher.id,teacherName:name,icon:'👨‍🏫'});save();adminSubjects()}function deleteSubject(id){if(confirm('حذف المادة؟')){state.subjects=state.subjects.filter(s=>s.id!==id);save();adminSubjects()}}function toggleTeacher(id){const t=teacherById(id);if(t){t.active=t.active===false;save();adminSubjects()}}function adminStudents(){
+  setActivePanel('adminStudents');jumpToWorkspace('adminMain');
+  const validSubjects=new Set(adminVisibleSubjects().map(s=>s.id));
+  const rows=adminVisibleStudents().map(s=>{
+    const subs=(state.enrollments||[]).filter(e=>visibleRecord(e)&&e.studentId===s.id&&e.status==='approved'&&validSubjects.has(e.subjectId)).map(e=>subjectById(e.subjectId)).filter(Boolean);
+    return `<tr><td>${s.name}</td><td>${s.grade}</td><td>${subs.map(x=>x.name).join('، ')||'غير مسجل'}</td><td>${s.phone||''}</td><td>${typeof parentNameForStudent==='function'?parentNameForStudent(s.id):''}</td><td>${subs.length}</td></tr>`;
   }).join('');
-  adminMain.innerHTML=`<div class="page-title-card"><h2>النتائج</h2></div><div class="panel compact-table-wrap"><table><thead><tr><th>الطالب</th><th>الصف</th><th>المادة</th><th>عنوان الاختبار</th><th>درجة الاختبار</th><th>النتيجة النهائية</th><th>المستوى</th><th>الإحصائيات</th></tr></thead><tbody>${rows||`<tr><td colspan="8">لا توجد نتائج</td></tr>`}</tbody></table></div>`;
+  adminMain.innerHTML=`<div class="page-title-card"><h2>الطلاب</h2></div><div class="panel compact-table-wrap"><table><thead><tr><th>اسم الطالب الثلاثي</th><th>الصف</th><th>المواد المسجل بها</th><th>رقم الهاتف</th><th>ولي الأمر</th><th>عدد المواد</th></tr></thead><tbody>${rows||`<tr><td colspan="6">لا يوجد طلاب ظاهرون</td></tr>`}</tbody></table></div>`;
+}function adminParents(){setActivePanel('adminParents');jumpToWorkspace('adminMain');adminMain.innerHTML=`<h2>أولياء الأمور</h2><div class="panel"><h3>إضافة / ربط ولي أمر</h3><input id="pName" placeholder="اسم ولي الأمر"><input id="pCode" placeholder="رمز ولي الأمر"><select id="pStudent">${state.students.map(s=>`<option value="${s.id}">${s.name} - ${s.grade}</option>`).join('')}</select><button onclick="addParentLink()">إضافة وربط</button></div><div class="panel">${state.parents.length?state.parents.map(p=>`<div class="file-item"><div><b>${p.name}</b><br>الأبناء: ${(p.students||[]).map(id=>state.students.find(s=>s.id===id)?.name).filter(Boolean).join('، ')||'لا يوجد'}</div></div>`).join(''):`<div class='empty'>لا يوجد أولياء أمور</div>`}</div>`}function addParentLink(){const name=pName.value.trim(),code=pCode.value.trim(),sid=pStudent.value;if(!name||!code||!sid)return alert('أكمل البيانات');let p=state.parents.find(x=>same(x.name,name)&&x.code===code);if(!p){p={id:uid('par'),name,code,students:[]};state.parents.push(p)}if(!p.students.includes(sid))p.students.push(sid);save();adminParents()}function adminPayments(){setActivePanel('adminPayments');jumpToWorkspace('adminMain');const pending=state.payments.filter(p=>p.status==='pending'),approved=state.payments.filter(p=>p.status==='approved');adminMain.innerHTML=`<h2>طلبات الاشتراك والتحويل</h2><div class="notice">رقم الماستر كارد: <b>${state.settings.masterCard}</b></div><div class="panel"><h3>طلبات قيد الموافقة</h3>${pending.length?pending.map(p=>{const s=state.students.find(x=>x.id===p.studentId),sub=subjectById(p.subjectId);return `<div class="file-item"><div><b>${s?.name}</b><br>${sub?.name} - ${sub?.grade}<br>الهاتف: ${p.phone}<br>المبلغ: ${p.amount}<br>التاريخ: ${p.payDate}</div><div><input id="days${p.id}" type="number" value="${state.settings.defaultSubscriptionDays}"><button class="green" onclick="approvePayment('${p.id}')">قبول</button><button class="danger" onclick="rejectPayment('${p.id}')">رفض</button></div></div>`}).join(''):`<div class='empty'>لا توجد طلبات</div>`}</div><div class="panel"><h3>اشتراكات مفعلة</h3>${approved.length?approved.map(p=>{const s=state.students.find(x=>x.id===p.studentId),sub=subjectById(p.subjectId);return `<div class="file-item"><b>${s?.name}</b><span>${sub?.name} - ينتهي ${p.endDate}</span></div>`}).join(''):`<div class='empty'>لا توجد اشتراكات</div>`}</div>`}function approvePayment(id){const p=state.payments.find(x=>x.id===id);if(!p)return;const days=+document.getElementById('days'+id).value||state.settings.defaultSubscriptionDays;const end=new Date();end.setDate(end.getDate()+days);p.status='approved';logActivity({source:'الاشتراكات',action:'تفعيل اشتراك طالب',studentId:p.studentId,subjectId:p.subjectId,icon:'💳'});p.days=days;p.startDate=todayISO();p.endDate=end.toISOString().slice(0,10);p.approvedAt=new Date().toLocaleString('ar-IQ');{const st=state.students.find(s=>s.id===p.studentId),sub=subjectById(p.subjectId);addNotification('student:'+p.studentId,{source:'الاشتراكات',title:'تم تفعيل اشتراكك',body:'تم تفعيل الاشتراك حتى '+p.endDate,subjectId:p.subjectId,subjectName:sub?.name||'',studentId:p.studentId,studentName:st?.name||'',icon:'💳'});}save();adminPayments()}function rejectPayment(id){const p=state.payments.find(x=>x.id===id);if(p){p.status='rejected';save();adminPayments()}}function adminResults(){
+  setActivePanel('adminResults');jumpToWorkspace('adminMain');
+  const rows=adminVisibleResults().map(r=>{
+    const st=(state.students||[]).find(s=>s.id===r.studentId);
+    const sub=subjectById(r.subjectId);
+    const fg=(state.finalGrades||[]).find(g=>g.studentId===r.studentId&&g.subjectId===r.subjectId);
+    return `<tr><td>${st?.name||''}</td><td>${st?.grade||''}</td><td>${sub?.name||''}</td><td>${r.examTitle||''}</td><td>${r.score}/${r.total}</td><td>${fg?`${fg.grade}/100`:'غير محددة'}</td><td>${levelFromPercent(r.percent)}</td><td><button onclick="studentFullStatsPage('${r.studentId}','${r.subjectId}')">إحصائيات</button></td></tr>`;
+  }).join('');
+  adminMain.innerHTML=`<div class="page-title-card"><h2>النتائج</h2><p>تظهر فقط نتائج الطلاب والمواد الظاهرة.</p></div><div class="panel compact-table-wrap"><table><thead><tr><th>الطالب</th><th>الصف</th><th>المادة</th><th>عنوان الاختبار</th><th>درجة الاختبار</th><th>النتيجة النهائية</th><th>المستوى</th><th>الإحصائيات</th></tr></thead><tbody>${rows||`<tr><td colspan="8">لا توجد نتائج ظاهرة</td></tr>`}</tbody></table></div>`;
 }function adminTeacherNotices(){setActivePanel('adminTeacherNotices');jumpToWorkspace('adminMain');adminMain.innerHTML=`<h2>تبليغات المدرسين</h2><div class="panel"><select id="noticeTeacher"><option value="all">كل المدرسين</option>${state.teachers.map(t=>`<option value="${t.id}">${t.name} - ${t.subject} - ${t.grade}</option>`).join('')}</select><textarea id="noticeText" placeholder="اكتب التبليغ"></textarea><button onclick="sendAdminNotice()">إرسال التبليغ</button></div><div class="panel"><h3>الردود</h3>${state.noticeReplies.length?state.noticeReplies.map(r=>`<div class="file-item"><b>${r.teacherName}</b><span>${r.text}</span></div>`).join(''):`<div class='empty'>لا توجد ردود</div>`}</div>`}function sendAdminNotice(){if(!noticeText.value.trim())return alert('اكتب التبليغ');state.adminNotices.unshift({id:uid('not'),teacherId:noticeTeacher.value,text:noticeText.value.trim(),date:new Date().toLocaleString('ar-IQ')});{const targets=noticeTeacher.value==='all'?state.teachers.map(t=>'teacher:'+t.id):['teacher:'+noticeTeacher.value];addNotification(targets,{source:'تبليغات المدير',title:'تبليغ جديد من المدير',body:noticeText.value.trim(),icon:'📢'});}save();alert('تم إرسال التبليغ');adminTeacherNotices()}function adminContactMessages(){setActivePanel('adminContactMessages');jumpToWorkspace('adminMain');adminMain.innerHTML=`<h2>رسائل التواصل</h2>${state.contactMessages.length?state.contactMessages.map(m=>`<div class="panel"><b>${m.title}</b><p>من: ${m.name}</p><p>${m.body}</p></div>`).join(''):`<div class='panel empty'>لا توجد رسائل</div>`}`}
 function adminBackup(){setActivePanel('adminBackup');jumpToWorkspace('adminMain');
   adminMain.innerHTML = `
@@ -2560,6 +2580,167 @@ function requestSubjectByCode(subjectId){
   state.enrollRequests.push({id:uid('req'),studentId:user.id,studentName:user.name,subjectId,subjectName:s.name,grade:s.grade,teacherId:t?.id||'',teacherName:t?.name||'',status:'pending',date:new Date().toLocaleString('ar-IQ')});
   addNotification(t?('teacher:'+t.id):'admin',{source:'طلبات المواد',title:'طلب تسجيل جديد',body:user.name+' طلب التسجيل في '+s.name,subjectId,subjectName:s.name,studentId:user.id,studentName:user.name,icon:'📚'});
   save();studentMaterials();
+}
+
+
+/* ===== Admin Counts Visible Only Final ===== */
+function visibleRecord(x){return !x || (x.hidden!==true && x.deleted!==true && x.status!=='removed');}
+function adminVisibleTeachers(){return (state.teachers||[]).filter(t=>visibleRecord(t));}
+function adminVisibleSubjects(){return (state.subjects||[]).filter(s=>visibleRecord(s));}
+function adminVisibleStudents(){return (state.students||[]).filter(s=>visibleRecord(s));}
+function adminVisibleExams(){
+  const validSubjects=new Set(adminVisibleSubjects().map(s=>s.id));
+  return (state.exams||[]).filter(e=>visibleRecord(e)&&(!e.subjectId||validSubjects.has(e.subjectId)));
+}
+function adminVisibleResults(){
+  const validSubjects=new Set(adminVisibleSubjects().map(s=>s.id));
+  const validStudents=new Set(adminVisibleStudents().map(s=>s.id));
+  return (state.results||[]).filter(r=>visibleRecord(r)&&validSubjects.has(r.subjectId)&&validStudents.has(r.studentId));
+}
+function adminVisibleEnrollRequests(){
+  const validSubjects=new Set(adminVisibleSubjects().map(s=>s.id));
+  return (state.enrollRequests||[]).filter(r=>visibleRecord(r)&&r.status==='pending'&&validSubjects.has(r.subjectId));
+}
+function adminVisibleSubscriptions(){return (state.subscriptions||[]).filter(s=>visibleRecord(s)&&s.status!=='expired');}
+function adminVisibleMessages(){return (state.messages||[]).filter(m=>visibleRecord(m));}
+function adminStatsCards(){
+  return `<div class="smart-grid">
+    <div class="smart-stat"><b>${adminVisibleStudents().length}</b><span>الطلاب</span></div>
+    <div class="smart-stat"><b>${adminVisibleTeachers().length}</b><span>المدرسون</span></div>
+    <div class="smart-stat"><b>${adminVisibleSubjects().length}</b><span>المواد</span></div>
+    <div class="smart-stat"><b>${adminVisibleExams().length}</b><span>الاختبارات</span></div>
+    <div class="smart-stat"><b>${adminVisibleResults().length}</b><span>النتائج</span></div>
+    <div class="smart-stat"><b>${adminVisibleSubscriptions().length}</b><span>اشتراكات نشطة</span></div>
+    <div class="smart-stat"><b>${adminVisibleEnrollRequests().length}</b><span>طلبات اشتراك</span></div>
+    <div class="smart-stat"><b>${adminVisibleMessages().length}</b><span>الرسائل</span></div>
+  </div>`;
+}
+
+
+/* ===== Archive Management Tools ===== */
+function makeBackupBeforeArchiveAction(label){
+  try{
+    state.backups=state.backups||[];
+    state.backups.unshift({
+      id:uid('backup'),
+      label,
+      date:new Date().toLocaleString('ar-IQ'),
+      data:JSON.stringify(state)
+    });
+    if(state.backups.length>10)state.backups=state.backups.slice(0,10);
+  }catch(e){console.warn(e)}
+}
+function hardRemoveHiddenFrom(arr){
+  if(!Array.isArray(arr))return [];
+  return arr.filter(x=>!(x&&((x.hidden===true)||(x.deleted===true)||(x.status==='removed'))));
+}
+function clearArchiveOnly(){
+  const word=prompt('لتأكيد تفريغ الأرشيف اكتب: أرشيف');
+  if(word!=='أرشيف')return alert('تم إلغاء العملية');
+  makeBackupBeforeArchiveAction('نسخة قبل تفريغ الأرشيف');
+  state.exams=hardRemoveHiddenFrom(state.exams);
+  state.homeworks=hardRemoveHiddenFrom(state.homeworks);
+  state.messages=hardRemoveHiddenFrom(state.messages);
+  state.notifications=hardRemoveHiddenFrom(state.notifications);
+  state.lectures=hardRemoveHiddenFrom(state.lectures);
+  state.files=hardRemoveHiddenFrom(state.files);
+  state.calendarEvents=hardRemoveHiddenFrom(state.calendarEvents);
+  state.libraryItems=hardRemoveHiddenFrom(state.libraryItems);
+  state.questionBank=hardRemoveHiddenFrom(state.questionBank);
+  state.enrollRequests=hardRemoveHiddenFrom(state.enrollRequests);
+  state.activityLog=hardRemoveHiddenFrom(state.activityLog);
+  save();
+  alert('تم تفريغ الأرشيف مع إنشاء نسخة احتياطية قبل العملية');
+  adminArchiveManagement();
+}
+function startNewSchoolYear(){
+  const word=prompt('لبدء سنة دراسية جديدة اكتب: سنة جديدة');
+  if(word!=='سنة جديدة')return alert('تم إلغاء العملية');
+  makeBackupBeforeArchiveAction('نسخة قبل بدء سنة دراسية جديدة');
+  state.attendance=[];
+  state.attendanceSessions=[];
+  state.attendanceResponses=[];
+  state.homeworks=[];
+  state.homeworkSubmissions=[];
+  state.exams=[];
+  state.results=[];
+  state.finalExamGrades=[];
+  state.messages=[];
+  state.notifications=[];
+  state.activityLog=[];
+  state.calendarEvents=[];
+  state.libraryItems=[];
+  state.questionBank=[];
+  state.xp=[];
+  state.enrollRequests=[];
+  save();
+  alert('تم بدء سنة دراسية جديدة. تم الإبقاء على الطلاب والمدرسين والمواد والأكواد.');
+  adminArchiveManagement();
+}
+function fullPlatformReset(){
+  const word=prompt('تحذير: سيتم حذف كل شيء. للتأكيد اكتب بالضبط: حذف كامل');
+  if(word!=='حذف كامل')return alert('تم إلغاء العملية');
+  makeBackupBeforeArchiveAction('نسخة قبل إعادة الضبط الكاملة');
+  const savedBackups=state.backups||[];
+  state.students=[];
+  state.parents=[];
+  state.teachers=[];
+  state.subjects=[];
+  state.enrollments=[];
+  state.enrollRequests=[];
+  state.exams=[];
+  state.results=[];
+  state.finalGrades=[];
+  state.finalExamGrades=[];
+  state.homeworks=[];
+  state.homeworkSubmissions=[];
+  state.attendance=[];
+  state.attendanceSessions=[];
+  state.attendanceResponses=[];
+  state.messages=[];
+  state.notifications=[];
+  state.subscriptions=[];
+  state.activityLog=[];
+  state.lectures=[];
+  state.files=[];
+  state.calendarEvents=[];
+  state.libraryItems=[];
+  state.questionBank=[];
+  state.xp=[];
+  state.backups=savedBackups;
+  save();
+  alert('تمت إعادة ضبط المنصة بالكامل مع الاحتفاظ بآخر نسخة احتياطية.');
+  adminArchiveManagement();
+}
+function archiveStatsHTML(){
+  const hiddenCount=(arr)=>Array.isArray(arr)?arr.filter(x=>x&&(x.hidden===true||x.deleted===true||x.status==='removed')).length:0;
+  return `<div class="smart-grid">
+    <div class="smart-stat"><b>${hiddenCount(state.exams)}</b><span>اختبارات مؤرشفة</span></div>
+    <div class="smart-stat"><b>${hiddenCount(state.homeworks)}</b><span>واجبات مؤرشفة</span></div>
+    <div class="smart-stat"><b>${hiddenCount(state.messages)}</b><span>رسائل مؤرشفة</span></div>
+    <div class="smart-stat"><b>${hiddenCount(state.notifications)}</b><span>إشعارات مؤرشفة</span></div>
+  </div>`;
+}
+function adminArchiveManagement(){
+  setActivePanel('adminArchiveManagement');jumpToWorkspace('adminMain');
+  adminMain.innerHTML=`<div class="page-title-card"><h2>إدارة الأرشيف</h2><p>تنظيف البيانات القديمة أو بدء سنة جديدة بأمان</p></div>
+  ${archiveStatsHTML()}
+  <div class="archive-danger-box">قبل أي عملية كبيرة، يتم إنشاء نسخة احتياطية تلقائياً داخل النسخ الاحتياطي حتى تستطيع الرجوع لها.</div>
+  <div class="archive-action-card">
+    <h3>تفريغ الأرشيف فقط</h3>
+    <p>يحذف العناصر المخفية أو المحذوفة من الواجهة فقط، ولا يمس البيانات الظاهرة.</p>
+    <button class="danger" onclick="clearArchiveOnly()">تفريغ الأرشيف</button>
+  </div>
+  <div class="archive-action-card">
+    <h3>بدء سنة دراسية جديدة</h3>
+    <p>يمسح الاختبارات والحضور والواجبات والرسائل القديمة، مع الإبقاء على الطلاب والمدرسين والمواد والأكواد.</p>
+    <button class="gold" onclick="startNewSchoolYear()">بدء سنة جديدة</button>
+  </div>
+  <div class="archive-action-card">
+    <h3>إعادة ضبط المنصة بالكامل</h3>
+    <p>يمسح كل بيانات المنصة تقريباً ويجعلها كأنها جديدة. استخدمه فقط عند الحاجة.</p>
+    <button class="danger" onclick="fullPlatformReset()">إعادة ضبط كاملة</button>
+  </div>`;
 }
 
 async function startApp(){

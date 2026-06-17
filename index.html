@@ -8,6 +8,7 @@
 <style>
 :root{--dark:#071b49;--blue:#2563eb;--sky:#60a5fa;--bg:#eef5ff;--card:#fff;--text:#0f172a;--muted:#64748b;--green:#16a34a;--red:#dc2626;--gold:#f5b72f;--shadow:0 18px 45px rgba(15,23,42,.10)}
 *{box-sizing:border-box}body{margin:0;font-family:Tahoma,Arial,sans-serif;background:linear-gradient(180deg,#eef5ff,#fbfdff);color:var(--text)}button,input,select,textarea{font-family:inherit}button{border:0;border-radius:15px;padding:11px 17px;background:var(--blue);color:#fff;font-weight:900;margin:4px;cursor:pointer}.green{background:var(--green)}.danger{background:var(--red)}.gold{background:var(--gold);color:#111}.gray{background:#64748b}.hidden{display:none!important}input,select,textarea{width:100%;padding:13px;border:1px solid #cfdaf0;border-radius:15px;background:#f8fbff;margin:7px 0}.topbar{position:sticky;top:0;z-index:90;background:rgba(255,255,255,.95);backdrop-filter:blur(16px);box-shadow:0 8px 30px rgba(15,23,42,.07)}.header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 5%}.logo{display:flex;align-items:center;gap:10px;font-size:21px;font-weight:900;color:var(--dark)}.mark{width:42px;height:42px;border-radius:16px;background:linear-gradient(135deg,var(--blue),var(--sky));display:grid;place-items:center;color:#fff}nav a{cursor:pointer;text-decoration:none;color:var(--dark);background:#f3f7ff;border:1px solid #e3ebfb;padding:8px 13px;border-radius:999px;font-weight:900;margin:2px}.page{padding:40px 5%}.hero{min-height:88vh;display:grid;grid-template-columns:1fr 1.05fr;gap:28px;align-items:center;background:radial-gradient(circle at 10% 10%,rgba(245,183,47,.34),transparent 28%),radial-gradient(circle at 85% 18%,rgba(96,165,250,.35),transparent 35%),linear-gradient(135deg,#06183f,#155eef 60%,#70c7ff);color:#fff}.hero h1{font-size:54px;margin:0 0 12px}.hero p{font-size:20px;color:#eaf2ff;line-height:1.8}.portal{display:grid;grid-template-columns:repeat(2,minmax(220px,1fr));gap:16px}.role{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:28px;padding:22px;backdrop-filter:blur(14px);box-shadow:0 20px 60px rgba(0,0,0,.16);cursor:pointer;text-align:center}.role .icon{font-size:42px}.role h3{margin:0;color:#fff;font-size:24px}.brand{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.25);border-radius:26px;padding:16px;margin-top:14px}.brand img{max-width:100%;max-height:260px;object-fit:cover;border-radius:22px}.panel,.card{background:#fff;border-radius:24px;padding:22px;box-shadow:var(--shadow);border:1px solid #e6edff;margin-top:18px}.title{background:linear-gradient(135deg,#071b49,#2563eb);color:#fff;border-radius:28px;padding:24px;margin:8px 0 18px;box-shadow:var(--shadow)}.title h2{margin:0 0 6px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px}.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:14px;margin:14px 0}.stat{background:linear-gradient(135deg,#071b49,#2563eb);color:#fff;border-radius:22px;padding:18px;text-align:center}.stat b{display:block;font-size:30px}.shell{display:grid;grid-template-columns:285px 1fr;min-height:80vh;padding:0;background:#f8fbff}.shell aside{background:#06183f;color:#fff;padding:22px;position:sticky;top:64px;height:calc(100vh - 64px);overflow:auto}.shell aside button{display:block;width:100%;margin:7px 0;text-align:right;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15)}.shell main{padding:30px}.item{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;border:1px solid #e7edf9;border-radius:18px;padding:14px;margin:9px 0;background:#fff}.badge{display:inline-block;background:#eef5ff;padding:7px 10px;border-radius:12px;color:#071b49;margin:3px;font-size:13px;font-weight:900}.note{background:#fff8df;border:1px solid #ffe08a;padding:14px;border-radius:18px;margin:10px 0;color:#7c4a00;font-weight:900}.empty{background:#f8fbff;border:1px dashed #b9c9e8;border-radius:18px;padding:22px;text-align:center;color:#64748b;font-weight:900}.modal{position:fixed;inset:0;background:rgba(2,6,23,.68);z-index:200;display:grid;place-items:center;padding:18px}.box{width:min(100%,520px);background:#fff;border-radius:30px;padding:24px;box-shadow:0 30px 80px rgba(0,0,0,.35)}.row{display:flex;gap:10px;flex-wrap:wrap}.row>*{flex:1}.chat{background:#f8fbff;border:1px solid #e7edf9;border-radius:16px;padding:12px;margin:8px 0}.q{border:1px solid #e7edf9;background:#fff;border-radius:18px;padding:14px;margin:12px 0}.choice{display:block;padding:12px;border:1px solid #dbeafe;border-radius:14px;margin:7px 0;background:#f8fbff}.choice input{width:auto;margin-left:8px}footer{text-align:center;padding:24px;background:#06183f;color:#fff}@media(max-width:950px){.header{display:grid;justify-items:center}.hero{display:block;min-height:auto;text-align:center;padding:32px 14px}.hero h1{font-size:34px}.portal{grid-template-columns:1fr}.shell{display:block}.shell aside{position:static;height:auto}.shell main{padding:20px 12px}.item{display:block;text-align:center}.page{padding:26px 12px}.stats{grid-template-columns:1fr 1fr}}@media(max-width:520px){.stats{grid-template-columns:1fr}}
+.mat-locked{border:1px solid #fde68a;background:#fffbeb;border-radius:18px;padding:14px;margin:9px 0}.mat-open{border:1px solid #bbf7d0;background:#f0fdf4;border-radius:18px;padding:14px;margin:9px 0}
 </style>
 </head>
 <body>
@@ -16,7 +17,7 @@
 <section id="about" class="page hidden"><div class="title"><h2>عن المنصة</h2><p>منصة تعليمية منظمة وسهلة الاستخدام.</p></div><div class="grid"><div class="card"><h3>📚 مواد منظمة</h3><p>كل طالب يرى مواده فقط.</p></div><div class="card"><h3>📝 اختبارات</h3><p>اختيارات وصح وخطأ وفراغات ومقالي.</p></div><div class="card"><h3>📊 نتائج</h3><p>نتائج تفصيلية ونهائية.</p></div></div></section>
 <section id="contact" class="page hidden"><div class="title"><h2>تواصل معنا</h2></div><div class="panel"><input id="contactName" placeholder="اسمك"><input id="contactPhone" placeholder="رقم الهاتف"><textarea id="contactText" rows="5" placeholder="الرسالة"></textarea><button class="green" onclick="sendContact()">إرسال</button></div></section>
 <section id="admin" class="shell page hidden"><aside><h3>لوحة المدير</h3><button onclick="adminHome()">📊 الرئيسية</button><button onclick="adminSubjects()">📚 المواد والمدرسون</button><button onclick="adminStudents()">👨‍🎓 الطلاب</button><button onclick="adminPayments()">💳 الاشتراكات</button><button onclick="adminResults()">📈 النتائج</button><button onclick="adminNotifications()">🔔 الإشعارات</button><button onclick="adminMessages()">💬 الرسائل</button><button onclick="adminBackup()">💾 النسخ الاحتياطي</button><button onclick="adminSystem()">⚙️ إدارة النظام</button><button onclick="adminAppearance()">🎨 واجهة المنصة</button></aside><main id="adminMain"></main></section>
-<section id="teacher" class="shell page hidden"><aside><h3>لوحة المدرس</h3><button onclick="teacherHome()">🏠 الرئيسية</button><button onclick="teacherStudents()">👨‍🎓 الطلاب</button><button onclick="teacherLessons()">📁 الدروس</button><button onclick="teacherExams()">📝 الاختبارات</button><button onclick="teacherHomework()">📌 الواجبات</button><button onclick="teacherAttendance()">✅ الحضور</button><button onclick="teacherFinalGrades()">🏁 النتائج النهائية</button><button onclick="teacherMessages()">💬 الرسائل</button></aside><main id="teacherMain"></main></section>
+<section id="teacher" class="shell page hidden"><aside><h3>لوحة المدرس</h3><button onclick="teacherHome()">🏠 الرئيسية</button><button onclick="teacherStudents()">👨‍🎓 الطلاب</button><button onclick="teacherMaterialRequests()">🔐 طلبات فتح المادة</button><button onclick="teacherLessons()">📁 الدروس</button><button onclick="teacherExams()">📝 الاختبارات</button><button onclick="teacherHomework()">📌 الواجبات</button><button onclick="teacherAttendance()">✅ الحضور</button><button onclick="teacherFinalGrades()">🏁 النتائج النهائية</button><button onclick="teacherMessages()">💬 الرسائل</button></aside><main id="teacherMain"></main></section>
 <section id="student" class="page hidden"><h2 id="studentWelcome">لوحة الطالب</h2><div id="studentStats" class="stats"></div><div class="panel"><div class="row"><button onclick="studentSubjects()">📚 موادي</button><button onclick="studentExams()">📝 اختباراتي</button><button onclick="studentResults()">📊 نتائجي</button><button onclick="studentNotifications()">🔔 إشعاراتي</button><button class="gold" onclick="studentSubscription()">💳 اشتراكي</button></div></div><div id="studentPanel" class="panel"></div></section>
 <section id="parent" class="page hidden"><h2 id="parentWelcome">لوحة ولي الأمر</h2><div class="panel"><input id="parentStudentSearch" placeholder="اسم الطالب الثلاثي"><button onclick="parentFindStudent()">بحث</button></div><div id="parentPanel" class="panel"></div></section>
 <section id="room" class="page hidden"><div class="title"><h2 id="roomTitle">المادة</h2><p id="roomSub"></p></div><div class="panel"><div class="row"><button onclick="roomTab('lessons')">📁 الدروس</button><button onclick="roomTab('homework')">📌 الواجبات</button><button onclick="roomTab('exams')">📝 الاختبارات</button><button onclick="roomTab('results')">📊 النتائج</button></div></div><div id="roomContent" class="panel"></div></section>
@@ -24,11 +25,11 @@
 <div id="loginModal" class="modal hidden"></div><footer id="footerName">© منصة آفاق التعليمية</footer>
 <script>
 const STORE='AFAQ_FINAL_ONE_FILE_V1',USER_STORE='AFAQ_USER_FINAL_ONE_FILE_V1';let state=null,user=null,currentSubjectId='',currentExamId='';
-function def(){return{settings:{platformName:'منصة آفاق التعليمية',adminCode:'admin',studentCode:'1234',parentCode:'parent',masterCard:'0000 0000 0000 0000',homeImage:'',homeBio:'منصة تعليمية متكاملة للدروس والاختبارات ومتابعة النتائج والحضور.'},subjects:[],teachers:[],students:[],parents:[],enrollments:[],payments:[],lessons:[],exams:[],results:[],finalGrades:[],homeworks:[],attendance:[],messages:[],notifications:[],activity:[],backups:[]}}
-function load(){state=JSON.parse(localStorage.getItem(STORE)||'null')||def();Object.keys(def()).forEach(k=>{if(state[k]===undefined)state[k]=def()[k]});['subjects','teachers','students','parents','enrollments','payments','lessons','exams','results','finalGrades','homeworks','attendance','messages','notifications','activity','backups'].forEach(k=>{if(!Array.isArray(state[k]))state[k]=[]});user=JSON.parse(localStorage.getItem(USER_STORE)||'null')}
+function def(){return{settings:{platformName:'منصة آفاق التعليمية',adminCode:'admin',studentCode:'1234',parentCode:'parent',masterCard:'0000 0000 0000 0000',homeImage:'',homeBio:'منصة تعليمية متكاملة للدروس والاختبارات ومتابعة النتائج والحضور.'},subjects:[],teachers:[],students:[],parents:[],enrollments:[],materialRequests:[],payments:[],lessons:[],exams:[],results:[],finalGrades:[],homeworks:[],attendance:[],messages:[],notifications:[],activity:[],backups:[]}}
+function load(){state=JSON.parse(localStorage.getItem(STORE)||'null')||def();Object.keys(def()).forEach(k=>{if(state[k]===undefined)state[k]=def()[k]});['subjects','teachers','students','parents','enrollments','materialRequests','payments','lessons','exams','results','finalGrades','homeworks','attendance','messages','notifications','activity','backups'].forEach(k=>{if(!Array.isArray(state[k]))state[k]=[]});user=JSON.parse(localStorage.getItem(USER_STORE)||'null')}
 function save(){localStorage.setItem(STORE,JSON.stringify(state))}function setUser(u){user=u;localStorage.setItem(USER_STORE,JSON.stringify(user));topUpdate()}
 function uid(p){return p+'_'+Date.now()+'_'+Math.floor(Math.random()*9999)}function clean(v){return String(v||'').trim().replace(/\s+/g,' ').toLowerCase()}function same(a,b){return clean(a)===clean(b)}function today(){return new Date().toISOString().slice(0,10)}function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function grades(){return ['الثالث متوسط','الرابع العلمي','الخامس العلمي','السادس العلمي']}function listSubjects(){return ['الأحياء','الكيمياء','الفيزياء','الرياضيات','اللغة العربية','اللغة الإنجليزية','الإسلامية']}function v(x){return !!x&&x.hidden!==true&&x.deleted!==true&&x.status!=='removed'}function visibleSubjects(){return state.subjects.filter(v)}function visibleTeachers(){return state.teachers.filter(v)}function subjectById(id){return state.subjects.find(s=>s.id===id)}function teacherById(id){return state.teachers.find(t=>t.id===id)}function studentById(id){return state.students.find(s=>s.id===id)}function teacherForSubject(id){const s=subjectById(id);return s?visibleTeachers().find(t=>t.id===s.teacherId||same(t.subject,s.name)&&same(t.grade,s.grade)):null}
+function grades(){return ['الأول متوسط','الثاني متوسط','الثالث متوسط','الرابع الإعدادي','الخامس الإعدادي','السادس الإعدادي']}function listSubjects(){return ['الأحياء','الفيزياء','الكيمياء','الرياضيات','الإنكليزي','العربي','الاجتماعيات','الإسلامية']}function v(x){return !!x&&x.hidden!==true&&x.deleted!==true&&x.status!=='removed'}function visibleSubjects(){return state.subjects.filter(v)}function visibleTeachers(){return state.teachers.filter(v)}function subjectById(id){return state.subjects.find(s=>s.id===id)}function teacherById(id){return state.teachers.find(t=>t.id===id)}function studentById(id){return state.students.find(s=>s.id===id)}function teacherForSubject(id){const s=subjectById(id);return s?visibleTeachers().find(t=>t.id===s.teacherId||same(t.subject,s.name)&&same(t.grade,s.grade)):null}
 function log(text,icon='🕒'){state.activity.unshift({id:uid('act'),text,icon,date:new Date().toLocaleString('ar-IQ'),by:user?.name||'النظام'});if(state.activity.length>200)state.activity=state.activity.slice(0,200)}
 function notify(target,title,body,icon='🔔'){state.notifications.unshift({id:uid('not'),target,title,body,icon,date:new Date().toLocaleString('ar-IQ')})}
 function show(id){document.querySelectorAll('.page').forEach(p=>p.classList.add('hidden'));document.getElementById(id)?.classList.remove('hidden');scrollTo({top:0,behavior:'smooth'});topUpdate()}function topUpdate(){logoutBtn.classList.toggle('hidden',!user);backBtn.classList.toggle('hidden',!user)}function logout(){user=null;localStorage.removeItem(USER_STORE);show('home')}function goHome(){if(!user)return show('home');if(user.role==='admin'){show('admin');adminHome()}else if(user.role==='teacher'){show('teacher');teacherHome()}else if(user.role==='student'){studentDashboard()}else parentHome()}
@@ -103,6 +104,106 @@ function studentResultsForSubject(id){const arr=state.results.filter(r=>r.studen
 function studentNotifications(){const arr=state.notifications.filter(n=>n.target==='all'||n.target==='students'||n.target==='student:'+user.id);studentPanel.innerHTML=`<h3>إشعاراتي</h3>${arr.length?arr.map(n=>`<div class="chat"><b>${esc(n.icon)} ${esc(n.title)}</b><p>${esc(n.body)}</p></div>`).join(''):'<div class="empty">لا توجد إشعارات</div>'}`}
 /* PARENT */
 function parentHome(){show('parent');parentWelcome.textContent='مرحباً '+user.name;parentPanel.innerHTML='<div class="empty">ابحث عن اسم الطالب لمتابعة بياناته</div>'}function parentFindStudent(){const s=state.students.find(x=>same(x.name,parentStudentSearch.value));if(!s)return alert('لم يتم العثور على الطالب');const res=state.results.filter(r=>r.studentId===s.id);parentPanel.innerHTML=`<h3>${esc(s.name)}</h3>${res.length?res.map(r=>`<div class="item"><b>${esc(r.examTitle)}</b><span>${r.score}/${r.total}</span></div>`).join(''):'<div class="empty">لا توجد نتائج</div>'}`}
+
+/* ===== PHASE 1: MATERIAL CODE + TEACHER APPROVAL ===== */
+function allMaterialRequests(){state.materialRequests=Array.isArray(state.materialRequests)?state.materialRequests:[];return state.materialRequests}
+function activeMaterialRequests(){return allMaterialRequests().filter(v)}
+function hasActivePayment(studentId){return state.payments.some(p=>v(p)&&p.studentId===studentId&&p.status==='approved')}
+function materialStatusForStudent(subjectId){
+  const enr=state.enrollments.find(e=>v(e)&&e.studentId===user.id&&e.subjectId===subjectId&&e.status==='approved');
+  if(enr)return 'approved';
+  const req=activeMaterialRequests().find(r=>r.studentId===user.id&&r.subjectId===subjectId);
+  return req?req.status:'none';
+}
+function studentSubjects(){
+  const subs=visibleSubjects().filter(s=>same(s.grade,user.grade));
+  const hasPay=hasActivePayment(user.id);
+  studentPanel.innerHTML=`<h3>موادي</h3><div class="note">المادة لا تفتح إلا بعد تفعيل الاشتراك من المدير ثم إرسال كود المادة وموافقة المدرس.</div>${
+    subs.length?subs.map(s=>{
+      const st=materialStatusForStudent(s.id);
+      if(st==='approved')return `<div class="mat-open"><div class="item"><div><b>✅ ${esc(s.name)}</b><br><span class="badge">${esc(s.grade)}</span><span class="badge">مفتوحة</span></div><button onclick="openRoom('${s.id}')">دخول المادة</button></div></div>`;
+      if(st==='pending')return `<div class="mat-locked"><div class="item"><div><b>⏳ ${esc(s.name)}</b><br><span class="badge">${esc(s.grade)}</span><span class="badge">بانتظار موافقة المدرس</span></div></div></div>`;
+      if(st==='rejected')return `<div class="mat-locked"><div class="item"><div><b>❌ ${esc(s.name)}</b><br><span class="badge">${esc(s.grade)}</span><span class="badge">مرفوضة</span></div><button onclick="requestMaterialAccess('${s.id}')">إعادة إرسال الكود</button></div></div>`;
+      return `<div class="mat-locked"><div class="item"><div><b>🔒 ${esc(s.name)}</b><br><span class="badge">${esc(s.grade)}</span><span class="badge">${hasPay?'تحتاج كود المادة':'تحتاج تفعيل اشتراك أولاً'}</span></div><button ${hasPay?'':'disabled'} onclick="requestMaterialAccess('${s.id}')">إرسال كود المادة للمدرس</button></div></div>`;
+    }).join(''):'<div class="empty">لا توجد مواد لهذا الصف</div>'}`;
+}
+function requestMaterialAccess(subjectId){
+  const s=subjectById(subjectId);
+  if(!s)return;
+  if(!hasActivePayment(user.id))return alert('يجب تفعيل الاشتراك من المدير أولاً');
+  const code=prompt('اكتب كود المادة');
+  if(code===null)return;
+  if(String(code).trim()!==String(s.code||'').trim())return alert('كود المادة غير صحيح');
+  let old=allMaterialRequests().find(r=>v(r)&&r.studentId===user.id&&r.subjectId===subjectId);
+  if(old){old.status='pending';old.code=code;old.date=new Date().toLocaleString('ar-IQ');old.hidden=false;old.deleted=false;}
+  else allMaterialRequests().unshift({id:uid('mreq'),studentId:user.id,studentName:user.name,studentGrade:user.grade,subjectId,subjectName:s.name,teacherId:s.teacherId||'',code,status:'pending',date:new Date().toLocaleString('ar-IQ')});
+  notify('teacher:'+(s.teacherId||''),'طلب فتح مادة جديد',user.name+' طلب فتح مادة '+s.name,'🔐');
+  save();alert('تم إرسال طلب فتح المادة إلى المدرس');studentSubjects();
+}
+function teacherMaterialRequests(){
+  const sub=teacherSubject();
+  if(!sub){teacherMain.innerHTML='<div class="empty">لا توجد مادة مربوطة بك</div>';return}
+  const reqs=activeMaterialRequests().filter(r=>r.subjectId===sub.id&&r.status==='pending');
+  teacherMain.innerHTML=`<div class="title"><h2>طلبات فتح المادة</h2><p>${esc(sub.name)} - ${esc(sub.grade)}</p></div><div class="panel">${
+    reqs.length?reqs.map(r=>`<div class="item"><div><b>${esc(r.studentName)}</b><br><span class="badge">${esc(r.studentGrade)}</span><span class="badge">${esc(r.subjectName)}</span><span class="badge">${esc(r.date)}</span></div><div><button class="green" onclick="approveMaterialRequest('${r.id}')">قبول</button><button class="danger" onclick="rejectMaterialRequest('${r.id}')">رفض</button></div></div>`).join(''):'<div class="empty">لا توجد طلبات حالياً</div>'}</div>`;
+}
+function approveMaterialRequest(id){
+  const r=allMaterialRequests().find(x=>x.id===id);if(!r)return;
+  r.status='approved';r.approvedAt=new Date().toLocaleString('ar-IQ');
+  if(!state.enrollments.some(e=>v(e)&&e.studentId===r.studentId&&e.subjectId===r.subjectId&&e.status==='approved'))state.enrollments.push({id:uid('enr'),studentId:r.studentId,subjectId:r.subjectId,status:'approved',date:new Date().toLocaleString('ar-IQ')});
+  notify('student:'+r.studentId,'تم فتح المادة','تم قبول طلبك وفتح مادة '+r.subjectName,'✅');
+  save();teacherMaterialRequests();
+}
+function rejectMaterialRequest(id){
+  const r=allMaterialRequests().find(x=>x.id===id);if(!r)return;
+  r.status='rejected';r.rejectedAt=new Date().toLocaleString('ar-IQ');
+  notify('student:'+r.studentId,'تم رفض فتح المادة','تم رفض طلب فتح مادة '+r.subjectName,'❌');
+  save();teacherMaterialRequests();
+}
+/* اشتراك المدير لا يفتح المادة مباشرة */
+function approvePayment(id){
+  const p=state.payments.find(x=>x.id===id);if(!p)return;
+  const d=prompt('مدة الاشتراك بالأيام','30');if(d===null)return;
+  const days=parseInt(d,10);if(!days)return alert('اكتب رقم صحيح');
+  const end=new Date();end.setDate(end.getDate()+days);
+  Object.assign(p,{status:'approved',days,startDate:today(),endDate:end.toISOString().slice(0,10)});
+  notify('student:'+p.studentId,'تم تفعيل اشتراكك','الآن أدخل كود المادة وأرسل الطلب للمدرس. مدة الاشتراك '+days+' يوم','💳');
+  save();adminPayments();
+}
+function studentSubscription(){
+  const gr=grades();
+  const subs=visibleSubjects().filter(s=>same(s.grade,user.grade));
+  studentPanel.innerHTML=`<h3>طلب تفعيل اشتراك</h3><div class="note">بعد موافقة المدير، ترسل كود المادة للمدرس حتى يفتح محتويات المادة.</div><input id="payStudentName" value="${esc(user.name)}" placeholder="اسم الطالب الثلاثي"><select id="payGrade">${gr.map(g=>`<option ${same(g,user.grade)?'selected':''}>${g}</option>`).join('')}</select><input id="payPhone" placeholder="رقم الهاتف"><input id="payAmount" placeholder="المبلغ"><select id="paySubject">${subs.map(s=>`<option value="${s.id}">${esc(s.name)} - ${esc(s.grade)}</option>`).join('')}</select><button class="gold" onclick="sendPayment()">إرسال طلب التفعيل للمدير</button>`;
+}
+function sendPayment(){
+  if(!paySubject.value)return alert('لا توجد مادة لهذا الصف');
+  const sub=subjectById(paySubject.value);
+  const name=payStudentName.value.trim()||user.name, grade=payGrade.value;
+  if(!payPhone.value.trim()||!payAmount.value.trim())return alert('اكتب رقم الهاتف والمبلغ');
+  state.payments.unshift({id:uid('pay'),studentId:user.id,studentName:name,studentGrade:grade,subjectId:sub.id,subjectName:sub.name,phone:payPhone.value.trim(),amount:payAmount.value.trim(),status:'pending',createdAt:new Date().toLocaleString('ar-IQ')});
+  notify('admin','طلب تفعيل اشتراك',name+' - '+grade+' - '+sub.name,'💳');
+  save();alert('تم إرسال الطلب إلى المدير');studentSubscription();
+}
+function teacherStudents(){
+  const arr=teacherStudentsList();
+  teacherMain.innerHTML=`<div class="title"><h2>الطلاب</h2></div><div class="panel">${arr.length?arr.map(s=>`<div class="item"><div><b>${esc(s.name)}</b><span class="badge">${esc(s.grade)}</span></div><button onclick="teacherStudentProfile('${s.id}')">عرض ملف الطالب</button></div>`).join(''):'<div class="empty">لا يوجد طلاب</div>'}</div>`;
+}
+function teacherStudentProfile(id){
+  const sub=teacherSubject(),s=studentById(id);
+  const res=state.results.filter(r=>r.studentId===id&&r.subjectId===sub.id);
+  const final=state.finalGrades.find(f=>f.studentId===id&&f.subjectId===sub.id);
+  const att=state.attendance.filter(a=>a.studentId===id&&a.subjectId===sub.id);
+  const present=att.filter(a=>a.status==='present').length,absent=att.filter(a=>a.status==='absent').length;
+  const avg=res.length?Math.round(res.reduce((a,b)=>a+(+b.percent||0),0)/res.length):0;
+  const level=avg>=90?'ممتاز':avg>=75?'جيد':avg>=50?'متوسط':'مبتدئ';
+  teacherMain.innerHTML=`<div class="title"><h2>ملف الطالب</h2><p>${esc(s.name)} - ${esc(sub.name)}</p></div><div class="grid"><div class="panel"><h3>المستوى</h3><div class="stat"><b>${level}</b><span>${avg}%</span></div></div><div class="panel"><h3>الحضور</h3><div class="item"><b>حاضر</b><span>${present}</span></div><div class="item"><b>غائب</b><span>${absent}</span></div></div><div class="panel"><h3>الاختبارات</h3>${res.length?res.map(r=>`<div class="item"><b>${esc(r.examTitle)}</b><span>${r.score}/${r.total}</span></div>`).join(''):'<div class="empty">لا توجد اختبارات</div>'}</div><div class="panel"><h3>النتيجة النهائية</h3><div class="item"><b>${esc(sub.name)}</b><span>${final?final.grade+'/100':'غير محددة'}</span></div></div></div>`;
+}
+function studentFullProfile(id){
+  const s=studentById(id);
+  const res=state.results.filter(r=>r.studentId===id), finals=state.finalGrades.filter(f=>f.studentId===id), reqs=activeMaterialRequests().filter(r=>r.studentId===id);
+  adminMain.innerHTML=`<div class="title"><h2>ملف الطالب</h2><p>${esc(s.name)} - ${esc(s.grade)}</p></div><div class="grid"><div class="panel"><h3>حالة المواد</h3>${reqs.length?reqs.map(r=>`<div class="item"><b>${esc(r.subjectName)}</b><span class="badge">${r.status==='approved'?'مفتوحة':r.status==='pending'?'بانتظار المدرس':'مرفوضة'}</span></div>`).join(''):'<div class="empty">لا توجد طلبات مواد</div>'}</div><div class="panel"><h3>نتائج الاختبارات</h3>${res.length?res.map(r=>`<div class="item"><b>${esc(r.examTitle)}</b><span>${r.score}/${r.total}</span></div>`).join(''):'<div class="empty">لا توجد نتائج</div>'}</div><div class="panel"><h3>النتائج النهائية</h3>${finals.length?finals.map(f=>`<div class="item"><b>${esc(subjectById(f.subjectId)?.name||'')}</b><span>${f.grade}/100</span></div>`).join(''):'<div class="empty">لا توجد نتائج نهائية</div>'}</div></div>`;
+}
+
 load();applyAppearance();topUpdate();if(user)goHome();
 </script>
 </body></html>

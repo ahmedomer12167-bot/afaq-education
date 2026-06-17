@@ -1530,6 +1530,129 @@ setTimeout(function(){
   afaqEnsureParentNotifyButton();
 }, 1200);
 
+
+/* ===== STUDENT ACTION BADGES: NOTIFICATIONS + ATTENDANCE + HOMEWORK ===== */
+function afaqBadgeAttach(btn,count){
+  if(!btn)return;
+  btn.classList.add('notif-watch');
+  let b=btn.querySelector('.notif-red-badge');
+  if(count>0){
+    if(!b){b=document.createElement('span');b.className='notif-red-badge';btn.appendChild(b)}
+    b.textContent=count>99?'99+':String(count);
+  }else if(b)b.remove();
+}
+function afaqStudentSubjectIds(){
+  if(!user||user.role!=='student')return [];
+  return (state.enrollments||[]).filter(e=>v(e)&&e.studentId===user.id&&e.status==='approved').map(e=>e.subjectId);
+}
+function afaqUnreadStudentNotifications(){
+  if(!user||user.role!=='student')return 0;
+  const ids=afaqStudentSubjectIds().map(id=>'subject:'+id);
+  const targets=['all','students','student:'+user.id].concat(ids);
+  return (state.notifications||[]).filter(n=>targets.includes(n.target)&&n.read!==true&&n.hidden!==true&&n.deleted!==true).length;
+}
+function afaqActiveStudentAttendanceCount(){
+  if(!user||user.role!=='student')return 0;
+  const ids=afaqStudentSubjectIds();
+  return (state.attendanceSessions||[]).filter(s=>{
+    if(!v(s)||!ids.includes(s.subjectId)||Date.now()>=s.endAt)return false;
+    return !(state.attendance||[]).some(a=>a.sessionId===s.id&&a.studentId===user.id);
+  }).length;
+}
+function afaqPendingStudentHomeworkCount(){
+  if(!user||user.role!=='student')return 0;
+  const ids=afaqStudentSubjectIds();
+  return (state.homeworks||[]).filter(h=>{
+    if(!v(h)||!ids.includes(h.subjectId))return false;
+    if(h.deadline&&new Date(h.deadline).getTime()<Date.now())return false;
+    return !(state.homeworkAnswers||[]).some(a=>v(a)&&a.homeworkId===h.id&&a.studentId===user.id);
+  }).length;
+}
+function afaqFindButtonsByText(texts){
+  return Array.from(document.querySelectorAll('button')).filter(btn=>{
+    const t=(btn.textContent||'').trim();
+    return texts.some(x=>t.includes(x));
+  });
+}
+function afaqUpdateStudentActionBadges(){
+  try{
+    document.querySelectorAll('button[onclick*="studentNotifications"]').forEach(btn=>afaqBadgeAttach(btn,afaqUnreadStudentNotifications()));
+    document.querySelectorAll('button[onclick*="studentAttendance"]').forEach(btn=>afaqBadgeAttach(btn,afaqActiveStudentAttendanceCount()));
+    afaqFindButtonsByText(['الحضور']).forEach(btn=>{
+      if((btn.getAttribute('onclick')||'').includes('studentAttendance')) afaqBadgeAttach(btn,afaqActiveStudentAttendanceCount());
+    });
+    afaqFindButtonsByText(['واجباتي','الواجبات']).forEach(btn=>{
+      const oc=btn.getAttribute('onclick')||'';
+      if(oc.includes('studentHomework')||oc.includes('homework')||oc.includes('roomTab')) afaqBadgeAttach(btn,afaqPendingStudentHomeworkCount());
+    });
+  }catch(e){}
+}
+function afaqUpdateAllBadgesNow(){
+  try{
+    afaqUpdateStudentActionBadges();
+    if(typeof afaqUpdateNotificationBadges==='function')afaqUpdateNotificationBadges();
+  }catch(e){}
+}
+
+/* عند فتح إشعارات الطالب تعتبر مقروءة ويختفي العداد */
+if(typeof studentNotifications==='function'&&!window.afaqStudentNotificationsActionWrapped){
+  window.afaqStudentNotificationsActionWrapped=true;
+  const oldStudentNotificationsAction=studentNotifications;
+  studentNotifications=function(){
+    const ids=afaqStudentSubjectIds().map(id=>'subject:'+id);
+    const targets=['all','students','student:'+user.id].concat(ids);
+    (state.notifications||[]).forEach(n=>{if(targets.includes(n.target))n.read=true});
+    save();
+    oldStudentNotificationsAction();
+    afaqUpdateStudentActionBadges();
+  };
+}
+
+/* تحديث العلامات بعد فتح لوحة الطالب */
+if(typeof studentDashboard==='function'&&!window.afaqStudentDashboardActionWrapped){
+  window.afaqStudentDashboardActionWrapped=true;
+  const oldStudentDashboardAction=studentDashboard;
+  studentDashboard=function(){
+    oldStudentDashboardAction();
+    setTimeout(afaqUpdateStudentActionBadges,100);
+  };
+}
+
+/* تحديث العلامات بعد فتح المادة */
+if(typeof roomTab==='function'&&!window.afaqRoomTabActionBadgeWrapped){
+  window.afaqRoomTabActionBadgeWrapped=true;
+  const oldRoomTabActionBadge=roomTab;
+  roomTab=function(tab){
+    const r=oldRoomTabActionBadge(tab);
+    setTimeout(afaqUpdateStudentActionBadges,100);
+    return r;
+  };
+}
+
+/* بعد تسجيل الحضور أو إرسال واجب */
+if(typeof markAttendance==='function'&&!window.afaqMarkAttendanceBadgeWrapped){
+  window.afaqMarkAttendanceBadgeWrapped=true;
+  const oldMarkAttendanceBadge=markAttendance;
+  markAttendance=function(sessionId){
+    const r=oldMarkAttendanceBadge(sessionId);
+    setTimeout(afaqUpdateStudentActionBadges,150);
+    return r;
+  };
+}
+if(typeof submitHomework==='function'&&!window.afaqSubmitHomeworkBadgeWrapped){
+  window.afaqSubmitHomeworkBadgeWrapped=true;
+  const oldSubmitHomeworkBadge=submitHomework;
+  submitHomework=function(id){
+    const r=oldSubmitHomeworkBadge(id);
+    setTimeout(afaqUpdateStudentActionBadges,150);
+    return r;
+  };
+}
+
+/* تنبيه واجب جديد إذا لم يكن محلولاً + حضور جديد إذا لم يسجل */
+setInterval(afaqUpdateStudentActionBadges,1000);
+setTimeout(afaqUpdateStudentActionBadges,800);
+
 load();applyAppearance();topUpdate();if(user)goHome();
 </script>
 </body></html>

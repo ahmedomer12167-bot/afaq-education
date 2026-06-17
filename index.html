@@ -1238,15 +1238,20 @@ function adminTeachers(){
 }
 function adminSubscriptions(){
   setActivePanel('adminSubscriptions');jumpToWorkspace('adminMain');
-  ensureSubscriptionRequests();
-  const reqs=visibleSubscriptionRequests();
-  const subs=visibleActiveSubscriptions();
+  ensureSubscriptionArrays();
+  const reqs=pendingSubscriptionRequests();
+  const subs=activeSubscriptionsVisible();
   adminMain.innerHTML=`<div class="page-title-card"><h2>الاشتراكات</h2><p>زر واحد فقط لإدارة طلبات الاشتراك والتفعيل والتنظيف</p></div>
   <div class="panel">
     <h3>طلبات تفعيل الاشتراك من الطلاب</h3>
     ${reqs.length?reqs.map(r=>`<div class="file-item">
-      <div><b>${r.studentName||r.name||'طالب'}</b><br><span class="badge">${r.subjectName||'اشتراك عام'}</span><span class="badge">${r.amount||''}</span><span class="badge">${r.phone||''}</span><p>${r.note||''}</p><small>${r.createdAt||r.date||''}</small></div>
-      <div><button class="green" onclick="approveSubscriptionRequest('${r.id}')">موافقة وتفعيل</button><button class="danger" onclick="rejectSubscriptionRequest('${r.id}')">حذف الطلب</button></div>
+      <div><b>${r.studentName||r.name||'طالب'}</b><br>
+        <span class="badge">${r.subjectName||'اشتراك عام'}</span>
+        <span class="badge">${r.amount||''}</span>
+        <span class="badge">${r.phone||''}</span>
+        <p>${r.note||''}</p><small>${r.createdAt||r.paymentDate||''}</small>
+      </div>
+      <div><button class="green" onclick="approveSubscriptionRequest('${r.id}')">موافقة وتحديد المدة</button><button class="danger" onclick="rejectSubscriptionRequest('${r.id}')">حذف الطلب</button></div>
     </div>`).join(''):`<div class="empty">لا توجد طلبات اشتراك</div>`}
   </div>
   <div class="panel">
@@ -1254,10 +1259,16 @@ function adminSubscriptions(){
     <button class="danger" onclick="clearOldSubscriptionsVisibleOnly()">تفريغ سجل الاشتراكات القديمة</button>
     <div class="cleanup-note">زر التفريغ يخفي سجل الاشتراكات من الواجهة فقط ولا يحذف بيانات الطالب أو نتائجه.</div>
     ${subs.length?subs.map(s=>`<div class="file-item">
-      <div><b>${s.studentName||s.name||'طالب'}</b><br><span class="badge">${s.subjectName||'اشتراك عام'}</span><span class="badge">${s.amount||''}</span><span class="badge">${s.days||30} يوم</span><span class="badge">مفعل</span></div>
+      <div><b>${s.studentName||s.name||'طالب'}</b><br>
+        <span class="badge">${s.subjectName||'اشتراك عام'}</span>
+        <span class="badge">${s.amount||''}</span>
+        <span class="badge">${s.days||30} يوم</span>
+        <span class="badge">مفعل</span>
+      </div>
       <div><button class="danger" onclick="deleteStudentSubscriptionAndRemoveFromSubjects('${s.id}')">حذف اشتراك الطالب وإخراجه من المواد</button></div>
     </div>`).join(''):`<div class="empty">لا توجد اشتراكات مفعلة ظاهرة</div>`}
   </div>`;
+  setTimeout(removeDuplicateSubscriptionButtons,300);
 }
 function adminHome(){
   setActivePanel('adminHome');jumpToWorkspace('adminMain');
@@ -1310,7 +1321,7 @@ function adminHome(){
     return `<tr><td>${s.name}</td><td>${s.grade}</td><td>${subs.map(x=>x.name).join('، ')||'غير مسجل'}</td><td>${s.phone||''}</td><td>${typeof parentNameForStudent==='function'?parentNameForStudent(s.id):''}</td><td>${subs.length}</td></tr>`;
   }).join('');
   adminMain.innerHTML=`<div class="page-title-card"><h2>الطلاب</h2></div><div class="panel compact-table-wrap"><table><thead><tr><th>اسم الطالب الثلاثي</th><th>الصف</th><th>المواد المسجل بها</th><th>رقم الهاتف</th><th>ولي الأمر</th><th>عدد المواد</th></tr></thead><tbody>${rows||`<tr><td colspan="6">لا يوجد طلاب ظاهرون</td></tr>`}</tbody></table></div>`;
-}function adminParents(){setActivePanel('adminParents');jumpToWorkspace('adminMain');adminMain.innerHTML=`<h2>أولياء الأمور</h2><div class="panel"><h3>إضافة / ربط ولي أمر</h3><input id="pName" placeholder="اسم ولي الأمر"><input id="pCode" placeholder="رمز ولي الأمر"><select id="pStudent">${state.students.map(s=>`<option value="${s.id}">${s.name} - ${s.grade}</option>`).join('')}</select><button onclick="addParentLink()">إضافة وربط</button></div><div class="panel">${state.parents.length?state.parents.map(p=>`<div class="file-item"><div><b>${p.name}</b><br>الأبناء: ${(p.students||[]).map(id=>state.students.find(s=>s.id===id)?.name).filter(Boolean).join('، ')||'لا يوجد'}</div></div>`).join(''):`<div class='empty'>لا يوجد أولياء أمور</div>`}</div>`}function addParentLink(){const name=pName.value.trim(),code=pCode.value.trim(),sid=pStudent.value;if(!name||!code||!sid)return alert('أكمل البيانات');let p=state.parents.find(x=>same(x.name,name)&&x.code===code);if(!p){p={id:uid('par'),name,code,students:[]};state.parents.push(p)}if(!p.students.includes(sid))p.students.push(sid);save();adminParents()}function adminPayments(){setActivePanel('adminPayments');jumpToWorkspace('adminMain');const pending=state.payments.filter(p=>p.status==='pending'),approved=state.payments.filter(p=>p.status==='approved');adminMain.innerHTML=`<h2>طلبات الاشتراك والتحويل</h2><div class="notice">رقم الماستر كارد: <b>${state.settings.masterCard}</b></div><div class="panel"><h3>طلبات قيد الموافقة</h3>${pending.length?pending.map(p=>{const s=state.students.find(x=>x.id===p.studentId),sub=subjectById(p.subjectId);return `<div class="file-item"><div><b>${s?.name}</b><br>${sub?.name} - ${sub?.grade}<br>الهاتف: ${p.phone}<br>المبلغ: ${p.amount}<br>التاريخ: ${p.payDate}</div><div><input id="days${p.id}" type="number" value="${state.settings.defaultSubscriptionDays}"><button class="green" onclick="approvePayment('${p.id}')">قبول</button><button class="danger" onclick="rejectPayment('${p.id}')">رفض</button></div></div>`}).join(''):`<div class='empty'>لا توجد طلبات</div>`}</div><div class="panel"><h3>اشتراكات مفعلة</h3>${approved.length?approved.map(p=>{const s=state.students.find(x=>x.id===p.studentId),sub=subjectById(p.subjectId);return `<div class="file-item"><b>${s?.name}</b><span>${sub?.name} - ينتهي ${p.endDate}</span></div>`}).join(''):`<div class='empty'>لا توجد اشتراكات</div>`}</div>`}function approvePayment(id){const p=state.payments.find(x=>x.id===id);if(!p)return;const days=+document.getElementById('days'+id).value||state.settings.defaultSubscriptionDays;const end=new Date();end.setDate(end.getDate()+days);p.status='approved';logActivity({source:'الاشتراكات',action:'تفعيل اشتراك طالب',studentId:p.studentId,subjectId:p.subjectId,icon:'💳'});p.days=days;p.startDate=todayISO();p.endDate=end.toISOString().slice(0,10);p.approvedAt=new Date().toLocaleString('ar-IQ');{const st=state.students.find(s=>s.id===p.studentId),sub=subjectById(p.subjectId);addNotification('student:'+p.studentId,{source:'الاشتراكات',title:'تم تفعيل اشتراكك',body:'تم تفعيل الاشتراك حتى '+p.endDate,subjectId:p.subjectId,subjectName:sub?.name||'',studentId:p.studentId,studentName:st?.name||'',icon:'💳'});}save();adminPayments()}function rejectPayment(id){const p=state.payments.find(x=>x.id===id);if(p){p.status='rejected';save();adminPayments()}}function adminResults(){
+}function adminParents(){setActivePanel('adminParents');jumpToWorkspace('adminMain');adminMain.innerHTML=`<h2>أولياء الأمور</h2><div class="panel"><h3>إضافة / ربط ولي أمر</h3><input id="pName" placeholder="اسم ولي الأمر"><input id="pCode" placeholder="رمز ولي الأمر"><select id="pStudent">${state.students.map(s=>`<option value="${s.id}">${s.name} - ${s.grade}</option>`).join('')}</select><button onclick="addParentLink()">إضافة وربط</button></div><div class="panel">${state.parents.length?state.parents.map(p=>`<div class="file-item"><div><b>${p.name}</b><br>الأبناء: ${(p.students||[]).map(id=>state.students.find(s=>s.id===id)?.name).filter(Boolean).join('، ')||'لا يوجد'}</div></div>`).join(''):`<div class='empty'>لا يوجد أولياء أمور</div>`}</div>`}function addParentLink(){const name=pName.value.trim(),code=pCode.value.trim(),sid=pStudent.value;if(!name||!code||!sid)return alert('أكمل البيانات');let p=state.parents.find(x=>same(x.name,name)&&x.code===code);if(!p){p={id:uid('par'),name,code,students:[]};state.parents.push(p)}if(!p.students.includes(sid))p.students.push(sid);save();adminParents()}function adminPayments(){setActivePanel('adminPayments');jumpToWorkspace('adminMain');const pending=state.payments.filter(p=>p.status==='pending'),approved=state.payments.filter(p=>p.status==='approved');adminMain.innerHTML=`<h2>طلبات الاشتراك والتحويل</h2><div class="notice">رقم الماستر كارد: <b>${state.settings.masterCard}</b></div><div class="panel"><h3>طلبات قيد الموافقة</h3>${pending.length?pending.map(p=>{const s=state.students.find(x=>x.id===p.studentId),sub=subjectById(p.subjectId);return `<div class="file-item"><div><b>${s?.name}</b><br>${sub?.name} - ${sub?.grade}<br>الهاتف: ${p.phone}<br>المبلغ: ${p.amount}<br>التاريخ: ${p.payDate}</div><div><button class="green" onclick="approvePayment('${p.id}')">قبول</button><button class="danger" onclick="rejectPayment('${p.id}')">رفض</button></div></div>`}).join(''):`<div class='empty'>لا توجد طلبات</div>`}</div><div class="panel"><h3>اشتراكات مفعلة</h3>${approved.length?approved.map(p=>{const s=state.students.find(x=>x.id===p.studentId),sub=subjectById(p.subjectId);return `<div class="file-item"><b>${s?.name}</b><span>${sub?.name} - ينتهي ${p.endDate}</span></div>`}).join(''):`<div class='empty'>لا توجد اشتراكات</div>`}</div>`}function approvePayment(id){const p=state.payments.find(x=>x.id===id);if(!p)return;const days=+document.getElementById('days'+id).value||state.settings.defaultSubscriptionDays;const end=new Date();end.setDate(end.getDate()+days);p.status='approved';logActivity({source:'الاشتراكات',action:'تفعيل اشتراك طالب',studentId:p.studentId,subjectId:p.subjectId,icon:'💳'});p.days=days;p.startDate=todayISO();p.endDate=end.toISOString().slice(0,10);p.approvedAt=new Date().toLocaleString('ar-IQ');{const st=state.students.find(s=>s.id===p.studentId),sub=subjectById(p.subjectId);addNotification('student:'+p.studentId,{source:'الاشتراكات',title:'تم تفعيل اشتراكك',body:'تم تفعيل الاشتراك حتى '+p.endDate,subjectId:p.subjectId,subjectName:sub?.name||'',studentId:p.studentId,studentName:st?.name||'',icon:'💳'});}save();adminPayments()}function rejectPayment(id){const p=state.payments.find(x=>x.id===id);if(p){p.status='rejected';save();adminPayments()}}function adminResults(){
   setActivePanel('adminResults');jumpToWorkspace('adminMain');
   const rows=adminVisibleResults().map(r=>{
     const st=(state.students||[]).find(s=>s.id===r.studentId);
@@ -3038,6 +3049,130 @@ function sendSubscriptionRequestToAdmin(){
   alert('تم إرسال طلب تفعيل الاشتراك إلى المدير');
   if(typeof studentSubscription==='function')studentSubscription();
 }
+
+
+/* ===== Final Single Subscription Button + Admin Duration ===== */
+function ensureSubscriptionArrays(){
+  state.subscriptionRequests=state.subscriptionRequests||[];
+  state.subscriptions=state.subscriptions||[];
+}
+function subscriptionVisible(x){
+  return !x || (x.hidden!==true && x.deleted!==true && x.status!=='removed');
+}
+function pendingSubscriptionRequests(){
+  ensureSubscriptionArrays();
+  return state.subscriptionRequests.filter(r=>subscriptionVisible(r)&&r.status!=='approved'&&r.status!=='rejected');
+}
+function activeSubscriptionsVisible(){
+  ensureSubscriptionArrays();
+  return state.subscriptions.filter(s=>subscriptionVisible(s)&&(s.status==='active'||s.active===true||!s.status));
+}
+function sendSubscriptionRequestToAdmin(){
+  ensureSubscriptionArrays();
+  const studentName=(document.getElementById('payStudentName')?.value||user?.name||'').trim();
+  const subjectId=(document.getElementById('paySubject')?.value||'').trim();
+  const phone=(document.getElementById('payPhone')?.value||'').trim();
+  const amount=(document.getElementById('payAmount')?.value||'').trim();
+  const date=(document.getElementById('payDate')?.value||'').trim();
+  const note=(document.getElementById('payNote')?.value||'').trim();
+  const sub=subjectId?(state.subjects||[]).find(s=>s.id===subjectId):null;
+  if(!studentName)return alert('اكتب اسم الطالب');
+  if(!phone)return alert('اكتب رقم الهاتف');
+  if(!amount)return alert('اكتب مبلغ الاشتراك');
+  state.subscriptionRequests.push({
+    id:uid('subreq'),
+    studentId:user.id,
+    studentName,
+    subjectId:subjectId||'',
+    subjectName:sub?.name||'اشتراك عام',
+    grade:user.grade||sub?.grade||'',
+    phone,
+    amount,
+    paymentDate:date||new Date().toLocaleDateString('ar-IQ'),
+    note,
+    status:'pending',
+    createdAt:new Date().toLocaleString('ar-IQ')
+  });
+  addNotification('admin',{source:'الاشتراكات',title:'طلب تفعيل اشتراك',body:studentName+' - '+amount,studentId:user.id,studentName,icon:'💳'});
+  save();
+  alert('تم إرسال طلب تفعيل الاشتراك إلى المدير');
+  if(typeof studentSubscription==='function')studentSubscription();
+}
+function approveSubscriptionRequest(id){
+  ensureSubscriptionArrays();
+  const r=state.subscriptionRequests.find(x=>x.id===id);
+  if(!r)return alert('لم يتم العثور على الطلب');
+  const days=prompt('حدد مدة الاشتراك بالأيام:', '30');
+  if(days===null)return;
+  const n=parseInt(days,10);
+  if(!n || n<1)return alert('اكتب عدد أيام صحيح');
+  r.status='approved';
+  r.approvedAt=new Date().toLocaleString('ar-IQ');
+  state.subscriptions.push({
+    id:uid('sub'),
+    studentId:r.studentId,
+    studentName:r.studentName||r.name||'طالب',
+    subjectId:r.subjectId||'',
+    subjectName:r.subjectName||'اشتراك عام',
+    phone:r.phone||'',
+    amount:r.amount||'',
+    paymentDate:r.paymentDate||r.date||'',
+    days:n,
+    status:'active',
+    active:true,
+    date:new Date().toLocaleString('ar-IQ'),
+    note:r.note||''
+  });
+  addNotification('student:'+r.studentId,{source:'الاشتراكات',title:'تم تفعيل اشتراكك',body:`المدة: ${n} يوم`,icon:'💳'});
+  save();
+  alert('تمت الموافقة وتحديد مدة الاشتراك');
+  adminSubscriptions();
+}
+function rejectSubscriptionRequest(id){
+  const r=(state.subscriptionRequests||[]).find(x=>x.id===id);
+  if(!r)return;
+  if(!confirm('حذف طلب الاشتراك من الواجهة؟'))return;
+  r.hidden=true;r.deleted=true;r.status='rejected';r.hiddenAt=new Date().toLocaleString('ar-IQ');
+  save();adminSubscriptions();
+}
+function clearOldSubscriptionsVisibleOnly(){
+  const word=prompt('لتفريغ سجل الاشتراكات القديمة من الواجهة فقط اكتب: تفريغ');
+  if(word!=='تفريغ')return alert('تم إلغاء العملية');
+  try{
+    state.backups=state.backups||[];
+    state.backups.unshift({id:uid('backup'),label:'نسخة قبل تفريغ سجل الاشتراكات',date:new Date().toLocaleString('ar-IQ'),data:JSON.stringify(state)});
+    if(state.backups.length>10)state.backups=state.backups.slice(0,10);
+  }catch(e){}
+  (state.subscriptions||[]).forEach(s=>{
+    if(subscriptionVisible(s)){
+      s.hidden=true;s.deleted=true;s.hiddenReason='تفريغ سجل الاشتراكات القديمة';s.hiddenAt=new Date().toLocaleString('ar-IQ');
+    }
+  });
+  save();
+  alert('تم تفريغ سجل الاشتراكات من الواجهة فقط، بدون حذف بيانات الطالب.');
+  adminSubscriptions();
+}
+function deleteStudentSubscriptionAndRemoveFromSubjects(subId){
+  const sub=(state.subscriptions||[]).find(s=>s.id===subId);
+  if(!sub)return alert('لم يتم العثور على الاشتراك');
+  if(!confirm('حذف اشتراك الطالب وإخراجه من المواد المسجل بها؟ ستبقى نتائجه القديمة محفوظة.'))return;
+  const sid=sub.studentId;
+  sub.hidden=true;sub.deleted=true;sub.status='removed';
+  sub.hiddenReason='حذف اشتراك الطالب وإخراجه من المواد';sub.hiddenAt=new Date().toLocaleString('ar-IQ');
+  (state.enrollments||[]).forEach(e=>{if(e.studentId===sid){e.hidden=true;e.deleted=true;e.status='removed';e.hiddenReason='تم حذف اشتراك الطالب';}});
+  (state.enrollRequests||[]).forEach(r=>{if(r.studentId===sid){r.hidden=true;r.deleted=true;r.status='removed';}});
+  addNotification('student:'+sid,{source:'الاشتراكات',title:'تم إيقاف اشتراكك',body:'تم حذف الاشتراك وإخراجك من المواد المسجل بها.',icon:'⚠️'});
+  save();
+  alert('تم حذف الاشتراك وإخراج الطالب من المواد المسجل بها.');
+  adminSubscriptions();
+}
+function removeDuplicateSubscriptionButtons(){
+  try{
+    const btns=[...document.querySelectorAll('button')].filter(b=>b.textContent.includes('الاشتراكات'));
+    btns.forEach((b,i)=>{if(i>0)b.remove();});
+  }catch(e){}
+}
+setInterval(removeDuplicateSubscriptionButtons,1000);
 
 async function startApp(){
   await loadCloudState();

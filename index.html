@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>آفاق التعليمية - النسخة النهائية</title>
 <meta name="theme-color" content="#071b49">
+<link rel="manifest" href="manifest.json">
 <style>
 :root{--dark:#071b49;--blue:#2563eb;--sky:#60a5fa;--bg:#eef5ff;--card:#fff;--text:#0f172a;--muted:#64748b;--green:#16a34a;--red:#dc2626;--gold:#f5b72f;--shadow:0 18px 45px rgba(15,23,42,.10)}
 *{box-sizing:border-box}body{margin:0;font-family:Tahoma,Arial,sans-serif;background:linear-gradient(180deg,#eef5ff,#fbfdff);color:var(--text)}button,input,select,textarea{font-family:inherit}button{border:0;border-radius:15px;padding:11px 17px;background:var(--blue);color:#fff;font-weight:900;margin:4px;cursor:pointer}.green{background:var(--green)}.danger{background:var(--red)}.gold{background:var(--gold);color:#111}.gray{background:#64748b}.hidden{display:none!important}input,select,textarea{width:100%;padding:13px;border:1px solid #cfdaf0;border-radius:15px;background:#f8fbff;margin:7px 0}.topbar{position:sticky;top:0;z-index:90;background:rgba(255,255,255,.95);backdrop-filter:blur(16px);box-shadow:0 8px 30px rgba(15,23,42,.07)}.header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 5%}.logo{display:flex;align-items:center;gap:10px;font-size:21px;font-weight:900;color:var(--dark)}.mark{width:42px;height:42px;border-radius:16px;background:linear-gradient(135deg,var(--blue),var(--sky));display:grid;place-items:center;color:#fff}nav a{cursor:pointer;text-decoration:none;color:var(--dark);background:#f3f7ff;border:1px solid #e3ebfb;padding:8px 13px;border-radius:999px;font-weight:900;margin:2px}.page{padding:40px 5%}.hero{min-height:88vh;display:grid;grid-template-columns:1fr 1.05fr;gap:28px;align-items:center;background:radial-gradient(circle at 10% 10%,rgba(245,183,47,.34),transparent 28%),radial-gradient(circle at 85% 18%,rgba(96,165,250,.35),transparent 35%),linear-gradient(135deg,#06183f,#155eef 60%,#70c7ff);color:#fff}.hero h1{font-size:54px;margin:0 0 12px}.hero p{font-size:20px;color:#eaf2ff;line-height:1.8}.portal{display:grid;grid-template-columns:repeat(2,minmax(220px,1fr));gap:16px}.role{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:28px;padding:22px;backdrop-filter:blur(14px);box-shadow:0 20px 60px rgba(0,0,0,.16);cursor:pointer;text-align:center}.role .icon{font-size:42px}.role h3{margin:0;color:#fff;font-size:24px}.brand{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.25);border-radius:26px;padding:16px;margin-top:14px}.brand img{max-width:100%;max-height:260px;object-fit:cover;border-radius:22px}.panel,.card{background:#fff;border-radius:24px;padding:22px;box-shadow:var(--shadow);border:1px solid #e6edff;margin-top:18px}.title{background:linear-gradient(135deg,#071b49,#2563eb);color:#fff;border-radius:28px;padding:24px;margin:8px 0 18px;box-shadow:var(--shadow)}.title h2{margin:0 0 6px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px}.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:14px;margin:14px 0}.stat{background:linear-gradient(135deg,#071b49,#2563eb);color:#fff;border-radius:22px;padding:18px;text-align:center}.stat b{display:block;font-size:30px}.shell{display:grid;grid-template-columns:285px 1fr;min-height:80vh;padding:0;background:#f8fbff}.shell aside{background:#06183f;color:#fff;padding:22px;position:sticky;top:64px;height:calc(100vh - 64px);overflow:auto}.shell aside button{display:block;width:100%;margin:7px 0;text-align:right;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15)}.shell main{padding:30px}.item{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;border:1px solid #e7edf9;border-radius:18px;padding:14px;margin:9px 0;background:#fff}.badge{display:inline-block;background:#eef5ff;padding:7px 10px;border-radius:12px;color:#071b49;margin:3px;font-size:13px;font-weight:900}.note{background:#fff8df;border:1px solid #ffe08a;padding:14px;border-radius:18px;margin:10px 0;color:#7c4a00;font-weight:900}.empty{background:#f8fbff;border:1px dashed #b9c9e8;border-radius:18px;padding:22px;text-align:center;color:#64748b;font-weight:900}.modal{position:fixed;inset:0;background:rgba(2,6,23,.68);z-index:200;display:grid;place-items:center;padding:18px}.box{width:min(100%,520px);background:#fff;border-radius:30px;padding:24px;box-shadow:0 30px 80px rgba(0,0,0,.35)}.row{display:flex;gap:10px;flex-wrap:wrap}.row>*{flex:1}.chat{background:#f8fbff;border:1px solid #e7edf9;border-radius:16px;padding:12px;margin:8px 0}.q{border:1px solid #e7edf9;background:#fff;border-radius:18px;padding:14px;margin:12px 0}.choice{display:block;padding:12px;border:1px solid #dbeafe;border-radius:14px;margin:7px 0;background:#f8fbff}.choice input{width:auto;margin-left:8px}footer{text-align:center;padding:24px;background:#06183f;color:#fff}@media(max-width:950px){.header{display:grid;justify-items:center}.hero{display:block;min-height:auto;text-align:center;padding:32px 14px}.hero h1{font-size:34px}.portal{grid-template-columns:1fr}.shell{display:block}.shell aside{position:static;height:auto}.shell main{padding:20px 12px}.item{display:block;text-align:center}.page{padding:26px 12px}.stats{grid-template-columns:1fr 1fr}}@media(max-width:520px){.stats{grid-template-columns:1fr}}
@@ -15,6 +16,7 @@
 .not-badge{display:inline-grid;place-items:center;min-width:24px;height:24px;background:#dc2626;color:#fff;border-radius:999px;font-size:12px;font-weight:900;margin-right:6px}
 .locked-input{user-select:none;-webkit-user-select:none}
 
+.firebase-state{display:inline-block;padding:6px 10px;border-radius:999px;background:#ecfeff;color:#075985;font-weight:900;margin:4px}.install-btn{position:fixed;left:14px;bottom:14px;z-index:300;background:#16a34a;color:#fff;border-radius:999px;box-shadow:0 12px 30px rgba(22,163,74,.35)}
 </style>
 </head>
 <body>
@@ -29,6 +31,11 @@
 <section id="room" class="page hidden"><div class="title"><h2 id="roomTitle">المادة</h2><p id="roomSub"></p></div><div class="panel"><div class="row"><button onclick="roomTab('lessons')">📁 الدروس</button><button onclick="roomTab('homework')">📌 الواجبات</button><button onclick="roomTab('exams')">📝 الاختبارات</button><button onclick="roomTab('results')">📊 النتائج</button></div></div><div id="roomContent" class="panel"></div></section>
 <section id="examPage" class="page hidden"><div id="examArea" class="panel"></div></section>
 <div id="loginModal" class="modal hidden"></div><footer id="footerName">© منصة آفاق التعليمية</footer>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-storage-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-analytics-compat.js"></script>
+
 <script>
 const STORE='AFAQ_FINAL_ONE_FILE_V1',USER_STORE='AFAQ_USER_FINAL_ONE_FILE_V1';let state=null,user=null,currentSubjectId='',currentExamId='';
 function def(){return{settings:{platformName:'منصة آفاق التعليمية',adminCode:'admin',studentCode:'1234',parentCode:'parent',masterCard:'0000 0000 0000 0000',homeImage:'',homeBio:'منصة تعليمية متكاملة للدروس والاختبارات ومتابعة النتائج والحضور.'},subjects:[],teachers:[],students:[],parents:[],enrollments:[],materialRequests:[],payments:[],lessons:[],exams:[],results:[],finalGrades:[],homeworks:[],attendance:[],messages:[],notifications:[],activity:[],backups:[]}}
@@ -680,7 +687,157 @@ function roomTab(tab){
   }
 }
 /* refresh active attendance countdown every few seconds while student page is open */
-setInterval(()=>{try{if(user&&user.role==='student'&&!document.getElementById('student').classList.contains('hidden')&&studentPanel.innerHTML.includes('الحضور'))studentAttendance()}catch(e){}},5000);
+setInterval(()=>{
+  try{
+    if(!user || user.role!=='student') return;
+
+    const studentVisible = !document.getElementById('student').classList.contains('hidden');
+    const roomVisible = !document.getElementById('room').classList.contains('hidden');
+
+    if(studentVisible && studentPanel.innerHTML.includes('الحضور')){
+      studentAttendance();
+    }
+
+    if(roomVisible && currentSubjectId){
+      if(roomContent.innerHTML.includes('تسجيل الحضور النشط')){
+        roomTab('lessons');
+      }
+    }
+  }catch(e){}
+},1000);
+
+
+/* ===== FIREBASE 3A CLOUD SYNC + STORAGE + PWA ===== */
+const firebaseConfig = {
+  apiKey: "AIzaSyAercsM1RjeL-GTMCBafeSN7W1aph9hvRw",
+  authDomain: "afaq-education-99de3.firebaseapp.com",
+  projectId: "afaq-education-99de3",
+  storageBucket: "afaq-education-99de3.firebasestorage.app",
+  messagingSenderId: "23291110528",
+  appId: "1:23291110528:web:6c9f597e73889e526cb265",
+  measurementId: "G-4GC33J93L9"
+};
+let afaqFirebaseReady=false, afaqApplyingRemote=false, afaqDb=null, afaqStorage=null, afaqUnsubscribe=null, afaqInstallPrompt=null;
+try{
+  if(window.firebase){
+    firebase.initializeApp(firebaseConfig);
+    afaqDb=firebase.firestore();
+    afaqStorage=firebase.storage();
+    try{firebase.analytics()}catch(e){}
+    afaqFirebaseReady=true;
+  }
+}catch(e){console.warn('Firebase init error',e)}
+const originalSaveLocal=save;
+save=function(){
+  originalSaveLocal();
+  if(afaqFirebaseReady && afaqDb && !afaqApplyingRemote){
+    afaqDb.collection('afaq_platform').doc('main_state').set({
+      state:state,
+      updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+    },{merge:true}).catch(err=>console.warn('Cloud save error',err));
+  }
+};
+function mergeWithDefaults(remote){
+  const base=def();
+  const merged=Object.assign(base,remote||{});
+  Object.keys(base).forEach(k=>{if(merged[k]===undefined)merged[k]=base[k]});
+  ['subjects','teachers','students','parents','enrollments','materialRequests','payments','lessons','exams','results','finalGrades','homeworks','homeworkAnswers','attendance','attendanceSessions','messages','notifications','activity','backups'].forEach(k=>{if(!Array.isArray(merged[k]))merged[k]=[]});
+  merged.settings=Object.assign(base.settings,merged.settings||{});
+  return merged;
+}
+function refreshCurrentView(){
+  applyAppearance();
+  if(!user)return;
+  const visible=[...document.querySelectorAll('.page')].find(p=>!p.classList.contains('hidden'));
+  if(!visible)return;
+  if(visible.id==='admin')adminHome();
+  else if(visible.id==='teacher')teacherHome();
+  else if(visible.id==='student')studentDashboard();
+  else if(visible.id==='parent')parentHome();
+}
+async function startFirebaseRealtime(){
+  if(!afaqFirebaseReady||!afaqDb)return;
+  const ref=afaqDb.collection('afaq_platform').doc('main_state');
+  const snap=await ref.get().catch(()=>null);
+  if(!snap || !snap.exists){
+    await ref.set({state:state,createdAt:firebase.firestore.FieldValue.serverTimestamp(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}).catch(console.warn);
+  }
+  if(afaqUnsubscribe)afaqUnsubscribe();
+  afaqUnsubscribe=ref.onSnapshot(doc=>{
+    if(!doc.exists)return;
+    const data=doc.data()||{};
+    if(!data.state)return;
+    afaqApplyingRemote=true;
+    state=mergeWithDefaults(data.state);
+    localStorage.setItem(STORE,JSON.stringify(state));
+    afaqApplyingRemote=false;
+    refreshCurrentView();
+  },err=>console.warn('Realtime error',err));
+}
+async function uploadFileToFirebase(file,path){
+  if(!afaqFirebaseReady||!afaqStorage||!file)return '';
+  const safeName=(file.name||'file').replace(/[^\u0600-\u06FF\w.\-]+/g,'_');
+  const ref=afaqStorage.ref(path+'/'+Date.now()+'_'+safeName);
+  await ref.put(file);
+  return await ref.getDownloadURL();
+}
+function firebaseStatusBadge(){return `<span class="firebase-state">${afaqFirebaseReady?'☁️ Firebase متصل':'⚠️ Firebase غير متصل'}</span><span class="firebase-state">تحديث لحظي</span><span class="firebase-state">PWA</span>`}
+const oldAdminHomeFirebase=adminHome;
+adminHome=function(){oldAdminHomeFirebase();if(adminMain&&!adminMain.innerHTML.includes('Firebase متصل'))adminMain.innerHTML=`<div class="panel">${firebaseStatusBadge()}</div>`+adminMain.innerHTML}
+
+/* رفع ملفات الدروس إلى Firebase Storage */
+function teacherLessons(){
+  if(typeof ensurePhase2==='function')ensurePhase2();
+  const sub=teacherSubject();const arr=state.lessons.filter(l=>v(l)&&l.subjectId===sub?.id);
+  teacherMain.innerHTML=`<div class="title"><h2>الدروس والملفات</h2>${firebaseStatusBadge()}</div>
+  <div class="panel"><input id="lessonTitle" placeholder="عنوان الدرس"><textarea id="lessonDesc" placeholder="وصف مختصر"></textarea><input id="lessonUrl" placeholder="رابط اختياري"><input id="lessonFile" type="file" accept=".pdf,image/*,video/*"><button onclick="addLesson()">إضافة الدرس</button></div>
+  <div class="panel">${arr.length?arr.map(l=>`<div class="item"><div><b>${esc(l.title)}</b><p>${esc(l.desc||'')}</p><span class="badge">${esc(l.date||'')}</span><span class="badge">${l.fileUrl?'Firebase Storage':l.fileData?'محلي':'رابط'}</span></div><div>${l.fileUrl?`<a target="_blank" href="${esc(l.fileUrl)}"><button>فتح الملف</button></a>`:''}${l.fileData?`<button onclick="openDataFile('${l.id}')">فتح الملف</button>`:''}${l.url?`<a target="_blank" href="${esc(l.url)}"><button>فتح الرابط</button></a>`:''}<button class="danger" onclick="delLesson('${l.id}')">حذف</button></div></div>`).join(''):'<div class="empty">لا توجد دروس</div>'}</div>`;
+}
+async function addLesson(){
+  const sub=teacherSubject();if(!lessonTitle.value.trim())return alert('اكتب عنوان الدرس');
+  const f=lessonFile.files[0];let fileUrl='',fileName='',fileData='';
+  if(f){
+    fileName=f.name;
+    try{fileUrl=await uploadFileToFirebase(f,'lessons/'+sub.id)}
+    catch(e){fileData=await new Promise(res=>{const r=new FileReader();r.onload=()=>res(r.result);r.readAsDataURL(f)})}
+  }
+  state.lessons.push({id:uid('les'),subjectId:sub.id,title:lessonTitle.value.trim(),desc:lessonDesc.value.trim(),url:lessonUrl.value.trim(),fileUrl,fileData,fileName,date:new Date().toLocaleString('ar-IQ')});
+  notify('subject:'+sub.id,'درس جديد','تمت إضافة درس: '+lessonTitle.value.trim(),'📚');
+  notify('students','درس جديد','تمت إضافة درس في مادة '+sub.name,'📚');
+  save();teacherLessons();
+}
+async function saveAppearance(){
+  state.settings.platformName=appName.value.trim()||'منصة آفاق التعليمية';
+  state.settings.homeBio=appBio.value.trim();
+  const f=appImageFile.files[0];
+  if(f){
+    try{state.settings.homeImage=await uploadFileToFirebase(f,'appearance')}
+    catch(e){state.settings.homeImage=await new Promise(res=>{const r=new FileReader();r.onload=()=>res(r.result);r.readAsDataURL(f)})}
+  }else state.settings.homeImage=appImage.value.trim();
+  save();applyAppearance();alert('تم الحفظ');
+}
+const previousRoomTabFirebase=roomTab;
+roomTab=function(tab){
+  const s=subjectById(currentSubjectId);
+  if(tab==='lessons'){
+    const arr=state.lessons.filter(l=>v(l)&&l.subjectId===s.id);
+    const attend = (typeof studentAttendanceBox==='function') ? studentAttendanceBox(s.id) : '';
+    roomContent.innerHTML=attend+(arr.length?arr.map(l=>`<div class="item"><div><b>${esc(l.title)}</b><p>${esc(l.desc||'')}</p></div>${l.fileUrl?`<a href="${esc(l.fileUrl)}" target="_blank"><button>فتح الملف</button></a>`:''}${l.fileData?`<button onclick="openDataFile('${l.id}')">فتح الملف</button>`:''}${l.url?`<a href="${esc(l.url)}" target="_blank"><button>فتح الرابط</button></a>`:''}</div>`).join(''):'<div class="empty">لا توجد دروس</div>');
+  }else previousRoomTabFirebase(tab);
+};
+
+/* تثبيت التطبيق PWA */
+window.addEventListener('beforeinstallprompt',e=>{
+  e.preventDefault();afaqInstallPrompt=e;
+  if(!document.getElementById('installPwaBtn')){
+    const btn=document.createElement('button');
+    btn.id='installPwaBtn';btn.className='install-btn';btn.textContent='تثبيت منصة آفاق';
+    btn.onclick=async()=>{if(afaqInstallPrompt){afaqInstallPrompt.prompt();await afaqInstallPrompt.userChoice;afaqInstallPrompt=null;btn.remove()}};
+    document.body.appendChild(btn);
+  }
+});
+if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(console.warn))}
+setTimeout(startFirebaseRealtime,500);
 
 load();applyAppearance();topUpdate();if(user)goHome();
 </script>

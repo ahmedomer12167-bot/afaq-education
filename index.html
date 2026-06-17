@@ -524,6 +524,12 @@ nav a{
 }
 .archive-action-card h3{margin-top:0;color:#071b49}
 
+
+/* ===== Archive Management Menu Fixed ===== */
+.archive-danger-box{background:#fff8df;border:1px solid #ffe08a;border-radius:22px;padding:18px;margin:14px 0;color:#7c4a00;font-weight:800}
+.archive-action-card{background:#fff;border:1px solid #e7edf9;border-radius:22px;padding:18px;margin:12px 0;box-shadow:0 10px 26px rgba(15,23,42,.06)}
+.archive-action-card h3{margin-top:0;color:#071b49}
+
 </style>
 
 <link rel="manifest" href="manifest.json">
@@ -2742,6 +2748,85 @@ function adminArchiveManagement(){
     <button class="danger" onclick="fullPlatformReset()">إعادة ضبط كاملة</button>
   </div>`;
 }
+
+
+/* ===== Archive Management Menu Fixed ===== */
+function makeBackupBeforeArchiveAction(label){
+  try{
+    state.backups=state.backups||[];
+    state.backups.unshift({id:uid('backup'),label,date:new Date().toLocaleString('ar-IQ'),data:JSON.stringify(state)});
+    if(state.backups.length>10)state.backups=state.backups.slice(0,10);
+  }catch(e){console.warn(e)}
+}
+function hardRemoveHiddenFrom(arr){
+  if(!Array.isArray(arr))return [];
+  return arr.filter(x=>!(x&&((x.hidden===true)||(x.deleted===true)||(x.status==='removed'))));
+}
+function clearArchiveOnly(){
+  const word=prompt('لتأكيد تفريغ الأرشيف اكتب: أرشيف');
+  if(word!=='أرشيف')return alert('تم إلغاء العملية');
+  makeBackupBeforeArchiveAction('نسخة قبل تفريغ الأرشيف');
+  state.exams=hardRemoveHiddenFrom(state.exams);
+  state.homeworks=hardRemoveHiddenFrom(state.homeworks);
+  state.messages=hardRemoveHiddenFrom(state.messages);
+  state.notifications=hardRemoveHiddenFrom(state.notifications);
+  state.lectures=hardRemoveHiddenFrom(state.lectures);
+  state.files=hardRemoveHiddenFrom(state.files);
+  state.calendarEvents=hardRemoveHiddenFrom(state.calendarEvents);
+  state.libraryItems=hardRemoveHiddenFrom(state.libraryItems);
+  state.questionBank=hardRemoveHiddenFrom(state.questionBank);
+  state.enrollRequests=hardRemoveHiddenFrom(state.enrollRequests);
+  state.activityLog=hardRemoveHiddenFrom(state.activityLog);
+  save();
+  alert('تم تفريغ الأرشيف مع إنشاء نسخة احتياطية');
+  adminArchiveManagement();
+}
+function startNewSchoolYear(){
+  const word=prompt('لبدء سنة دراسية جديدة اكتب: سنة جديدة');
+  if(word!=='سنة جديدة')return alert('تم إلغاء العملية');
+  makeBackupBeforeArchiveAction('نسخة قبل بدء سنة دراسية جديدة');
+  state.attendance=[];state.attendanceSessions=[];state.attendanceResponses=[];
+  state.homeworks=[];state.homeworkSubmissions=[];state.exams=[];state.results=[];
+  state.finalExamGrades=[];state.messages=[];state.notifications=[];state.activityLog=[];
+  state.calendarEvents=[];state.libraryItems=[];state.questionBank=[];state.xp=[];state.enrollRequests=[];
+  save();
+  alert('تم بدء سنة دراسية جديدة مع الإبقاء على الطلاب والمدرسين والمواد والأكواد');
+  adminArchiveManagement();
+}
+function fullPlatformReset(){
+  const word=prompt('تحذير: سيتم حذف كل شيء. للتأكيد اكتب بالضبط: حذف كامل');
+  if(word!=='حذف كامل')return alert('تم إلغاء العملية');
+  makeBackupBeforeArchiveAction('نسخة قبل إعادة الضبط الكاملة');
+  const savedBackups=state.backups||[];
+  Object.assign(state,{students:[],parents:[],teachers:[],subjects:[],enrollments:[],enrollRequests:[],exams:[],results:[],finalGrades:[],finalExamGrades:[],homeworks:[],homeworkSubmissions:[],attendance:[],attendanceSessions:[],attendanceResponses:[],messages:[],notifications:[],subscriptions:[],activityLog:[],lectures:[],files:[],calendarEvents:[],libraryItems:[],questionBank:[],xp:[],backups:savedBackups});
+  save();
+  alert('تمت إعادة ضبط المنصة بالكامل مع الاحتفاظ بالنسخة الاحتياطية');
+  adminArchiveManagement();
+}
+function archiveStatsHTML(){
+  const hiddenCount=(arr)=>Array.isArray(arr)?arr.filter(x=>x&&(x.hidden===true||x.deleted===true||x.status==='removed')).length:0;
+  return `<div class="smart-grid"><div class="smart-stat"><b>${hiddenCount(state.exams)}</b><span>اختبارات مؤرشفة</span></div><div class="smart-stat"><b>${hiddenCount(state.homeworks)}</b><span>واجبات مؤرشفة</span></div><div class="smart-stat"><b>${hiddenCount(state.messages)}</b><span>رسائل مؤرشفة</span></div><div class="smart-stat"><b>${hiddenCount(state.notifications)}</b><span>إشعارات مؤرشفة</span></div></div>`;
+}
+function adminArchiveManagement(){
+  setActivePanel('adminArchiveManagement');jumpToWorkspace('adminMain');
+  adminMain.innerHTML=`<div class="page-title-card"><h2>إدارة الأرشيف</h2><p>تنظيف البيانات القديمة أو بدء سنة جديدة بأمان</p></div>${archiveStatsHTML()}<div class="archive-danger-box">قبل أي عملية كبيرة يتم إنشاء نسخة احتياطية تلقائياً.</div><div class="archive-action-card"><h3>تفريغ الأرشيف فقط</h3><p>يحذف العناصر المخفية أو المحذوفة من الواجهة فقط.</p><button class="danger" onclick="clearArchiveOnly()">تفريغ الأرشيف</button></div><div class="archive-action-card"><h3>بدء سنة دراسية جديدة</h3><p>يمسح الاختبارات والحضور والواجبات والرسائل القديمة مع الإبقاء على الطلاب والمدرسين والمواد والأكواد.</p><button class="gold" onclick="startNewSchoolYear()">بدء سنة جديدة</button></div><div class="archive-action-card"><h3>إعادة ضبط المنصة بالكامل</h3><p>يمسح كل بيانات المنصة تقريباً ويجعلها كأنها جديدة.</p><button class="danger" onclick="fullPlatformReset()">إعادة ضبط كاملة</button></div>`;
+}
+function ensureArchiveButtonVisible(){
+  try{
+    if(!(user&&user.role==='admin'))return;
+    if(document.querySelector('[data-archive-btn="1"]'))return;
+    const buttons=[...document.querySelectorAll('button')];
+    const ref=buttons.find(b=>b.textContent.includes('الإعدادات'))||buttons.find(b=>b.textContent.includes('واجهة المنصة'))||buttons.find(b=>b.textContent.includes('النسخ الاحتياطي'));
+    if(ref&&ref.parentElement){
+      const btn=document.createElement('button');
+      btn.setAttribute('data-archive-btn','1');
+      btn.innerHTML='🗄️ إدارة الأرشيف';
+      btn.onclick=adminArchiveManagement;
+      ref.parentElement.insertBefore(btn,ref);
+    }
+  }catch(e){}
+}
+setInterval(ensureArchiveButtonVisible,1200);
 
 async function startApp(){
   await loadCloudState();

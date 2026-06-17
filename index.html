@@ -44,6 +44,25 @@ button.afaq-badge-btn[data-badge]:not([data-badge="0"])::after{
   border:2px solid #fff;
 }
 
+
+/* ===== INLINE BADGES FIX ===== */
+.inlineBadge{
+  display:inline-grid;
+  place-items:center;
+  min-width:22px;
+  height:22px;
+  padding:0 6px;
+  border-radius:999px;
+  background:#dc2626;
+  color:#fff;
+  font-size:12px;
+  font-weight:900;
+  margin-right:6px;
+  vertical-align:middle;
+  box-shadow:0 6px 15px rgba(220,38,38,.35);
+}
+.inlineBadge:empty,.inlineBadge[data-count="0"]{display:none}
+
 </style>
 </head>
 <body>
@@ -1808,6 +1827,154 @@ if(typeof afaqOldStrongRefresh==='function'&&!window.afaqStrongRefreshWrapped){
 /* تحديث مستمر */
 setInterval(afaqUpdateStrongStudentBadges,700);
 setTimeout(afaqUpdateStrongStudentBadges,800);
+
+
+/* ===== FINAL INLINE BADGES INSIDE ORIGINAL BUTTONS ===== */
+function afaqV(x){return !!x && x.hidden!==true && x.deleted!==true && x.status!=='removed'}
+function afaqStudentSubs(){
+  if(!user || user.role!=='student') return [];
+  return (state.enrollments||[]).filter(e=>afaqV(e)&&e.studentId===user.id&&e.status==='approved').map(e=>e.subjectId);
+}
+function afaqBadgeData(){
+  if(!user || user.role!=='student') return {n:0,a:0,h:0,e:0,l:0};
+  const subjectIds=afaqStudentSubs();
+  const targets=['all','students','student:'+user.id].concat(subjectIds.map(id=>'subject:'+id));
+  const n=(state.notifications||[]).filter(x=>targets.includes(x.target)&&x.read!==true&&afaqV(x)).length;
+  const a=(state.attendanceSessions||[]).filter(s=>afaqV(s)&&subjectIds.includes(s.subjectId)&&Date.now()<Number(s.endAt||0)&&!(state.attendance||[]).some(r=>r.sessionId===s.id&&r.studentId===user.id)).length;
+  const h=(state.homeworks||[]).filter(hw=>afaqV(hw)&&subjectIds.includes(hw.subjectId)&&!(hw.deadline&&new Date(hw.deadline).getTime()<Date.now())&&!(state.homeworkAnswers||[]).some(ans=>afaqV(ans)&&ans.homeworkId===hw.id&&ans.studentId===user.id)).length;
+  const e=(state.exams||[]).filter(ex=>afaqV(ex)&&subjectIds.includes(ex.subjectId)&&!(state.results||[]).some(r=>r.examId===ex.id&&r.studentId===user.id)).length;
+  const l=(state.lessons||[]).filter(ls=>afaqV(ls)&&subjectIds.includes(ls.subjectId)).length;
+  return {n,a,h,e,l};
+}
+function afaqBadgeSpan(id,count){
+  return `<span class="inlineBadge" id="${id}" data-count="${count||0}">${count?count:''}</span>`;
+}
+function afaqRefreshInlineBadgeNumbers(){
+  try{
+    if(!user || user.role!=='student') return;
+    const b=afaqBadgeData();
+    const map={
+      studentNotifyInlineBadge:b.n,
+      studentAttendanceInlineBadge:b.a,
+      studentHomeworkInlineBadge:b.h,
+      studentExamInlineBadge:b.e,
+      roomLessonsInlineBadge:b.l,
+      roomHomeworkInlineBadge:b.h,
+      roomExamsInlineBadge:b.e,
+      roomAttendanceInlineBadge:b.a
+    };
+    Object.entries(map).forEach(([id,count])=>{
+      document.querySelectorAll('#'+id).forEach(el=>{
+        el.dataset.count=String(count||0);
+        el.textContent=count?String(count):'';
+      });
+    });
+  }catch(e){}
+}
+
+/* إعادة رسم أزرار لوحة الطالب بالشارات داخل الزر */
+if(typeof studentDashboard==='function' && !window.afaqInlineStudentDashboardWrapped){
+  window.afaqInlineStudentDashboardWrapped=true;
+  const oldStudentDashboardInline=studentDashboard;
+  studentDashboard=function(){
+    show('student');
+    studentWelcome.textContent='أهلاً '+user.name;
+    const ens=state.enrollments.filter(e=>v(e)&&e.studentId===user.id&&e.status==='approved');
+    const res=state.results.filter(r=>r.studentId===user.id);
+    studentStats.innerHTML=`<div class="stat"><b>${ens.length}</b><span>موادي</span></div><div class="stat"><b>${res.length}</b><span>اختباراتي</span></div><div class="stat"><b>${avgStudent()}%</b><span>المعدل</span></div>`;
+    const b=afaqBadgeData();
+    const panel=document.querySelector('#student > .panel');
+    if(panel){
+      panel.innerHTML=`<div class="row">
+        <button onclick="studentSubjects()">📚 موادي</button>
+        <button onclick="studentExams()">📝 اختباراتي ${afaqBadgeSpan('studentExamInlineBadge',b.e)}</button>
+        <button onclick="studentResults()">📊 نتائجي</button>
+        <button onclick="studentNotifications()">🔔 إشعاراتي ${afaqBadgeSpan('studentNotifyInlineBadge',b.n)}</button>
+        <button onclick="studentAttendance()">📌 الحضور ${afaqBadgeSpan('studentAttendanceInlineBadge',b.a)}</button>
+        <button onclick="roomTab('homework')" style="display:none">واجبات مخفي ${afaqBadgeSpan('studentHomeworkInlineBadge',b.h)}</button>
+        <button class="gold" onclick="studentSubscription()">💳 اشتراكي</button>
+      </div>`;
+    }
+    studentSubjects();
+    setTimeout(afaqRefreshInlineBadgeNumbers,100);
+  };
+}
+
+/* إضافة زر واجباتي ظاهر في لوحة الطالب إذا لم يكن موجوداً */
+if(typeof studentDashboard==='function' && !window.afaqInlineStudentHomeworkButtonAdded){
+  window.afaqInlineStudentHomeworkButtonAdded=true;
+  const oldAfterDashboard=studentDashboard;
+  studentDashboard=function(){
+    oldAfterDashboard();
+    const b=afaqBadgeData();
+    const row=document.querySelector('#student .panel .row');
+    if(row && !Array.from(row.querySelectorAll('button')).some(x=>(x.textContent||'').includes('واجباتي'))){
+      const btn=document.createElement('button');
+      btn.setAttribute('onclick',"studentHomework ? studentHomework() : studentSubjects()");
+      btn.innerHTML='📌 واجباتي '+afaqBadgeSpan('studentHomeworkInlineBadge',b.h);
+      row.insertBefore(btn,row.children[2]||null);
+    }
+    afaqRefreshInlineBadgeNumbers();
+  };
+}
+
+/* دالة واجباتي للطالب إذا غير موجودة */
+if(typeof studentHomework!=='function'){
+  function studentHomework(){
+    const subjectIds=afaqStudentSubs();
+    const arr=(state.homeworks||[]).filter(h=>afaqV(h)&&subjectIds.includes(h.subjectId));
+    studentPanel.innerHTML=`<h3>واجباتي</h3>${arr.length?arr.map(h=>{
+      const sub=subjectById(h.subjectId);
+      const ans=(state.homeworkAnswers||[]).find(a=>afaqV(a)&&a.homeworkId===h.id&&a.studentId===user.id);
+      const closed=h.deadline&&new Date(h.deadline).getTime()<Date.now();
+      return `<div class="item"><div><b>${esc(sub?.name||'مادة')} - ${esc(h.title)}</b><p>${esc(h.text||'')}</p><span class="badge">${closed?'انتهى التسليم':'متاح'}</span>${ans?`<span class="badge">${ans.grade!==undefined?'درجتك: '+ans.grade+'/'+(ans.maxGrade||h.maxGrade||10):'بانتظار التصحيح'}</span>`:''}</div><div>${closed||ans?'':`<textarea id="hwa_${h.id}" placeholder="اكتب الحل"></textarea><button onclick="submitHomework('${h.id}')">إرسال الحل</button>`}</div></div>`;
+    }).join(''):'<div class="empty">لا توجد واجبات</div>'}`;
+    afaqRefreshInlineBadgeNumbers();
+  }
+}
+
+/* إعادة رسم أزرار المادة بالشارات */
+if(typeof openRoom==='function' && !window.afaqInlineOpenRoomWrapped){
+  window.afaqInlineOpenRoomWrapped=true;
+  const oldOpenRoomInline=openRoom;
+  openRoom=function(id){
+    currentSubjectId=id;
+    const s=subjectById(id);
+    show('room');
+    roomTitle.textContent=s.name;
+    roomSub.textContent=s.grade;
+    const b=afaqBadgeData();
+    const topPanel=document.querySelector('#room .panel');
+    if(topPanel){
+      topPanel.innerHTML=`<div class="row">
+        <button onclick="roomTab('lessons')">📁 الدروس ${afaqBadgeSpan('roomLessonsInlineBadge',b.l)}</button>
+        <button onclick="roomTab('homework')">📌 الواجبات ${afaqBadgeSpan('roomHomeworkInlineBadge',b.h)}</button>
+        <button onclick="roomTab('exams')">📝 الاختبارات ${afaqBadgeSpan('roomExamsInlineBadge',b.e)}</button>
+        <button onclick="roomTab('attendance')">✅ الحضور ${afaqBadgeSpan('roomAttendanceInlineBadge',b.a)}</button>
+        <button onclick="roomTab('results')">📊 النتائج</button>
+      </div>`;
+    }
+    roomTab('lessons');
+    setTimeout(afaqRefreshInlineBadgeNumbers,100);
+  };
+}
+
+/* عند فتح إشعارات الطالب تصير مقروءة */
+if(typeof studentNotifications==='function' && !window.afaqInlineStudentNotificationsReadWrapped){
+  window.afaqInlineStudentNotificationsReadWrapped=true;
+  const oldStudentNotificationsInline=studentNotifications;
+  studentNotifications=function(){
+    const subjectIds=afaqStudentSubs();
+    const targets=['all','students','student:'+user.id].concat(subjectIds.map(id=>'subject:'+id));
+    (state.notifications||[]).forEach(n=>{if(targets.includes(n.target)) n.read=true});
+    save();
+    oldStudentNotificationsInline();
+    setTimeout(afaqRefreshInlineBadgeNumbers,100);
+  };
+}
+
+setInterval(afaqRefreshInlineBadgeNumbers,1000);
+setTimeout(afaqRefreshInlineBadgeNumbers,800);
 
 load();applyAppearance();topUpdate();if(user)goHome();
 </script>

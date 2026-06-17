@@ -17,6 +17,10 @@
 .locked-input{user-select:none;-webkit-user-select:none}
 
 .firebase-state{display:inline-block;padding:6px 10px;border-radius:999px;background:#ecfeff;color:#075985;font-weight:900;margin:4px}.install-btn{position:fixed;left:14px;bottom:14px;z-index:300;background:#16a34a;color:#fff;border-radius:999px;box-shadow:0 12px 30px rgba(22,163,74,.35)}
+
+.notif-watch{position:relative!important;overflow:visible!important}
+.notif-red-badge{position:absolute;top:-8px;left:-8px;min-width:22px;height:22px;padding:0 6px;border-radius:999px;background:#dc2626;color:white;display:grid;place-items:center;font-size:12px;font-weight:900;box-shadow:0 6px 16px rgba(220,38,38,.35);z-index:5}
+
 </style>
 </head>
 <body>
@@ -1256,6 +1260,275 @@ setInterval(()=>{
 },1000);
 
 ensureExtraArrays();
+
+
+/* ===== AFAQ LIVE REFRESH + RED NOTIFICATION BADGES FIX ===== */
+var afaqCurrentRoomTab = 'lessons';
+var afaqLastRemoteHash = '';
+var afaqLastRefreshAt = 0;
+
+function afaqTargetsForRole(role){
+  if(role === 'admin') return ['all','admin'];
+  if(role === 'teacher'){
+    var sub = (typeof teacherSubject === 'function') ? teacherSubject() : null;
+    return ['all','teachers','teacher:'+(user && user.id ? user.id : ''), sub ? 'subject:'+sub.id : ''];
+  }
+  if(role === 'student') return ['all','students','student:'+(user && user.id ? user.id : '')];
+  if(role === 'parent') return ['all','parents','parent:'+(user && user.id ? user.id : '')];
+  return ['all'];
+}
+function afaqUnreadCount(role){
+  var targets = afaqTargetsForRole(role);
+  return (state.notifications || []).filter(function(n){
+    return targets.includes(n.target) && n.read !== true && n.hidden !== true && n.deleted !== true;
+  }).length;
+}
+function afaqAttachBadgeToButton(btn,count){
+  if(!btn) return;
+  btn.classList.add('notif-watch');
+  var b = btn.querySelector('.notif-red-badge');
+  if(count > 0){
+    if(!b){
+      b = document.createElement('span');
+      b.className = 'notif-red-badge';
+      btn.appendChild(b);
+    }
+    b.textContent = count > 99 ? '99+' : String(count);
+  }else if(b){
+    b.remove();
+  }
+}
+function afaqUpdateNotificationBadges(){
+  try{
+    document.querySelectorAll('button[onclick*="adminNotifications"]').forEach(function(btn){
+      afaqAttachBadgeToButton(btn, afaqUnreadCount('admin'));
+    });
+    document.querySelectorAll('button[onclick*="teacherNotifications"]').forEach(function(btn){
+      afaqAttachBadgeToButton(btn, afaqUnreadCount('teacher'));
+    });
+    document.querySelectorAll('button[onclick*="studentNotifications"]').forEach(function(btn){
+      afaqAttachBadgeToButton(btn, afaqUnreadCount('student'));
+    });
+    document.querySelectorAll('button[onclick*="parentNotifications"]').forEach(function(btn){
+      afaqAttachBadgeToButton(btn, afaqUnreadCount('parent'));
+    });
+  }catch(e){}
+}
+function afaqMarkRoleNotificationsRead(role){
+  var targets = afaqTargetsForRole(role);
+  (state.notifications || []).forEach(function(n){
+    if(targets.includes(n.target)) n.read = true;
+  });
+  save();
+  afaqUpdateNotificationBadges();
+}
+function afaqClearRoleNotifications(role){
+  var targets = afaqTargetsForRole(role);
+  state.notifications = (state.notifications || []).filter(function(n){
+    return !targets.includes(n.target);
+  });
+  save();
+  afaqUpdateNotificationBadges();
+}
+
+if(typeof roomTab === 'function' && !window.afaqRoomTabWrapped){
+  window.afaqRoomTabWrapped = true;
+  var afaqOldRoomTab = roomTab;
+  roomTab = function(tab){
+    afaqCurrentRoomTab = tab || afaqCurrentRoomTab || 'lessons';
+    return afaqOldRoomTab(tab);
+  };
+}
+
+function afaqSmartRefreshCurrentView(){
+  try{
+    if(!user){
+      applyAppearance();
+      afaqUpdateNotificationBadges();
+      return;
+    }
+
+    var visible = Array.from(document.querySelectorAll('.page')).find(function(p){
+      return !p.classList.contains('hidden');
+    });
+    if(!visible) return;
+
+    var id = visible.id;
+
+    if(id === 'admin'){
+      var h = adminMain ? adminMain.innerText : '';
+      if(h.includes('المواد والمدرسون')) adminSubjects();
+      else if(h.includes('الطلاب')) adminStudents();
+      else if(h.includes('الاشتراكات')) adminPayments();
+      else if(h.includes('النتائج')) adminResults();
+      else if(h.includes('الإشعارات') || h.includes('التنبيهات')) adminNotifications();
+      else if(h.includes('الرسائل')) adminMessages();
+      else if(h.includes('النسخ الاحتياطي')) adminBackup();
+      else if(h.includes('إدارة النظام')) adminSystem();
+      else if(h.includes('واجهة المنصة')) adminAppearance();
+      else adminHome();
+    }else if(id === 'teacher'){
+      var th = teacherMain ? teacherMain.innerText : '';
+      if(th.includes('طلبات فتح المادة')) teacherMaterialRequests();
+      else if(th.includes('الطلاب') && !th.includes('ملف الطالب')) teacherStudents();
+      else if(th.includes('الدروس')) teacherLessons();
+      else if(th.includes('الاختبارات') || th.includes('تصحيح المقالي')) teacherExams();
+      else if(th.includes('الواجبات') || th.includes('تصحيح الواجب')) teacherHomework();
+      else if(th.includes('الحضور') || th.includes('تقرير الحضور')) teacherAttendance();
+      else if(th.includes('النتائج النهائية')) teacherFinalGrades();
+      else if(th.includes('التنبيهات') || th.includes('الإشعارات')) teacherNotifications();
+      else if(th.includes('مستويات الطلبة') || th.includes('لوحة الشرف')) teacherLevels();
+      else teacherHome();
+    }else if(id === 'student'){
+      var sh = studentPanel ? studentPanel.innerText : '';
+      if(sh.includes('موادي')) studentSubjects();
+      else if(sh.includes('اختباراتي')) studentExams();
+      else if(sh.includes('نتائجي')) studentResults();
+      else if(sh.includes('إشعاراتي')) studentNotifications();
+      else if(sh.includes('الحضور')) studentAttendance();
+      else if(sh.includes('اشتراك') || sh.includes('تفعيل')) studentSubscription();
+      else studentDashboard();
+    }else if(id === 'parent'){
+      if(typeof parentHome === 'function') parentHome();
+      afaqEnsureParentNotifyButton();
+    }else if(id === 'room' && currentSubjectId){
+      roomTab(afaqCurrentRoomTab || 'lessons');
+    }
+
+    applyAppearance();
+    afaqUpdateNotificationBadges();
+  }catch(e){
+    console.warn('Afaq smart refresh error:', e);
+  }
+}
+
+window.afaqSyncRefreshCurrentView = afaqSmartRefreshCurrentView;
+
+function afaqStartExtraRealtimeWatcher(){
+  try{
+    var db = null;
+    if(typeof afaqSyncDb !== 'undefined' && afaqSyncDb) db = afaqSyncDb;
+    else if(typeof afaqDb !== 'undefined' && afaqDb) db = afaqDb;
+    else if(window.firebase && firebase.firestore) db = firebase.firestore();
+    if(!db) return;
+
+    if(window.afaqExtraRealtimeUnsub) window.afaqExtraRealtimeUnsub();
+
+    window.afaqExtraRealtimeUnsub = db.collection('afaq_platform').doc('main_state').onSnapshot(function(doc){
+      if(!doc.exists) return;
+      var data = doc.data() || {};
+      if(!data.state) return;
+
+      var nextHash = JSON.stringify({
+        students:data.state.students || [],
+        teachers:data.state.teachers || [],
+        subjects:data.state.subjects || [],
+        payments:data.state.payments || [],
+        enrollments:data.state.enrollments || [],
+        materialRequests:data.state.materialRequests || [],
+        lessons:data.state.lessons || [],
+        exams:data.state.exams || [],
+        results:data.state.results || [],
+        finalGrades:data.state.finalGrades || [],
+        homeworks:data.state.homeworks || [],
+        homeworkAnswers:data.state.homeworkAnswers || [],
+        attendance:data.state.attendance || [],
+        attendanceSessions:data.state.attendanceSessions || [],
+        messages:data.state.messages || [],
+        notifications:data.state.notifications || []
+      });
+
+      if(nextHash === afaqLastRemoteHash) return;
+      afaqLastRemoteHash = nextHash;
+
+      if(typeof afaqSyncMergeState === 'function') state = afaqSyncMergeState(data.state);
+      else if(typeof afaqMergeState === 'function') state = afaqMergeState(data.state);
+      else state = Object.assign(def(), data.state || {});
+
+      localStorage.setItem(STORE, JSON.stringify(state));
+
+      var now = Date.now();
+      if(now - afaqLastRefreshAt > 350){
+        afaqLastRefreshAt = now;
+        afaqSmartRefreshCurrentView();
+      }
+    });
+  }catch(e){
+    console.warn('Extra realtime watcher error:', e);
+  }
+}
+
+if(typeof adminNotifications === 'function' && !window.afaqAdminNotificationsWrapped){
+  window.afaqAdminNotificationsWrapped = true;
+  var afaqOldAdminNotifications = adminNotifications;
+  adminNotifications = function(){
+    afaqMarkRoleNotificationsRead('admin');
+    afaqOldAdminNotifications();
+    afaqUpdateNotificationBadges();
+  };
+}
+if(typeof teacherNotifications === 'function' && !window.afaqTeacherNotificationsWrapped){
+  window.afaqTeacherNotificationsWrapped = true;
+  var afaqOldTeacherNotifications = teacherNotifications;
+  teacherNotifications = function(){
+    afaqMarkRoleNotificationsRead('teacher');
+    afaqOldTeacherNotifications();
+    afaqUpdateNotificationBadges();
+  };
+}
+if(typeof studentNotifications === 'function' && !window.afaqStudentNotificationsWrapped){
+  window.afaqStudentNotificationsWrapped = true;
+  var afaqOldStudentNotifications = studentNotifications;
+  studentNotifications = function(){
+    afaqMarkRoleNotificationsRead('student');
+    afaqOldStudentNotifications();
+    afaqUpdateNotificationBadges();
+  };
+}
+
+function parentNotifications(){
+  afaqMarkRoleNotificationsRead('parent');
+  var targets = afaqTargetsForRole('parent');
+  var arr = (state.notifications || []).filter(function(n){
+    return targets.includes(n.target) && n.hidden !== true && n.deleted !== true;
+  });
+  parentPanel.innerHTML = "<h3>تنبيهات ولي الأمر</h3>" +
+    "<button class='danger' onclick=\"afaqClearRoleNotifications('parent');parentNotifications()\">تفريغ التنبيهات</button>" +
+    (arr.length ? arr.map(function(n){
+      return "<div class='chat'><b>"+esc(n.icon || '🔔')+" "+esc(n.title || '')+"</b><p>"+esc(n.body || '')+"</p><small>"+esc(n.date || '')+"</small></div>";
+    }).join('') : "<div class='empty'>لا توجد تنبيهات</div>");
+  afaqUpdateNotificationBadges();
+}
+function afaqEnsureParentNotifyButton(){
+  try{
+    var parentSection = document.getElementById('parent');
+    if(!parentSection) return;
+    var firstPanel = parentSection.querySelector('.panel');
+    if(!firstPanel) return;
+    if(!firstPanel.querySelector('button[onclick*="parentNotifications"]')){
+      var btn = document.createElement('button');
+      btn.textContent = '🔔 التنبيهات';
+      btn.setAttribute('onclick','parentNotifications()');
+      firstPanel.appendChild(btn);
+    }
+    afaqUpdateNotificationBadges();
+  }catch(e){}
+}
+if(typeof parentHome === 'function' && !window.afaqParentHomeWrapped){
+  window.afaqParentHomeWrapped = true;
+  var afaqOldParentHome = parentHome;
+  parentHome = function(){
+    afaqOldParentHome();
+    afaqEnsureParentNotifyButton();
+  };
+}
+
+setInterval(afaqUpdateNotificationBadges, 1000);
+setTimeout(function(){
+  afaqStartExtraRealtimeWatcher();
+  afaqUpdateNotificationBadges();
+  afaqEnsureParentNotifyButton();
+}, 1200);
 
 load();applyAppearance();topUpdate();if(user)goHome();
 </script>

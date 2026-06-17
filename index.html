@@ -546,7 +546,7 @@ nav a{
 <section id="home" class="hero page"><div><h1>منصة آفاق التعليمية</h1><p>منصة منظمة للمواد، الاشتراكات، الاختبارات، الرسائل، ومتابعة ولي الأمر.</p><div id='homeDynamicBox'></div><button class="gold" onclick="document.getElementById('loginArea').scrollIntoView({behavior:'smooth'})">ابدأ الآن</button></div><div id="loginArea" class="login-grid"><div class="login-card"><h3>👨‍🎓 دخول الطالب</h3><input id="studentName" placeholder="اسم الطالب الثلاثي"><select id="studentGrade"></select><input id="studentCode" type="password" placeholder="رمز الطالب العام"><button onclick="loginStudent()">دخول الطالب</button></div><div class="login-card"><h3>👨‍👩‍👦 دخول ولي الأمر</h3><input id="parentName" placeholder="اسم ولي الأمر الثلاثي"><input id="parentCode" type="password" placeholder="رمز ولي الأمر"><button onclick="loginParent()">دخول ولي الأمر</button></div><div class="login-card"><h3>👨‍🏫 دخول المدرس</h3><input id="teacherName" placeholder="اسم المدرس الثلاثي"><select id="teacherLoginGrade"></select><select id="teacherLoginSubject"></select><input id="teacherCode" type="password" placeholder="رمز المدرس"><button onclick="loginTeacher()">دخول المدرس</button></div><div class="login-card"><h3>👨‍💼 دخول المدير</h3><input id="adminCode" type="password" placeholder="رمز المدير فقط"><button onclick="loginAdmin()">دخول المدير</button></div></div></section>
 <section id="contact" class="section page hidden"><h2>تواصل معنا</h2><div class="panel"><input id="contactName" placeholder="اسمك"><input id="contactTitle" placeholder="عنوان الرسالة"><textarea id="contactBody" rows="5" placeholder="نص الرسالة"></textarea><button onclick="sendContact()">إرسال إلى المدير</button></div></section>
 <section id="subjects" class="section page hidden"><h2>المواد المتاحة</h2><div id="publicSubjects" class="cards"></div></section>
-<section id="admin" class="shell page hidden"><aside><h3>لوحة المدير</h3><button onclick="adminHome()">🏠 الرئيسية</button><button onclick="adminNotifications()">🔔 الإشعارات <span id="adminNotifCount" class="notif-count hidden">0</span></button><button onclick="adminSubjects()">📚 المواد والمدرسون</button><button onclick="adminStudents()">👨‍🎓 الطلاب</button><button onclick="adminParents()">👨‍👩‍👦 أولياء الأمور</button><button onclick="adminPayments()">💳 الاشتراكات</button><button onclick="adminResults()">📊 النتائج</button><button onclick="adminHallOfFame()">🏆 لوحة الشرف</button><button onclick="adminActivityLog()">🕒 سجل النشاط</button><button onclick="adminTeacherNotices()">📢 تبليغات المدرسين</button><button onclick="adminContactMessages()">📩 رسائل التواصل</button><button onclick="adminBackup()">💾 النسخ الاحتياطي</button><button onclick="adminHomeAppearance()">🖼️ واجهة المنصة</button><button onclick="adminSettings()">⚙️ الإعدادات</button></aside><main id="adminMain"></main></section>
+<section id="admin" class="shell page hidden"><aside><h3>لوحة المدير</h3><button onclick="adminHome()">🏠 الرئيسية</button><button onclick="adminNotifications()">🔔 الإشعارات <span id="adminNotifCount" class="notif-count hidden">0</span></button><button onclick="adminSubjects()">📚 المواد والمدرسون</button><button onclick="adminStudents()">👨‍🎓 الطلاب</button><button onclick="adminParents()">👨‍👩‍👦 أولياء الأمور</button><button onclick="adminPayments()">💳 الاشتراكات</button><button onclick="adminResults()">📊 النتائج</button><button onclick="adminSubscriptions()">💳 الاشتراكات</button><button onclick="adminHallOfFame()">🏆 لوحة الشرف</button><button onclick="adminActivityLog()">🕒 سجل النشاط</button><button onclick="adminTeacherNotices()">📢 تبليغات المدرسين</button><button onclick="adminContactMessages()">📩 رسائل التواصل</button><button onclick="adminBackup()">💾 النسخ الاحتياطي</button><button onclick="adminHomeAppearance()">🖼️ واجهة المنصة</button><button onclick="adminSettings()">⚙️ الإعدادات</button></aside><main id="adminMain"></main></section>
 <section id="teacher" class="shell page hidden"><aside><h3>لوحة المدرس</h3><button onclick="teacherHome()">🏠 الرئيسية</button><button onclick="teacherNotifications()">🔔 الإشعارات <span id="teacherNotifCount" class="notif-count hidden">0</span></button><button onclick="teacherProfile()">👤 البروفايل</button><button onclick="teacherContent()">📁 المحاضرات والملفات</button><button onclick="teacherExams()">📝 الاختبارات</button><button onclick="teacherStudents()">👨‍🎓 الطلاب والمستويات</button><button onclick="teacherHonorBoard()">🏆 لوحة الشرف الذكية</button><button onclick="teacherAttendanceStats()">📈 تحليل الحضور والواجبات</button><button onclick="teacherAttendance()">✅ الحضور والغياب</button><button onclick="teacherHomework()">📝 الواجبات</button><button onclick="teacherQuestionBank()">🏦 بنك الأسئلة</button><button onclick="teacherCalendar()">📅 التقويم</button><button onclick="teacherLibrary()">📚 مكتبة المادة</button><button onclick="teacherRequests()">✅ طلبات التسجيل</button><button onclick="teacherMessages()">💬 رسائل الطلاب</button><button onclick="teacherParentMessages()">👨‍👩‍👦 رسائل ولي الأمر</button><button onclick="teacherResults()">📊 النتائج</button><button onclick="teacherNotices()">📢 تبليغات المدير</button></aside><main id="teacherMain"></main></section>
 <section id="student" class="dashboard page hidden"><h2 id="studentWelcome">لوحة الطالب</h2><div id="studentTopNotice"></div><div class="stats"><div><b id="subDays">0</b><span>أيام الاشتراك</span></div><div><b id="subCount">0</b><span>مواد مشترك بها</span></div><div><b id="msgCount">0</b><span>الرسائل</span></div><div><b id="avgScore">0%</b><span>المعدل</span></div></div><div id="studentNav" class="panel hidden"><div class="row"><button onclick="studentMySubjects()">📚 موادي</button><button onclick="studentMyExams()">📝 اختباراتي</button><button onclick="studentLevel()">🏆 مستواي</button><button onclick="studentGrades()">📊 درجاتي</button><button onclick="studentFinalResults()">🏁 النتائج النهائية</button><button onclick="studentMessages()">💬 الرسائل</button><button onclick="studentHomework()">📝 واجباتي</button><button onclick="studentAttendanceCheck()">✅ تسجيل الحضور</button><button onclick="studentCalendar()">📅 التقويم</button><button onclick="studentAchievements()">🏅 إنجازاتي</button><button onclick="studentNotifications()">🔔 الإشعارات <span id="studentNotifCount" class="notif-count hidden">0</span></button><button class="gold" onclick="studentSubscription()">💳 الاشتراك</button></div></div><div id="studentPanel" class="panel"></div></section>
 <section id="parentPanel" class="dashboard page hidden"><h2 id="parentWelcome">لوحة ولي الأمر</h2><div class="panel"><h3>بحث عن الطالب</h3><input id="parentSearchInput" placeholder="اكتب اسم الطالب الثلاثي"><button onclick="parentSearchStudent()">بحث</button><button onclick="parentAttendance()">✅ حضور الطالب</button><button onclick="parentHomework()">📝 واجبات الطالب</button><button onclick="parentNotifications()">🔔 الإشعارات <span id="parentNotifCount" class="notif-count hidden">0</span></button></div><div id="parentContent" class="panel"><div class="empty">ابحث عن اسم الطالب لمتابعة مستواه ودرجاته.</div></div></section>
@@ -1227,6 +1227,27 @@ function adminTeachers(){
       <span class="badge">الكود: ${t.code||t.password||''}</span>
       ${teacherAdminButtonsHTML(t)}
     </div>`).join(''):`<div class="empty">لا يوجد مدرسون ظاهرون</div>`}
+  </div>`;
+}
+function adminSubscriptions(){
+  setActivePanel('adminSubscriptions');jumpToWorkspace('adminMain');
+  const subs=(state.subscriptions||[]).filter(visibleSubscription);
+  adminMain.innerHTML=`<div class="page-title-card"><h2>الاشتراكات</h2><p>إدارة اشتراكات الطلاب وتنظيف الاشتراكات القديمة من الواجهة</p></div>
+  <div class="panel">
+    <h3>إضافة اشتراك</h3>
+    <input id="subStudentName" placeholder="اسم الطالب">
+    <input id="subAmount" placeholder="المبلغ">
+    <input id="subDays" type="number" value="30" placeholder="عدد الأيام">
+    <button class="green" onclick="addSubscription()">إضافة/تفعيل الاشتراك</button>
+  </div>
+  <div class="panel">
+    <h3>تنظيف الاشتراكات</h3>
+    <div class="cleanup-note">هذا الزر يخفي الاشتراكات المفعلة من الواجهة فقط ولا يحذف الطالب أو نتائجه أو سجلاته.</div>
+    <button class="danger" onclick="clearActiveSubscriptionsVisibleOnly()">حذف الاشتراكات المفعلة من الواجهة</button>
+  </div>
+  <div class="panel">
+    <h3>الاشتراكات الظاهرة</h3>
+    ${subs.length?subs.map(s=>`<div class="file-item"><div><b>${s.studentName||s.name||'طالب'}</b><br><span class="badge">${s.amount||''}</span><span class="badge">${s.days||s.duration||''} يوم</span><span class="badge">${s.status||'active'}</span></div></div>`).join(''):`<div class="empty">لا توجد اشتراكات ظاهرة</div>`}
   </div>`;
 }
 function adminHome(){
@@ -2607,7 +2628,7 @@ function adminVisibleEnrollRequests(){
   const validSubjects=new Set(adminVisibleSubjects().map(s=>s.id));
   return (state.enrollRequests||[]).filter(r=>visibleRecord(r)&&r.status==='pending'&&validSubjects.has(r.subjectId));
 }
-function adminVisibleSubscriptions(){return (state.subscriptions||[]).filter(s=>visibleRecord(s)&&s.status!=='expired');}
+function adminVisibleSubscriptions(){return (state.subscriptions||[]).filter(visibleSubscription).filter(s=>visibleRecord(s)&&s.status!=='expired');}
 function adminVisibleMessages(){return (state.messages||[]).filter(m=>visibleRecord(m));}
 function adminStatsCards(){
   return `<div class="smart-grid">
@@ -2827,6 +2848,37 @@ function ensureArchiveButtonVisible(){
   }catch(e){}
 }
 setInterval(ensureArchiveButtonVisible,1200);
+
+
+/* ===== Subscription Cleanup Visible Only ===== */
+function visibleSubscription(s){
+  return !s || (s.hidden!==true && s.deleted!==true && s.status!=='removed');
+}
+function clearActiveSubscriptionsVisibleOnly(){
+  const word=prompt('لحذف الاشتراكات المفعلة من الواجهة فقط اكتب: حذف الاشتراكات');
+  if(word!=='حذف الاشتراكات')return alert('تم إلغاء العملية');
+  try{
+    state.backups=state.backups||[];
+    state.backups.unshift({
+      id:uid('backup'),
+      label:'نسخة قبل تفريغ الاشتراكات المفعلة',
+      date:new Date().toLocaleString('ar-IQ'),
+      data:JSON.stringify(state)
+    });
+    if(state.backups.length>10)state.backups=state.backups.slice(0,10);
+  }catch(e){}
+  (state.subscriptions||[]).forEach(s=>{
+    if(visibleSubscription(s) && (s.status==='active' || s.active===true || !s.status)){
+      s.hidden=true;
+      s.deleted=true;
+      s.hiddenReason='تفريغ الاشتراكات المفعلة من الواجهة';
+      s.hiddenAt=new Date().toLocaleString('ar-IQ');
+    }
+  });
+  save();
+  alert('تم إخفاء الاشتراكات المفعلة من الواجهة فقط، مع بقاء بيانات الطلاب والنتائج محفوظة.');
+  adminSubscriptions();
+}
 
 async function startApp(){
   await loadCloudState();

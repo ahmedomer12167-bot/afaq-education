@@ -1,1 +1,1 @@
-
+console.log('Afaq Platform Started');

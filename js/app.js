@@ -18,64 +18,31 @@ let activeRole = "";
 const fields = {
   student: {
     title: "تسجيل دخول الطالب",
-    inputs: [
-      ["text", "الاسم الثلاثي"],
-      ["select", "المرحلة الدراسية"],
-      ["password", "كود الطالب"]
-    ]
+    inputs: [["text", "الاسم الثلاثي"], ["select", "المرحلة الدراسية"], ["password", "كود الطالب"]]
   },
   teacher: {
     title: "تسجيل دخول المدرس",
-    inputs: [
-      ["text", "الاسم الثلاثي"],
-      ["select", "المادة"],
-      ["select", "المرحلة الدراسية"],
-      ["password", "كود المدرس"]
-    ]
+    inputs: [["text", "الاسم الثلاثي"], ["select", "المادة"], ["select", "المرحلة الدراسية"], ["password", "كود المدرس"]]
   },
   parent: {
     title: "تسجيل دخول ولي الأمر",
-    inputs: [
-      ["text", "الاسم الثلاثي"],
-      ["password", "كود ولي الأمر"]
-    ]
+    inputs: [["text", "الاسم الثلاثي"], ["password", "كود ولي الأمر"]]
   },
   admin: {
     title: "تسجيل دخول المدير",
-    inputs: [
-      ["password", "كود المدير"]
-    ]
+    inputs: [["password", "كود المدير"]]
   }
 };
 
-const grades = [
-  "الأول متوسط",
-  "الثاني متوسط",
-  "الثالث متوسط",
-  "الرابع الإعدادي",
-  "الخامس الإعدادي",
-  "السادس الإعدادي"
-];
+const grades = ["الأول متوسط","الثاني متوسط","الثالث متوسط","الرابع الإعدادي","الخامس الإعدادي","السادس الإعدادي"];
+const subjects = ["الأحياء","الكيمياء","الفيزياء","الرياضيات","الإنكليزي","العربي","الإسلامية","الاجتماعيات"];
 
-const subjects = [
-  "الأحياء",
-  "الكيمياء",
-  "الفيزياء",
-  "الرياضيات",
-  "الإنكليزي",
-  "العربي",
-  "الإسلامية",
-  "الاجتماعيات"
-];
-
-if (roleCards.length) {
-  roleCards.forEach(card => {
-    card.addEventListener("click", () => {
-      activeRole = card.dataset.role;
-      openLogin(activeRole);
-    });
+roleCards.forEach(card => {
+  card.addEventListener("click", () => {
+    activeRole = card.dataset.role;
+    openLogin(activeRole);
   });
-}
+});
 
 function openLogin(role){
   const data = fields[role];
@@ -90,11 +57,9 @@ function openLogin(role){
     label.textContent = labelText;
 
     let input;
-
     if(type === "select"){
       input = document.createElement("select");
       const list = labelText.includes("المادة") ? subjects : grades;
-
       list.forEach(item => {
         const option = document.createElement("option");
         option.textContent = item;
@@ -116,32 +81,22 @@ function openLogin(role){
   modal.classList.add("active");
 }
 
-if (closeModal) {
-  closeModal.addEventListener("click", () => {
+closeModal.addEventListener("click", () => {
+  modal.classList.remove("active");
+});
+
+modal.addEventListener("click", e => {
+  if(e.target === modal){
     modal.classList.remove("active");
-  });
-}
+  }
+});
 
-if (modal) {
-  modal.addEventListener("click", e => {
-    if(e.target === modal){
-      modal.classList.remove("active");
-    }
-  });
-}
+themeToggle.addEventListener("click", () => {
+  document.body.classList.toggle("light");
+  themeToggle.textContent = document.body.classList.contains("light") ? "☀️" : "🌙";
+});
 
-if (themeToggle) {
-  themeToggle.addEventListener("click", () => {
-    document.body.classList.toggle("light");
-    themeToggle.textContent = document.body.classList.contains("light") ? "☀️" : "🌙";
-  });
-}
-
-if (loginForm) {
-  loginForm.addEventListener("submit", e => {
-    e.preventDefault();
-    if (pages[activeRole]) {
-      window.location.href = pages[activeRole];
-    }
-  });
-}
+loginForm.addEventListener("submit", e => {
+  e.preventDefault();
+  window.location.href = pages[activeRole];
+});

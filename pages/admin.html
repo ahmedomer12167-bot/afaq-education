@@ -9,7 +9,7 @@
 <body class="dash">
 <main class="wrap">
 <header class="head">
-  <div><h1>لوحة المدير</h1><p class="muted">نظام الاشتراكات الكامل - الإصدار 2.9.2</p></div>
+  <div><h1>لوحة المدير</h1><p class="muted">نظام الدفع والاشتراكات - الإصدار 2.9.3</p></div>
   <a class="btn" href="../index.html">خروج</a>
 </header>
 
@@ -23,12 +23,13 @@
   <div class="box">
     <button class="x" onclick="document.getElementById('accM').classList.remove('active')">×</button>
     <h2>اعتماد الاشتراك</h2>
-    <form id="accF" class="grid">
+    <form id="accF" class="formgrid">
       <div class="field"><label>كود الطالب</label><input id="code" required></div>
-      <div class="field"><label>رقم الماستر</label><input id="master" required></div>
       <div class="field"><label>تاريخ البداية</label><input id="start" type="date" required></div>
       <div class="field"><label>تاريخ الانتهاء</label><input id="end" type="date" required></div>
-      <button class="primary" style="grid-column:1/-1">اعتماد الاشتراك</button>
+      <div class="field"><label>حالة الدفع</label><select id="paymentStatus"><option>مدفوع</option><option>بانتظار المراجعة</option><option>مرفوض</option><option>منتهي</option><option>مجدد</option></select></div>
+      <div class="field full"><label>ملاحظات المدير</label><textarea id="adminNote"></textarea></div>
+      <button class="primary full">اعتماد الاشتراك</button>
     </form>
   </div>
 </div>
@@ -44,7 +45,7 @@
   </div>
 </div>
 
-<script src="../js/admin-core.js?v=292"></script>
-<script src="../js/admin.js?v=292"></script>
+<script src="../js/admin-core.js?v=293"></script>
+<script src="../js/admin.js?v=293"></script>
 </body>
 </html>

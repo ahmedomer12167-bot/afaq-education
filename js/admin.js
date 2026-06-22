@@ -6,6 +6,7 @@ var editIndex = null;
 
 var navItems = [
   ['الرئيسية','home'],
+  ['إعدادات الدفع','paymentSettings'],
   ['طلبات الاشتراك','requests'],
   ['الطلاب المقبولون','accepted'],
   ['الاشتراكات المنتهية','expired'],
@@ -82,6 +83,7 @@ function openSection(section){
   drawSide();
 
   if(section === 'home') showHome();
+  else if(section === 'paymentSettings') showPaymentSettings();
   else if(section === 'requests') showRequests('new');
   else if(section === 'accepted') showAccepted();
   else if(section === 'expired') showExpired();
@@ -92,6 +94,50 @@ function openSection(section){
 function showHome(){
   document.getElementById('content').innerHTML =
     panel('مركز إدارة الاشتراكات','نظرة عامة') + statsHtml() + '</section>';
+}
+
+function showPaymentSettings(){
+  var s = getSettings();
+  var html = panel('إعدادات الدفع والاشتراكات','هذه البيانات تظهر للطالب عند تقديم طلب الاشتراك.');
+  html += '<form id="paymentForm" class="formgrid">';
+  html += field('رقم الماستر الخاص بالمنصة','masterNumber',s.masterNumber);
+  html += field('اسم صاحب البطاقة','cardOwner',s.cardOwner);
+  html += field('اسم البنك اختياري','bankName',s.bankName);
+  html += field('مدة الاشتراك الافتراضية بالأيام','defaultDuration',s.defaultDuration);
+  html += field('مبلغ الأول متوسط','firstAmount',s.firstAmount);
+  html += field('مبلغ الثاني متوسط','secondAmount',s.secondAmount);
+  html += field('مبلغ الثالث متوسط','thirdAmount',s.thirdAmount);
+  html += field('مبلغ الرابع الإعدادي','fourthAmount',s.fourthAmount);
+  html += field('مبلغ الخامس الإعدادي','fifthAmount',s.fifthAmount);
+  html += field('مبلغ السادس الإعدادي','sixthAmount',s.sixthAmount);
+  html += '<div class="field full"><label>تعليمات الدفع للطالب</label><textarea id="paymentInstructions">' + s.paymentInstructions + '</textarea></div>';
+  html += '<div class="field full"><label>حالة الاشتراكات</label><select id="subscriptionsEnabled"><option ' + (s.subscriptionsEnabled === 'مفعلة' ? 'selected' : '') + '>مفعلة</option><option ' + (s.subscriptionsEnabled === 'متوقفة' ? 'selected' : '') + '>متوقفة</option></select></div>';
+  html += '<button class="primary full">حفظ إعدادات الدفع</button>';
+  html += '</form></section>';
+  document.getElementById('content').innerHTML = html;
+
+  document.getElementById('paymentForm').onsubmit = function(e){
+    e.preventDefault();
+    saveSettings({
+      masterNumber: document.getElementById('masterNumber').value,
+      cardOwner: document.getElementById('cardOwner').value,
+      bankName: document.getElementById('bankName').value,
+      defaultDuration: document.getElementById('defaultDuration').value,
+      firstAmount: document.getElementById('firstAmount').value,
+      secondAmount: document.getElementById('secondAmount').value,
+      thirdAmount: document.getElementById('thirdAmount').value,
+      fourthAmount: document.getElementById('fourthAmount').value,
+      fifthAmount: document.getElementById('fifthAmount').value,
+      sixthAmount: document.getElementById('sixthAmount').value,
+      paymentInstructions: document.getElementById('paymentInstructions').value,
+      subscriptionsEnabled: document.getElementById('subscriptionsEnabled').value
+    });
+    alert('تم حفظ إعدادات الدفع');
+  };
+}
+
+function field(label, idValue, value){
+  return '<div class="field"><label>' + label + '</label><input id="' + idValue + '" value="' + (value || '') + '"></div>';
 }
 
 function showRequests(status){
@@ -120,7 +166,7 @@ function showExpired(){
 }
 
 function requestsTable(items, canAccept){
-  var html = '<div class="tablebox"><table class="tbl"><tr><th>الطالب</th><th>ولي الأمر</th><th>المرحلة</th><th>الهاتف</th><th>المبلغ</th><th>الكود</th><th>الماستر</th><th>النهاية</th><th>الحالة</th><th>أوامر</th></tr>';
+  var html = '<div class="tablebox"><table class="tbl"><tr><th>الطالب</th><th>ولي الأمر</th><th>المرحلة</th><th>الهاتف</th><th>المبلغ</th><th>الكود</th><th>النهاية</th><th>حالة الدفع</th><th>حالة الاشتراك</th><th>أوامر</th></tr>';
 
   if(items.length === 0){
     html += '<tr><td colspan="10"><div class="empty">لا توجد بيانات</div></td></tr>';
@@ -133,8 +179,8 @@ function requestsTable(items, canAccept){
       html += '<td>' + (x.phone || '') + '</td>';
       html += '<td>' + (x.amount || '') + '</td>';
       html += '<td>' + (x.studentCode || '—') + '</td>';
-      html += '<td>' + (x.masterNumber || '—') + '</td>';
       html += '<td>' + (x.endDate || '—') + '</td>';
+      html += '<td>' + (x.paymentStatus || 'بانتظار المراجعة') + '</td>';
       html += '<td>' + (isExpired(x.endDate) ? 'منتهي' : (x.subStatus || x.status)) + '</td>';
       html += '<td><div class="actions">';
 
@@ -203,9 +249,10 @@ function showReset(){
 function openAccept(idValue){
   acceptId = idValue;
   document.getElementById('code').value = 'ST-' + Math.floor(1000 + Math.random() * 9000);
-  document.getElementById('master').value = 'M-' + Date.now().toString().slice(-5);
   document.getElementById('start').value = today();
   document.getElementById('end').value = '';
+  document.getElementById('adminNote').value = '';
+  document.getElementById('paymentStatus').value = 'مدفوع';
   document.getElementById('accM').classList.add('active');
 }
 
@@ -217,13 +264,21 @@ document.getElementById('accF').onsubmit = function(e){
   if(!req) return;
 
   var updated = {
-    ...req,
+    id: req.id,
+    studentName: req.studentName,
+    parentName: req.parentName,
+    grade: req.grade,
+    phone: req.phone,
+    amount: req.amount,
+    notes: req.notes,
     status: 'accepted',
     studentCode: document.getElementById('code').value,
-    masterNumber: document.getElementById('master').value,
     startDate: document.getElementById('start').value,
     endDate: document.getElementById('end').value,
-    subStatus: 'نشط'
+    subStatus: 'نشط',
+    paymentStatus: document.getElementById('paymentStatus').value,
+    adminNote: document.getElementById('adminNote').value,
+    createdAt: req.createdAt || today()
   };
 
   setData('requests', requests.map(function(x){ return x.id === acceptId ? updated : x; }));
@@ -235,8 +290,7 @@ document.getElementById('accF').onsubmit = function(e){
     'كود الطالب': updated.studentCode,
     'رقم الهاتف': req.phone,
     'الحالة': 'مفعل',
-    'الاشتراك': 'نشط',
-    'رقم الماستر': updated.masterNumber
+    'الاشتراك': 'نشط'
   });
   setData('students', students);
 
@@ -252,11 +306,13 @@ document.getElementById('accF').onsubmit = function(e){
   var payments = getData('payments');
   payments.unshift({
     'اسم الطالب': req.studentName,
-    'رقم الماستر': updated.masterNumber,
+    'ولي الأمر': req.parentName,
+    'المرحلة': req.grade,
+    'رقم الهاتف': req.phone,
     'المبلغ': req.amount,
-    'التاريخ': today(),
-    'نوع العملية': 'اشتراك جديد',
-    'ملاحظات': req.notes || ''
+    'تاريخ الدفع': today(),
+    'حالة الدفع': updated.paymentStatus,
+    'ملاحظات المدير': updated.adminNote
   });
   setData('payments', payments);
 
@@ -266,7 +322,10 @@ document.getElementById('accF').onsubmit = function(e){
 
 function rejectRequest(idValue){
   setData('requests', allRequests().map(function(x){
-    if(x.id === idValue) x.status = 'rejected';
+    if(x.id === idValue){
+      x.status = 'rejected';
+      x.paymentStatus = 'مرفوض';
+    }
     return x;
   }));
   openSection(current);
@@ -280,6 +339,7 @@ function renewSubscription(idValue){
     if(x.id === idValue){
       x.endDate = newEnd;
       x.subStatus = 'نشط';
+      x.paymentStatus = 'مجدد';
     }
     return x;
   }));
@@ -347,10 +407,11 @@ function deleteRow(key, index){
 }
 
 function dangerReset(name){
-  localStorage.setItem('afaq292_backup', JSON.stringify({
+  localStorage.setItem('afaq293_backup', JSON.stringify({
     requests: getData('requests'),
     students: getData('students'),
     payments: getData('payments'),
+    settings: getSettings(),
     date: new Date().toISOString()
   }));
 

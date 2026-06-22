@@ -5,6 +5,8 @@ const modalTitle = document.getElementById("modalTitle");
 const formFields = document.getElementById("formFields");
 const themeToggle = document.getElementById("themeToggle");
 const loginForm = document.getElementById("loginForm");
+const newStudentBtn = document.getElementById("newStudentBtn");
+const studentNote = document.getElementById("studentNote");
 
 const pages = {
   student: "pages/student.html",
@@ -37,66 +39,91 @@ const fields = {
 const grades = ["الأول متوسط","الثاني متوسط","الثالث متوسط","الرابع الإعدادي","الخامس الإعدادي","السادس الإعدادي"];
 const subjects = ["الأحياء","الكيمياء","الفيزياء","الرياضيات","الإنكليزي","العربي","الإسلامية","الاجتماعيات"];
 
-roleCards.forEach(card => {
-  card.addEventListener("click", () => {
-    activeRole = card.dataset.role;
-    openLogin(activeRole);
+if(roleCards.length){
+  roleCards.forEach(card => {
+    card.addEventListener("click", () => {
+      activeRole = card.dataset.role;
+      openLogin(activeRole);
+    });
   });
-});
+}
 
 function openLogin(role){
   const data = fields[role];
   modalTitle.textContent = data.title;
   formFields.innerHTML = "";
+  newStudentBtn.classList.toggle("hidden", role !== "student");
+  studentNote.classList.toggle("hidden", role !== "student");
 
   data.inputs.forEach(([type, labelText]) => {
-    const field = document.createElement("div");
-    field.className = "field";
-
-    const label = document.createElement("label");
-    label.textContent = labelText;
-
-    let input;
-    if(type === "select"){
-      input = document.createElement("select");
-      const list = labelText.includes("المادة") ? subjects : grades;
-      list.forEach(item => {
-        const option = document.createElement("option");
-        option.textContent = item;
-        option.value = item;
-        input.appendChild(option);
-      });
-    }else{
-      input = document.createElement("input");
-      input.type = type;
-      input.placeholder = labelText;
-    }
-
-    input.required = true;
-    field.appendChild(label);
-    field.appendChild(input);
+    const field = createField(type, labelText);
     formFields.appendChild(field);
   });
 
   modal.classList.add("active");
 }
 
-closeModal.addEventListener("click", () => {
-  modal.classList.remove("active");
-});
+function createField(type, labelText, value = ""){
+  const field = document.createElement("div");
+  field.className = "field";
 
-modal.addEventListener("click", e => {
-  if(e.target === modal){
-    modal.classList.remove("active");
+  const label = document.createElement("label");
+  label.textContent = labelText;
+
+  let input;
+
+  if(type === "select"){
+    input = document.createElement("select");
+    const list = labelText.includes("المادة") ? subjects : grades;
+    list.forEach(item => {
+      const option = document.createElement("option");
+      option.textContent = item;
+      option.value = item;
+      input.appendChild(option);
+    });
+  }else if(type === "textarea"){
+    input = document.createElement("textarea");
+    input.placeholder = labelText;
+  }else{
+    input = document.createElement("input");
+    input.type = type;
+    input.placeholder = labelText;
+    input.value = value;
   }
-});
 
-themeToggle.addEventListener("click", () => {
-  document.body.classList.toggle("light");
-  themeToggle.textContent = document.body.classList.contains("light") ? "☀️" : "🌙";
-});
+  input.required = !labelText.includes("اختياري");
+  input.dataset.label = labelText;
+  field.appendChild(label);
+  field.appendChild(input);
+  return field;
+}
 
-loginForm.addEventListener("submit", e => {
-  e.preventDefault();
-  window.location.href = pages[activeRole];
-});
+if(closeModal){
+  closeModal.addEventListener("click", () => modal.classList.remove("active"));
+}
+
+if(modal){
+  modal.addEventListener("click", e => {
+    if(e.target === modal) modal.classList.remove("active");
+  });
+}
+
+if(themeToggle){
+  themeToggle.addEventListener("click", () => {
+    document.body.classList.toggle("light");
+    themeToggle.textContent = document.body.classList.contains("light") ? "☀️" : "🌙";
+  });
+}
+
+if(loginForm){
+  loginForm.addEventListener("submit", e => {
+    e.preventDefault();
+    window.location.href = pages[activeRole];
+  });
+}
+
+if(newStudentBtn){
+  newStudentBtn.addEventListener("click", () => {
+    window.location.href = "pages/student-register.html";
+  });
+}

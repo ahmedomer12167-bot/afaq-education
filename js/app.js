@@ -2,42 +2,10 @@ const roleCards = document.querySelectorAll(".role-card");
 const modal = document.getElementById("loginModal");
 const closeModal = document.getElementById("closeModal");
 const modalTitle = document.getElementById("modalTitle");
+const modalSubtitle = document.getElementById("modalSubtitle");
 const formFields = document.getElementById("formFields");
-const themeToggle = document.getElementById("themeToggle");
 const loginForm = document.getElementById("loginForm");
-
-const fields = {
-  student: {
-    title: "تسجيل دخول الطالب",
-    inputs: [
-      ["text", "الاسم الثلاثي"],
-      ["select", "المرحلة الدراسية"],
-      ["password", "كود الطالب"]
-    ]
-  },
-  teacher: {
-    title: "تسجيل دخول المدرس",
-    inputs: [
-      ["text", "الاسم الثلاثي"],
-      ["select", "المادة"],
-      ["select", "المرحلة الدراسية"],
-      ["password", "كود المدرس"]
-    ]
-  },
-  parent: {
-    title: "تسجيل دخول ولي الأمر",
-    inputs: [
-      ["text", "الاسم الثلاثي"],
-      ["password", "كود ولي الأمر"]
-    ]
-  },
-  admin: {
-    title: "تسجيل دخول المدير",
-    inputs: [
-      ["password", "كود المدير"]
-    ]
-  }
-};
+const themeToggle = document.getElementById("themeToggle");
 
 const grades = [
   "الأول متوسط",
@@ -59,43 +27,80 @@ const subjects = [
   "الاجتماعيات"
 ];
 
+const roles = {
+  student: {
+    title: "تسجيل دخول الطالب",
+    subtitle: "أدخل بيانات الطالب للدخول إلى لوحة التعلم",
+    fields: [
+      { type: "text", label: "الاسم الثلاثي" },
+      { type: "select", label: "المرحلة الدراسية", options: grades },
+      { type: "password", label: "كود الطالب" }
+    ]
+  },
+  teacher: {
+    title: "تسجيل دخول المدرس",
+    subtitle: "أدخل بيانات المدرس للدخول إلى لوحة إدارة المادة",
+    fields: [
+      { type: "text", label: "الاسم الثلاثي" },
+      { type: "select", label: "المادة", options: subjects },
+      { type: "select", label: "المرحلة الدراسية", options: grades },
+      { type: "password", label: "كود المدرس" }
+    ]
+  },
+  parent: {
+    title: "تسجيل دخول ولي الأمر",
+    subtitle: "تابع مستوى الطالب والنتائج والتنبيهات",
+    fields: [
+      { type: "text", label: "الاسم الثلاثي" },
+      { type: "password", label: "كود ولي الأمر" }
+    ]
+  },
+  admin: {
+    title: "تسجيل دخول المدير",
+    subtitle: "لوحة التحكم الرئيسية لإدارة المنصة",
+    fields: [
+      { type: "password", label: "كود المدير" }
+    ]
+  }
+};
+
 roleCards.forEach(card => {
   card.addEventListener("click", () => {
-    const role = card.dataset.role;
-    openLogin(role);
+    openModal(card.dataset.role);
   });
 });
 
-function openLogin(role){
-  const data = fields[role];
+function openModal(role){
+  const data = roles[role];
+
   modalTitle.textContent = data.title;
+  modalSubtitle.textContent = data.subtitle;
   formFields.innerHTML = "";
 
-  data.inputs.forEach(([type, labelText]) => {
+  data.fields.forEach(item => {
     const field = document.createElement("div");
     field.className = "field";
 
     const label = document.createElement("label");
-    label.textContent = labelText;
+    label.textContent = item.label;
 
     let input;
 
-    if(type === "select"){
+    if(item.type === "select"){
       input = document.createElement("select");
-      const list = labelText.includes("المادة") ? subjects : grades;
-
-      list.forEach(item => {
+      item.options.forEach(optionText => {
         const option = document.createElement("option");
-        option.textContent = item;
-        option.value = item;
+        option.value = optionText;
+        option.textContent = optionText;
         input.appendChild(option);
       });
     }else{
       input = document.createElement("input");
-      input.type = type;
-      input.placeholder = labelText;
+      input.type = item.type;
+      input.placeholder = item.label;
     }
 
+    input.required = true;
     field.appendChild(label);
     field.appendChild(input);
     formFields.appendChild(field);
@@ -104,22 +109,32 @@ function openLogin(role){
   modal.classList.add("active");
 }
 
-closeModal.addEventListener("click", () => {
-  modal.classList.remove("active");
-});
+closeModal.addEventListener("click", closeLoginModal);
 
-modal.addEventListener("click", e => {
-  if(e.target === modal){
-    modal.classList.remove("active");
+modal.addEventListener("click", event => {
+  if(event.target === modal){
+    closeLoginModal();
   }
 });
+
+function closeLoginModal(){
+  modal.classList.remove("active");
+}
 
 themeToggle.addEventListener("click", () => {
   document.body.classList.toggle("light");
   themeToggle.textContent = document.body.classList.contains("light") ? "☀️" : "🌙";
 });
 
-loginForm.addEventListener("submit", e => {
-  e.preventDefault();
-  alert("هذه واجهة تجريبية. سنربط تسجيل الدخول الحقيقي في المرحلة القادمة.");
+loginForm.addEventListener("submit", event => {
+  event.preventDefault();
+  alert("تم تجهيز الواجهة. في الإصدار القادم سنربط الدخول باللوحات والبيانات.");
 });
+
+function scrollToCards(){
+  document.getElementById("cardsSection").scrollIntoView({ behavior: "smooth" });
+}
+
+function openInfo(){
+  alert("منصة آفاق التعليمية: نظام لإدارة الطلاب والمدرسين والمواد والاختبارات والنتائج والاشتراكات.");
+}

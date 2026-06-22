@@ -1,1 +1,373 @@
-let current='home';let accId='';let editKey='';let editIdx=null;const nav=[['الرئيسية','home'],['طلبات الاشتراك','requests'],['الطلاب المقبولون','accepted'],['الاشتراكات المنتهية','expired'],['سجل المدفوعات','payments'],['إدارة الطلاب','students'],['إدارة المدرسين','teachers'],['أولياء الأمور','parents'],['المراحل','stages'],['المواد','subjects'],['الإشعارات','notifications'],['الرسائل','messages'],['الحضور','attendance'],['لوحة الشرف','leaderboard'],['المستويات','levels'],['إعادة ضبط','reset']];function drawSide(){side.innerHTML='<h2>آفاق التعليمية</h2>'+nav.map(function(n){return `<button class="nav ${current===n[1]?'active':''}" onclick="openS('${n[1]}')"><span>${n[0]}</span><span>›</span></button>`}).join('')}function all(){return get('requests')}function ok(){return all().filter(x=>x.status==='accepted')}function activeSubs(){return ok().filter(x=>!expired(x.endDate)&&x.subStatus!=='موقوف')}function exp(){return ok().filter(x=>expired(x.endDate))}function rev(){return get('payments').reduce((a,x)=>a+(+x['المبلغ']||0),0)}function stats(){return `<div class="subcards"><div class="subcard"><h3>🟢 نشطة</h3><strong>${activeSubs().length}</strong></div><div class="subcard"><h3>🔴 منتهية</h3><strong>${exp().length}</strong></div><div class="subcard"><h3>🟡 طلبات</h3><strong>${all().filter(x=>x.status==='new').length}</strong></div><div class="subcard"><h3>💰 الإيرادات</h3><strong>${rev().toLocaleString('ar-IQ')}</strong></div></div>`}function head(t,d){return `<section class="panel"><h2>${t}</h2><p class="muted">${d||''}</p>`}function openS(s){current=s;drawSide();if(s==='home')home();else if(s==='requests')req('new');else if(s==='accepted')accepted();else if(s==='expired')expiredPage();else if(s==='reset')resetPage();else table(s)}function home(){content.innerHTML=head('مركز إدارة الاشتراكات','نظرة عامة')+stats()+'</section>'}function req(st){content.innerHTML=head('طلبات الاشتراك الجديدة','قبول الطلب ينشئ الطالب وولي الأمر وسجل الدفع.')+stats()+reqTable(all().filter(x=>x.status===st),true)+'</section>'}function accepted(){content.innerHTML=head('الطلاب المقبولون','تعديل وتجديد وإيقاف وتفعيل.')+stats()+reqTable(ok(),false)+'</section>'}function expiredPage(){content.innerHTML=head('الاشتراكات المنتهية','يمكن تجديدها مباشرة.')+stats()+reqTable(exp(),false)+'</section>'}function reqTable(arr,can){return `<div class="tablebox"><table class="tbl"><tr><th>الطالب</th><th>ولي الأمر</th><th>المرحلة</th><th>الهاتف</th><th>المبلغ</th><th>الكود</th><th>الماستر</th><th>النهاية</th><th>الحالة</th><th>أوامر</th></tr>${arr.length?arr.map(x=>`<tr><td>${x.studentName}</td><td>${x.parentName}</td><td>${x.grade}</td><td>${x.phone}</td><td>${x.amount}</td><td>${x.studentCode||'—'}</td><td>${x.masterNumber||'—'}</td><td>${x.endDate||'—'}</td><td>${expired(x.endDate)?'منتهي':(x.subStatus||x.status)}</td><td><div class="actions">${can?`<button class="btn green" onclick="openAcc('${x.id}')">قبول</button><button class="btn red" onclick="reject('${x.id}')">رفض</button>`:`<button class="btn green" onclick="renew('${x.id}')">تجديد</button><button class="btn orange" onclick="toggle('${x.id}')">${x.subStatus==='موقوف'?'تفعيل':'إيقاف'}</button>`}<button class="btn" onclick="alert('${x.notes||'لا توجد ملاحظات'}')">تفاصيل</button><button class="btn red" onclick="delReq('${x.id}')">حذف</button></div></td></tr>`).join(''):'<tr><td colspan=10><div class="empty">لا توجد بيانات</div></td></tr>'}</table></div>`}function table(k){let f=schemas[k]||['العنوان','الوصف','الحالة'];let d=get(k);content.innerHTML=head(k,'إضافة وتعديل وحذف')+`<div class="toolbar"><button class="btn" onclick="openEdit('${k}')">إضافة جديد</button></div><div class="tablebox"><table class="tbl"><tr>${f.map(x=>`<th>${x}</th>`).join('')}<th>أوامر</th></tr>${d.length?d.map((r,i)=>`<tr>${f.map(x=>`<td>${r[x]||'—'}</td>`).join('')}<td><div class="actions"><button class="btn" onclick="openEdit('${k}',${i})">تعديل</button><button class="btn red" onclick="delRow('${k}',${i})">حذف</button></div></td></tr>`).join(''):'<tr><td colspan='+(f.length+1)+'><div class="empty">لا توجد سجلات</div></td></tr>'}</table></div></section>`}function resetPage(){content.innerHTML=head('إعادة ضبط المنصة','مع نسخة احتياطية وتأكيد')+`<div class="grid">${['إعادة ضبط المنصة بالكامل','حذف جميع الطلاب','حذف الاشتراكات وسجلات الدفع'].map(x=>`<div class="card danger"><h3>${x}</h3><p>سيتم إنشاء نسخة احتياطية قبل التنفيذ.</p><button class="btn red" onclick="danger('${x}')">تنفيذ</button></div>`).join('')}</div></section>`}function openAcc(idv){accId=idv;code.value='ST-'+Math.floor(1000+Math.random()*9000);master.value='M-'+Date.now().toString().slice(-5);start.value=today();end.value='';accM.classList.add('active')}accF.onsubmit=function(e){e.preventDefault();let r=all(),q=r.find(x=>x.id===accId);let u={...q,status:'accepted',studentCode:code.value,masterNumber:master.value,startDate:start.value,endDate:end.value,subStatus:'نشط'};set('requests',r.map(x=>x.id===accId?u:x));let s=get('students');s.unshift({'الاسم الثلاثي':q.studentName,'المرحلة':q.grade,'كود الطالب':code.value,'رقم الهاتف':q.phone,'الحالة':'مفعل','الاشتراك':'نشط','رقم الماستر':master.value});set('students',s);let p=get('parents');p.unshift({'اسم ولي الأمر':q.parentName,'اسم الطالب':q.studentName,'كود ولي الأمر':code.value,'رقم الهاتف':q.phone});set('parents',p);let pay=get('payments');pay.unshift({'اسم الطالب':q.studentName,'رقم الماستر':master.value,'المبلغ':q.amount,'التاريخ':today(),'نوع العملية':'اشتراك جديد','ملاحظات':q.notes||''});set('payments',pay);accM.classList.remove('active');openS('requests')};function reject(idv){set('requests',all().map(x=>x.id===idv?{...x,status:'rejected'}:x));openS(current)}function renew(idv){let nd=prompt('تاريخ الانتهاء الجديد');if(!nd)return;set('requests',all().map(x=>x.id===idv?{...x,endDate:nd,subStatus:'نشط'}:x));openS(current)}function toggle(idv){set('requests',all().map(x=>x.id===idv?{...x,subStatus:x.subStatus==='موقوف'?'نشط':'موقوف'}:x));openS(current)}function delReq(idv){if(confirm('حذف؟')){set('requests',all().filter(x=>x.id!==idv));openS(current)}}function openEdit(k,i=null){editKey=k;editIdx=i;let f=schemas[k]||['العنوان','الوصف','الحالة'],r=i!==null?get(k)[i]:{};editT.textContent=i!==null?'تعديل':'إضافة';editFields.innerHTML=f.map(x=>`<div class="field"><label>${x}</label><input id="e_${x}" value="${r[x]||''}"></div>`).join('');editM.classList.add('active')}editF.onsubmit=function(e){e.preventDefault();let f=schemas[editKey]||['العنوان','الوصف','الحالة'],d=get(editKey),o={};f.forEach(x=>o[x]=document.getElementById('e_'+x).value||'—');if(editIdx!==null)d[editIdx]=o;else d.unshift(o);set(editKey,d);editM.classList.remove('active');openS(current)}function delRow(k,i){let d=get(k);d.splice(i,1);set(k,d);openS(current)}function danger(x){localStorage.setItem('afaq291_backup',JSON.stringify({requests:get('requests'),students:get('students'),payments:get('payments'),date:new Date().toISOString()}));let t=prompt('اكتب: أوافق على الحذف');if(t==='أوافق على الحذف'){if(x.includes('المنصة'))['requests','students','parents','payments'].forEach(k=>set(k,[]));if(x.includes('طلاب'))set('students',[]);if(x.includes('اشتراكات')){set('requests',[]);set('payments',[])}alert('تم التنفيذ بعد النسخ الاحتياطي');openS('reset')}}drawSide();openS('home');
+
+var current = 'home';
+var acceptId = '';
+var editKey = '';
+var editIndex = null;
+
+var navItems = [
+  ['الرئيسية','home'],
+  ['طلبات الاشتراك','requests'],
+  ['الطلاب المقبولون','accepted'],
+  ['الاشتراكات المنتهية','expired'],
+  ['سجل المدفوعات','payments'],
+  ['إدارة الطلاب','students'],
+  ['إدارة المدرسين','teachers'],
+  ['أولياء الأمور','parents'],
+  ['المراحل','stages'],
+  ['المواد','subjects'],
+  ['الإشعارات','notifications'],
+  ['الرسائل','messages'],
+  ['الحضور','attendance'],
+  ['لوحة الشرف','leaderboard'],
+  ['المستويات','levels'],
+  ['إعادة ضبط','reset']
+];
+
+function drawSide(){
+  var side = document.getElementById('side');
+  side.innerHTML = '<h2>آفاق التعليمية</h2>';
+
+  navItems.forEach(function(item){
+    var button = document.createElement('button');
+    button.className = 'nav' + (current === item[1] ? ' active' : '');
+    button.innerHTML = '<span>' + item[0] + '</span><span>›</span>';
+    button.onclick = function(){
+      openSection(item[1]);
+    };
+    side.appendChild(button);
+  });
+}
+
+function allRequests(){
+  return getData('requests');
+}
+
+function acceptedRequests(){
+  return allRequests().filter(function(x){ return x.status === 'accepted'; });
+}
+
+function activeSubscriptions(){
+  return acceptedRequests().filter(function(x){
+    return !isExpired(x.endDate) && x.subStatus !== 'موقوف';
+  });
+}
+
+function expiredSubscriptions(){
+  return acceptedRequests().filter(function(x){
+    return isExpired(x.endDate);
+  });
+}
+
+function revenue(){
+  return getData('payments').reduce(function(total, item){
+    return total + (Number(item['المبلغ']) || 0);
+  }, 0);
+}
+
+function statsHtml(){
+  return '<div class="subcards">' +
+    '<div class="subcard"><h3>🟢 نشطة</h3><strong>' + activeSubscriptions().length + '</strong></div>' +
+    '<div class="subcard"><h3>🔴 منتهية</h3><strong>' + expiredSubscriptions().length + '</strong></div>' +
+    '<div class="subcard"><h3>🟡 طلبات</h3><strong>' + allRequests().filter(function(x){return x.status === 'new';}).length + '</strong></div>' +
+    '<div class="subcard"><h3>💰 الإيرادات</h3><strong>' + revenue().toLocaleString('ar-IQ') + '</strong></div>' +
+  '</div>';
+}
+
+function panel(title, desc){
+  return '<section class="panel"><h2>' + title + '</h2><p class="muted">' + (desc || '') + '</p>';
+}
+
+function openSection(section){
+  current = section;
+  drawSide();
+
+  if(section === 'home') showHome();
+  else if(section === 'requests') showRequests('new');
+  else if(section === 'accepted') showAccepted();
+  else if(section === 'expired') showExpired();
+  else if(section === 'reset') showReset();
+  else showTable(section);
+}
+
+function showHome(){
+  document.getElementById('content').innerHTML =
+    panel('مركز إدارة الاشتراكات','نظرة عامة') + statsHtml() + '</section>';
+}
+
+function showRequests(status){
+  var items = allRequests().filter(function(x){ return x.status === status; });
+  document.getElementById('content').innerHTML =
+    panel('طلبات الاشتراك الجديدة','قبول الطلب ينشئ الطالب وولي الأمر وسجل الدفع.') +
+    statsHtml() +
+    requestsTable(items, true) +
+    '</section>';
+}
+
+function showAccepted(){
+  document.getElementById('content').innerHTML =
+    panel('الطلاب المقبولون','تعديل وتجديد وإيقاف وتفعيل.') +
+    statsHtml() +
+    requestsTable(acceptedRequests(), false) +
+    '</section>';
+}
+
+function showExpired(){
+  document.getElementById('content').innerHTML =
+    panel('الاشتراكات المنتهية','يمكن تجديدها مباشرة.') +
+    statsHtml() +
+    requestsTable(expiredSubscriptions(), false) +
+    '</section>';
+}
+
+function requestsTable(items, canAccept){
+  var html = '<div class="tablebox"><table class="tbl"><tr><th>الطالب</th><th>ولي الأمر</th><th>المرحلة</th><th>الهاتف</th><th>المبلغ</th><th>الكود</th><th>الماستر</th><th>النهاية</th><th>الحالة</th><th>أوامر</th></tr>';
+
+  if(items.length === 0){
+    html += '<tr><td colspan="10"><div class="empty">لا توجد بيانات</div></td></tr>';
+  }else{
+    items.forEach(function(x){
+      html += '<tr>';
+      html += '<td>' + (x.studentName || '') + '</td>';
+      html += '<td>' + (x.parentName || '') + '</td>';
+      html += '<td>' + (x.grade || '') + '</td>';
+      html += '<td>' + (x.phone || '') + '</td>';
+      html += '<td>' + (x.amount || '') + '</td>';
+      html += '<td>' + (x.studentCode || '—') + '</td>';
+      html += '<td>' + (x.masterNumber || '—') + '</td>';
+      html += '<td>' + (x.endDate || '—') + '</td>';
+      html += '<td>' + (isExpired(x.endDate) ? 'منتهي' : (x.subStatus || x.status)) + '</td>';
+      html += '<td><div class="actions">';
+
+      if(canAccept){
+        html += '<button class="btn green" onclick="openAccept(\'' + x.id + '\')">قبول</button>';
+        html += '<button class="btn red" onclick="rejectRequest(\'' + x.id + '\')">رفض</button>';
+      }else{
+        html += '<button class="btn green" onclick="renewSubscription(\'' + x.id + '\')">تجديد</button>';
+        html += '<button class="btn orange" onclick="toggleSubscription(\'' + x.id + '\')">' + (x.subStatus === 'موقوف' ? 'تفعيل' : 'إيقاف') + '</button>';
+      }
+
+      html += '<button class="btn" onclick="alert(\'' + (x.notes || 'لا توجد ملاحظات') + '\')">تفاصيل</button>';
+      html += '<button class="btn red" onclick="deleteRequest(\'' + x.id + '\')">حذف</button>';
+      html += '</div></td></tr>';
+    });
+  }
+
+  html += '</table></div>';
+  return html;
+}
+
+function showTable(key){
+  var fields = schemas[key] || ['العنوان','الوصف','الحالة'];
+  var data = getData(key);
+  var html = panel(key, 'إضافة وتعديل وحذف');
+  html += '<button class="btn" onclick="openEdit(\'' + key + '\')">إضافة جديد</button>';
+  html += '<div class="tablebox"><table class="tbl"><tr>';
+
+  fields.forEach(function(f){
+    html += '<th>' + f + '</th>';
+  });
+
+  html += '<th>أوامر</th></tr>';
+
+  if(data.length === 0){
+    html += '<tr><td colspan="' + (fields.length + 1) + '"><div class="empty">لا توجد سجلات</div></td></tr>';
+  }else{
+    data.forEach(function(row, index){
+      html += '<tr>';
+      fields.forEach(function(f){
+        html += '<td>' + (row[f] || '—') + '</td>';
+      });
+      html += '<td><div class="actions">';
+      html += '<button class="btn" onclick="openEdit(\'' + key + '\',' + index + ')">تعديل</button>';
+      html += '<button class="btn red" onclick="deleteRow(\'' + key + '\',' + index + ')">حذف</button>';
+      html += '</div></td></tr>';
+    });
+  }
+
+  html += '</table></div></section>';
+  document.getElementById('content').innerHTML = html;
+}
+
+function showReset(){
+  var ops = ['إعادة ضبط المنصة بالكامل','حذف جميع الطلاب','حذف الاشتراكات وسجلات الدفع'];
+  var html = panel('إعادة ضبط المنصة','مع نسخة احتياطية وتأكيد') + '<div class="grid">';
+
+  ops.forEach(function(op){
+    html += '<div class="card danger"><h3>' + op + '</h3><p>سيتم إنشاء نسخة احتياطية قبل التنفيذ.</p><button class="btn red" onclick="dangerReset(\'' + op + '\')">تنفيذ</button></div>';
+  });
+
+  html += '</div></section>';
+  document.getElementById('content').innerHTML = html;
+}
+
+function openAccept(idValue){
+  acceptId = idValue;
+  document.getElementById('code').value = 'ST-' + Math.floor(1000 + Math.random() * 9000);
+  document.getElementById('master').value = 'M-' + Date.now().toString().slice(-5);
+  document.getElementById('start').value = today();
+  document.getElementById('end').value = '';
+  document.getElementById('accM').classList.add('active');
+}
+
+document.getElementById('accF').onsubmit = function(e){
+  e.preventDefault();
+
+  var requests = allRequests();
+  var req = requests.find(function(x){ return x.id === acceptId; });
+  if(!req) return;
+
+  var updated = {
+    ...req,
+    status: 'accepted',
+    studentCode: document.getElementById('code').value,
+    masterNumber: document.getElementById('master').value,
+    startDate: document.getElementById('start').value,
+    endDate: document.getElementById('end').value,
+    subStatus: 'نشط'
+  };
+
+  setData('requests', requests.map(function(x){ return x.id === acceptId ? updated : x; }));
+
+  var students = getData('students');
+  students.unshift({
+    'الاسم الثلاثي': req.studentName,
+    'المرحلة': req.grade,
+    'كود الطالب': updated.studentCode,
+    'رقم الهاتف': req.phone,
+    'الحالة': 'مفعل',
+    'الاشتراك': 'نشط',
+    'رقم الماستر': updated.masterNumber
+  });
+  setData('students', students);
+
+  var parents = getData('parents');
+  parents.unshift({
+    'اسم ولي الأمر': req.parentName,
+    'اسم الطالب': req.studentName,
+    'كود ولي الأمر': updated.studentCode,
+    'رقم الهاتف': req.phone
+  });
+  setData('parents', parents);
+
+  var payments = getData('payments');
+  payments.unshift({
+    'اسم الطالب': req.studentName,
+    'رقم الماستر': updated.masterNumber,
+    'المبلغ': req.amount,
+    'التاريخ': today(),
+    'نوع العملية': 'اشتراك جديد',
+    'ملاحظات': req.notes || ''
+  });
+  setData('payments', payments);
+
+  document.getElementById('accM').classList.remove('active');
+  openSection('requests');
+};
+
+function rejectRequest(idValue){
+  setData('requests', allRequests().map(function(x){
+    if(x.id === idValue) x.status = 'rejected';
+    return x;
+  }));
+  openSection(current);
+}
+
+function renewSubscription(idValue){
+  var newEnd = prompt('تاريخ الانتهاء الجديد');
+  if(!newEnd) return;
+
+  setData('requests', allRequests().map(function(x){
+    if(x.id === idValue){
+      x.endDate = newEnd;
+      x.subStatus = 'نشط';
+    }
+    return x;
+  }));
+
+  openSection(current);
+}
+
+function toggleSubscription(idValue){
+  setData('requests', allRequests().map(function(x){
+    if(x.id === idValue){
+      x.subStatus = x.subStatus === 'موقوف' ? 'نشط' : 'موقوف';
+    }
+    return x;
+  }));
+  openSection(current);
+}
+
+function deleteRequest(idValue){
+  if(confirm('حذف الطلب؟')){
+    setData('requests', allRequests().filter(function(x){ return x.id !== idValue; }));
+    openSection(current);
+  }
+}
+
+function openEdit(key, index){
+  editKey = key;
+  editIndex = typeof index === 'number' ? index : null;
+  var fields = schemas[key] || ['العنوان','الوصف','الحالة'];
+  var row = editIndex !== null ? getData(key)[editIndex] : {};
+  document.getElementById('editT').textContent = editIndex !== null ? 'تعديل' : 'إضافة';
+  var html = '';
+
+  fields.forEach(function(f){
+    html += '<div class="field"><label>' + f + '</label><input id="e_' + f + '" value="' + (row[f] || '') + '"></div>';
+  });
+
+  document.getElementById('editFields').innerHTML = html;
+  document.getElementById('editM').classList.add('active');
+}
+
+document.getElementById('editF').onsubmit = function(e){
+  e.preventDefault();
+
+  var fields = schemas[editKey] || ['العنوان','الوصف','الحالة'];
+  var data = getData(editKey);
+  var obj = {};
+
+  fields.forEach(function(f){
+    obj[f] = document.getElementById('e_' + f).value || '—';
+  });
+
+  if(editIndex !== null) data[editIndex] = obj;
+  else data.unshift(obj);
+
+  setData(editKey, data);
+  document.getElementById('editM').classList.remove('active');
+  openSection(current);
+};
+
+function deleteRow(key, index){
+  var data = getData(key);
+  data.splice(index, 1);
+  setData(key, data);
+  openSection(current);
+}
+
+function dangerReset(name){
+  localStorage.setItem('afaq292_backup', JSON.stringify({
+    requests: getData('requests'),
+    students: getData('students'),
+    payments: getData('payments'),
+    date: new Date().toISOString()
+  }));
+
+  var text = prompt('اكتب: أوافق على الحذف');
+  if(text === 'أوافق على الحذف'){
+    if(name.indexOf('المنصة') !== -1){
+      ['requests','students','parents','payments'].forEach(function(k){ setData(k, []); });
+    }
+    if(name.indexOf('طلاب') !== -1) setData('students', []);
+    if(name.indexOf('اشتراكات') !== -1){
+      setData('requests', []);
+      setData('payments', []);
+    }
+    alert('تم التنفيذ بعد النسخ الاحتياطي');
+    openSection('reset');
+  }
+}
+
+drawSide();
+openSection('home');

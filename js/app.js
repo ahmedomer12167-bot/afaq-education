@@ -6,6 +6,15 @@ const formFields = document.getElementById("formFields");
 const themeToggle = document.getElementById("themeToggle");
 const loginForm = document.getElementById("loginForm");
 
+const pages = {
+  student: "pages/student.html",
+  teacher: "pages/teacher.html",
+  parent: "pages/parent.html",
+  admin: "pages/admin.html"
+};
+
+let activeRole = "";
+
 const fields = {
   student: {
     title: "تسجيل دخول الطالب",
@@ -59,12 +68,14 @@ const subjects = [
   "الاجتماعيات"
 ];
 
-roleCards.forEach(card => {
-  card.addEventListener("click", () => {
-    const role = card.dataset.role;
-    openLogin(role);
+if (roleCards.length) {
+  roleCards.forEach(card => {
+    card.addEventListener("click", () => {
+      activeRole = card.dataset.role;
+      openLogin(activeRole);
+    });
   });
-});
+}
 
 function openLogin(role){
   const data = fields[role];
@@ -96,6 +107,7 @@ function openLogin(role){
       input.placeholder = labelText;
     }
 
+    input.required = true;
     field.appendChild(label);
     field.appendChild(input);
     formFields.appendChild(field);
@@ -104,22 +116,32 @@ function openLogin(role){
   modal.classList.add("active");
 }
 
-closeModal.addEventListener("click", () => {
-  modal.classList.remove("active");
-});
-
-modal.addEventListener("click", e => {
-  if(e.target === modal){
+if (closeModal) {
+  closeModal.addEventListener("click", () => {
     modal.classList.remove("active");
-  }
-});
+  });
+}
 
-themeToggle.addEventListener("click", () => {
-  document.body.classList.toggle("light");
-  themeToggle.textContent = document.body.classList.contains("light") ? "☀️" : "🌙";
-});
+if (modal) {
+  modal.addEventListener("click", e => {
+    if(e.target === modal){
+      modal.classList.remove("active");
+    }
+  });
+}
 
-loginForm.addEventListener("submit", e => {
-  e.preventDefault();
-  alert("هذه واجهة تجريبية. سنربط تسجيل الدخول الحقيقي في المرحلة القادمة.");
-});
+if (themeToggle) {
+  themeToggle.addEventListener("click", () => {
+    document.body.classList.toggle("light");
+    themeToggle.textContent = document.body.classList.contains("light") ? "☀️" : "🌙";
+  });
+}
+
+if (loginForm) {
+  loginForm.addEventListener("submit", e => {
+    e.preventDefault();
+    if (pages[activeRole]) {
+      window.location.href = pages[activeRole];
+    }
+  });
+}

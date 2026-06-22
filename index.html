@@ -7,95 +7,67 @@
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
-  <div class="bg-orbs">
-    <span></span>
-    <span></span>
-    <span></span>
+  <div class="background">
+    <span></span><span></span><span></span><span></span>
   </div>
 
-  <header class="navbar">
+  <header class="topbar">
     <div class="brand">
-      <div class="brand-logo">آ</div>
+      <div class="logo">آ</div>
       <div>
         <h2>آفاق التعليمية</h2>
-        <p>منصة تعليمية ذكية</p>
+        <p>منصة تعليمية متكاملة</p>
       </div>
     </div>
-    <button id="themeToggle" class="theme-btn" title="تبديل الوضع">🌙</button>
+
+    <button class="theme-toggle" id="themeToggle">🌙</button>
   </header>
 
-  <main class="main-layout">
-    <section class="intro">
-      <div class="pill">تعلم • اختبر • تابع • تطور</div>
-      <h1>منصة <span>آفاق التعليمية</span></h1>
+  <main class="hero">
+    <section class="hero-content">
+      <div class="badge">تعلم بذكاء • تواصل أسرع • نتائج أوضح</div>
+      <h1>مرحباً بك في منصة <span>آفاق التعليمية</span></h1>
       <p>
-        واجهة عصرية لإدارة الدروس والاختبارات والحضور والنتائج والاشتراكات
-        لجميع الأدوار داخل المنصة بطريقة منظمة وسهلة.
+        واجهة حديثة لإدارة الدروس، الاختبارات، الحضور، النتائج، والاشتراكات
+        بطريقة منظمة وسهلة لجميع المستخدمين.
       </p>
-      <div class="intro-actions">
-        <button class="primary-btn" onclick="scrollToCards()">ابدأ الآن</button>
-        <button class="ghost-btn" onclick="openInfo()">عن المنصة</button>
-      </div>
     </section>
 
-    <section class="cards-section" id="cardsSection">
-      <div class="role-card" data-role="student">
-        <div class="card-glow"></div>
+    <section class="login-grid">
+      <article class="role-card" data-role="student">
         <div class="icon">🎓</div>
-        <h3>الطالب</h3>
-        <p>الدروس، الواجبات، الاختبارات، الحضور والنتائج.</p>
-        <span>تسجيل الدخول ←</span>
-      </div>
+        <h3>تسجيل الطالب</h3>
+        <p>الدروس، الاختبارات، الواجبات والنتائج.</p>
+      </article>
 
-      <div class="role-card" data-role="teacher">
-        <div class="card-glow"></div>
+      <article class="role-card" data-role="teacher">
         <div class="icon">👨‍🏫</div>
-        <h3>المدرس</h3>
-        <p>إدارة المادة، الملفات، الاختبارات، الطلاب والحضور.</p>
-        <span>تسجيل الدخول ←</span>
-      </div>
+        <h3>تسجيل المدرس</h3>
+        <p>إدارة المواد، الطلاب، الاختبارات والحضور.</p>
+      </article>
 
-      <div class="role-card" data-role="parent">
-        <div class="card-glow"></div>
+      <article class="role-card" data-role="parent">
         <div class="icon">👨‍👩‍👦</div>
-        <h3>ولي الأمر</h3>
-        <p>متابعة مستوى الطالب والتنبيهات والاشتراكات.</p>
-        <span>تسجيل الدخول ←</span>
-      </div>
+        <h3>تسجيل ولي الأمر</h3>
+        <p>متابعة مستوى الطالب والاشتراكات والتنبيهات.</p>
+      </article>
 
-      <div class="role-card" data-role="admin">
-        <div class="card-glow"></div>
+      <article class="role-card" data-role="admin">
         <div class="icon">⚙️</div>
-        <h3>المدير</h3>
-        <p>التحكم الكامل بالطلاب والمدرسين والمواد والنظام.</p>
-        <span>تسجيل الدخول ←</span>
-      </div>
+        <h3>تسجيل المدير</h3>
+        <p>إدارة المنصة بالكامل من لوحة واحدة.</p>
+      </article>
     </section>
   </main>
 
-  <section class="features">
-    <div>
-      <strong>تحديث فوري</strong>
-      <p>جاهزة للربط لاحقاً مع Firebase.</p>
-    </div>
-    <div>
-      <strong>تصميم متجاوب</strong>
-      <p>تعمل بوضوح على الهاتف والكمبيوتر.</p>
-    </div>
-    <div>
-      <strong>أدوار متعددة</strong>
-      <p>طالب، مدرس، ولي أمر، ومدير.</p>
-    </div>
-  </section>
-
   <div class="modal" id="loginModal">
     <div class="modal-box">
-      <button class="close-btn" id="closeModal">×</button>
+      <button class="close" id="closeModal">×</button>
       <h2 id="modalTitle">تسجيل الدخول</h2>
-      <p class="modal-subtitle" id="modalSubtitle">أدخل البيانات المطلوبة للمتابعة</p>
+
       <form id="loginForm">
         <div id="formFields"></div>
-        <button class="submit-btn" type="submit">دخول إلى اللوحة</button>
+        <button type="submit" class="submit-btn">دخول</button>
       </form>
     </div>
   </div>

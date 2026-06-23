@@ -36,9 +36,245 @@ function showActivity(){var data=getData('activity');var html=panel('سجل ال
 function clearKey(k){if(confirm('حذف الكل؟')){setData(k,[]);openSection(current)}}
 function details(type,idv){var map={student:'students',teacher:'teachers',subject:'subjects',stage:'stages',parent:'parents',notification:'notifications',message:'messages',honor:'honor',level:'levels',request:'requests'};var obj=getData(map[type]).find(x=>x.id===idv);if(!obj)return;var html='<div class="details-grid">';Object.keys(obj).forEach(k=>{if(k!=='photo')html+=`<div class="detail-box"><b>${k}</b>${obj[k]}</div>`});html+='</div>';qs('detailContent').innerHTML=(obj.photo?`<img class="detail-photo" src="${obj.photo}">`:'')+html;qs('detailModal').classList.add('active')}
 function deleteItem(type,idv){var map={student:'students',teacher:'teachers',subject:'subjects',stage:'stages',parent:'parents',notification:'notifications',message:'messages',honor:'honor',level:'levels',request:'requests'};var k=map[type];if(!confirm('حذف؟'))return;setData(k,getData(k).filter(x=>x.id!==idv));openSection(current)}
-var schemas={student:['name','parentName','stage','phone','code','startDate','endDate','amount','status'],teacher:['name','stage','subject','teacherCode','subjectCode','phone','qualification','status','bio'],subject:['name','code','stage','teacher','color','icon','order','status','visibility'],stage:['name','order','status','visibility'],parent:['name','studentName','studentCode','phone','code'],request:['studentName','parentName','grade','phone','amount','status'],notification:['title','target','body'],message:['from','to','title','body','box'],honor:['studentName','points','level'],level:['name','percent']};
-var stores={student:'students',teacher:'teachers',subject:'subjects',stage:'stages',parent:'parents',request:'requests',notification:'notifications',message:'messages',honor:'honor',level:'levels'};
-function defaultVal(type,f){if(f==='code'&&type==='student')return randomStudentCode();if(f==='teacherCode')return randomTeacherCode();if(f==='subjectCode')return '';if(f==='startDate')return today();if(f==='endDate')return addDays(today(),30);if(f==='status')return type==='request'?'new':'مفعل';if(f==='visibility')return 'ظاهر';if(f==='box')return 'الوارد';if(f==='order')return '1';return ''}
-function editItem(type,idv){editType=type;editId=idv||null;var obj=editId?getData(stores[type]).find(x=>x.id===editId):{};var html='';schemas[type].forEach(function(f){html+=`<div class="field"><label>${f}</label><input id="f_${f}" value="${obj[f]||defaultVal(type,f)}"></div>`});if(type==='teacher')html+=`<div class="field full"><label>صورة المدرس</label><label class="file-button" for="teacherPhotoGeneric">📎 اختيار صورة</label><input id="teacherPhotoGeneric" class="hidden" type="file" accept="image/*"><img id="genericPreview" class="preview"></div>`;qs('genericTitle').textContent=editId?'تعديل':'إضافة';qs('genericFields').innerHTML=html;qs('genericModal').classList.add('active');if(type==='teacher'){currentTeacherPhoto=obj.photo||'';qs('genericPreview').src=currentTeacherPhoto;qs('genericPreview').style.display=currentTeacherPhoto?'block':'none';qs('teacherPhotoGeneric').onchange=function(){var file=this.files[0];if(!file)return;var r=new FileReader();r.onload=function(e){currentTeacherPhoto=e.target.result;qs('genericPreview').src=currentTeacherPhoto;qs('genericPreview').style.display='block'};r.readAsDataURL(file)}}}
-qs('genericForm').onsubmit=function(e){e.preventDefault();var obj={id:editId||id()};schemas[editType].forEach(f=>obj[f]=qs('f_'+f).value);if(editType==='teacher')obj.photo=currentTeacherPhoto;var k=stores[editType],arr=getData(k);if(editId)arr=arr.map(x=>x.id===editId?obj:x);else arr.push(obj);setData(k,arr);qs('genericModal').classList.remove('active');openSection(current)}
+var schemas={
+student:['name','parentName','stage','phone','code','startDate','endDate','amount','status'],
+teacher:['name','stage','subject','teacherCode','subjectCode','phone','qualification','status','bio'],
+subject:['name','code','stage','teacher','color','icon','order','status','visibility'],
+stage:['name','order','status','visibility'],
+parent:['name','studentName','studentCode','phone','code'],
+request:['studentName','parentName','grade','phone','amount','status'],
+notification:['title','target','body'],
+message:['from','to','title','body','box'],
+honor:['studentName','points','level'],
+level:['name','percent']
+};
+
+var stores={
+student:'students',
+teacher:'teachers',
+subject:'subjects',
+stage:'stages',
+parent:'parents',
+request:'requests',
+notification:'notifications',
+message:'messages',
+honor:'honor',
+level:'levels'
+};
+
+function optionList(values, selected){
+  var html='';
+  values.forEach(function(v){
+    html += '<option value="'+v+'"'+(selected===v?' selected':'')+'>'+v+'</option>';
+  });
+  return html;
+}
+
+function studentNameOptions(selected){
+  var arr=getData('students');
+  var html='';
+  arr.forEach(function(s){
+    html += '<option value="'+s.name+'"'+(selected===s.name?' selected':'')+'>'+s.name+' - '+s.code+'</option>';
+  });
+  if(!html) html='<option value="">لا يوجد طلاب بعد</option>';
+  return html;
+}
+
+function teacherNameOptions(selected){
+  var arr=getData('teachers');
+  var html='<option value="غير محدد">غير محدد</option>';
+  arr.forEach(function(t){
+    html += '<option value="'+t.name+'"'+(selected===t.name?' selected':'')+'>'+t.name+' - '+t.subject+'</option>';
+  });
+  return html;
+}
+
+function levelOptions(selected){
+  var arr=getData('levels');
+  var html='';
+  arr.forEach(function(l){
+    html += '<option value="'+l.name+'"'+(selected===l.name?' selected':'')+'>'+l.name+'</option>';
+  });
+  if(!html) html='<option value="مبتدئ">مبتدئ</option>';
+  return html;
+}
+
+function renderChoiceField(type, field, value){
+  value = value || defaultVal(type, field);
+  var labelMap={
+    name:'الاسم',
+    parentName:'ولي الأمر',
+    studentName:'اسم الطالب',
+    studentCode:'كود الطالب',
+    stage:'المرحلة',
+    grade:'المرحلة',
+    subject:'المادة',
+    code:'الكود',
+    teacherCode:'كود المدرس',
+    subjectCode:'كود المادة',
+    phone:'رقم الهاتف',
+    startDate:'تاريخ البداية',
+    endDate:'تاريخ الانتهاء',
+    amount:'المبلغ',
+    status:'الحالة',
+    subscriptionStatus:'حالة الاشتراك',
+    teacher:'المدرس',
+    color:'لون المادة',
+    icon:'أيقونة المادة',
+    order:'الترتيب',
+    visibility:'الظهور',
+    qualification:'المؤهل العلمي',
+    bio:'نبذة المدرس',
+    title:'العنوان',
+    target:'المستهدف',
+    body:'النص',
+    from:'المرسل',
+    to:'المستلم',
+    box:'صندوق الرسائل',
+    points:'النقاط',
+    level:'المستوى',
+    percent:'النسبة'
+  };
+  var label=labelMap[field]||field;
+  var html='<div class="field"><label>'+label+'</label>';
+
+  if(field==='stage' || field==='grade'){
+    html += '<select id="f_'+field+'">'+stageOptions(value)+'</select>';
+  }else if(field==='subject'){
+    html += '<select id="f_'+field+'">'+subjectOptions(value, '')+'</select>';
+  }else if(field==='teacher'){
+    html += '<select id="f_'+field+'">'+teacherNameOptions(value)+'</select>';
+  }else if(field==='status'){
+    var vals = type==='request' ? ['new','accepted','rejected'] : ['مفعل','موقوف'];
+    html += '<select id="f_'+field+'">'+optionList(vals, value)+'</select>';
+  }else if(field==='visibility'){
+    html += '<select id="f_'+field+'">'+optionList(['ظاهر','مخفي'], value)+'</select>';
+  }else if(field==='color'){
+    html += '<select id="f_'+field+'">'+optionList(['بنفسجي','أزرق','أخضر','أحمر','برتقالي','وردي','رمادي'], value)+'</select>';
+  }else if(field==='icon'){
+    html += '<select id="f_'+field+'">'+optionList(['📘','🧬','⚗️','🔬','🧮','🌍','✍️','📖','🧠','⭐'], value)+'</select>';
+  }else if(field==='target'){
+    html += '<select id="f_'+field+'">'+optionList(['عام','مرحلة معينة','مادة معينة','طالب معين','مدرس معين'], value)+'</select>';
+  }else if(field==='box'){
+    html += '<select id="f_'+field+'">'+optionList(['الوارد','المرسل','الأرشيف','المحذوفات'], value)+'</select>';
+  }else if(field==='level'){
+    html += '<select id="f_'+field+'">'+levelOptions(value)+'</select>';
+  }else if(field==='studentName'){
+    html += '<select id="f_'+field+'">'+studentNameOptions(value)+'</select>';
+  }else if(field==='order'){
+    html += '<select id="f_'+field+'">'+optionList(['1','2','3','4','5','6','7','8','9','10'], String(value))+'</select>';
+  }else if(field==='percent'){
+    html += '<select id="f_'+field+'">'+optionList(['0','25','50','60','70','80','85','90','95','100'], String(value))+'</select>';
+  }else if(field==='points'){
+    html += '<select id="f_'+field+'">'+optionList(['0','10','20','30','40','50','75','100','150','200'], String(value))+'</select>';
+  }else if(field==='startDate' || field==='endDate'){
+    html += '<input id="f_'+field+'" type="date" value="'+value+'">';
+  }else if(field==='amount'){
+    html += '<select id="f_'+field+'">'+optionList(['0','10000','15000','20000','25000','30000','35000','40000','50000'], String(value))+'</select>';
+  }else if(field==='body' || field==='bio'){
+    html += '<textarea id="f_'+field+'">'+value+'</textarea>';
+  }else{
+    html += '<input id="f_'+field+'" value="'+value+'">';
+  }
+
+  html += '</div>';
+  return html;
+}
+
+function defaultVal(type,f){
+  if(f==='code'&&type==='student')return randomStudentCode();
+  if(f==='teacherCode')return randomTeacherCode();
+  if(f==='subjectCode')return '';
+  if(f==='startDate')return today();
+  if(f==='endDate')return addDays(today(),30);
+  if(f==='status')return type==='request'?'new':'مفعل';
+  if(f==='visibility')return 'ظاهر';
+  if(f==='box')return 'الوارد';
+  if(f==='order')return '1';
+  if(f==='color')return 'بنفسجي';
+  if(f==='icon')return '📘';
+  if(f==='target')return 'عام';
+  if(f==='level')return 'مبتدئ';
+  if(f==='percent')return '0';
+  if(f==='points')return '0';
+  if(f==='amount')return '0';
+  return '';
+}
+
+function editItem(type,idv){
+  editType=type;
+  editId=idv||null;
+  var obj=editId?getData(stores[type]).find(function(x){return x.id===editId}):{};
+  var html='';
+  schemas[type].forEach(function(f){
+    html += renderChoiceField(type, f, obj[f]);
+  });
+
+  if(type==='teacher'){
+    html += '<div class="field full"><label>صورة المدرس</label><label class="file-button" for="teacherPhotoGeneric">📎 اختيار صورة من الجهاز</label><input id="teacherPhotoGeneric" class="hidden" type="file" accept="image/*"><img id="genericPreview" class="preview"></div>';
+  }
+
+  qs('genericTitle').textContent=editId?'تعديل':'إضافة';
+  qs('genericFields').innerHTML=html;
+  qs('genericModal').classList.add('active');
+
+  if(type==='teacher'){
+    currentTeacherPhoto=obj.photo||'';
+    qs('genericPreview').src=currentTeacherPhoto;
+    qs('genericPreview').style.display=currentTeacherPhoto?'block':'none';
+    qs('teacherPhotoGeneric').onchange=function(){
+      var file=this.files[0];
+      if(!file)return;
+      var r=new FileReader();
+      r.onload=function(e){
+        currentTeacherPhoto=e.target.result;
+        qs('genericPreview').src=currentTeacherPhoto;
+        qs('genericPreview').style.display='block';
+      };
+      r.readAsDataURL(file);
+    };
+  }
+
+  var stageField=qs('f_stage');
+  var subjectField=qs('f_subject');
+  var codeField=qs('f_subjectCode');
+  if(stageField && subjectField){
+    stageField.onchange=function(){
+      subjectField.innerHTML=subjectOptions('', stageField.value);
+      if(codeField) codeField.value=getSubjectCodeByName(subjectField.value);
+    };
+  }
+  if(subjectField && codeField){
+    subjectField.onchange=function(){
+      codeField.value=getSubjectCodeByName(subjectField.value);
+    };
+  }
+}
+
+qs('genericForm').onsubmit=function(e){
+  e.preventDefault();
+  var obj={id:editId||id()};
+  schemas[editType].forEach(function(f){
+    obj[f]=qs('f_'+f).value;
+  });
+  if(editType==='teacher') obj.photo=currentTeacherPhoto;
+
+  var k=stores[editType];
+  var arr=getData(k);
+
+  if(editId) arr=arr.map(function(x){return x.id===editId?obj:x});
+  else arr.push(obj);
+
+  setData(k,arr);
+
+  if(editType==='teacher'){
+    setData('subjects',getData('subjects').map(function(s){
+      return s.name===obj.subject ? Object.assign({},s,{teacher:obj.name}) : s;
+    }));
+  }
+
+  qs('genericModal').classList.remove('active');
+  openSection(current);
+};
+
 drawSide();openSection('home');

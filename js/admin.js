@@ -2,6 +2,29 @@ seedBase();
 var current='home', editType='', editId=null, currentTeacherPhoto='';
 var nav=[['الرئيسية','home'],['طلبات الاشتراك','requests'],['الطلاب','students'],['المدرسون','teachers'],['المواد','subjects'],['المراحل','stages'],['أولياء الأمور','parents'],['المدفوعات','payments'],['الإشعارات','notifications'],['الرسائل','messages'],['لوحة الشرف','honor'],['المستويات','levels'],['النسخ الاحتياطي','backup'],['الإعدادات','settings'],['إعادة الضبط','reset'],['سجل النشاط','activity']];
 function qs(x){return document.getElementById(x)}
+function fileToSafeDataURL(file, cb){
+  var reader = new FileReader();
+  reader.onload = function(e){
+    if(file.type && file.type.indexOf('image/') === 0){
+      var img = new Image();
+      img.onload = function(){
+        var max = 700;
+        var w = img.width, h = img.height;
+        if(w > h && w > max){ h = Math.round(h * max / w); w = max; }
+        else if(h >= w && h > max){ w = Math.round(w * max / h); h = max; }
+        var canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img,0,0,w,h);
+        cb(canvas.toDataURL('image/jpeg',0.72));
+      };
+      img.onerror = function(){ cb(e.target.result); };
+      img.src = e.target.result;
+    }else{
+      cb(e.target.result);
+    }
+  };
+  reader.readAsDataURL(file);
+}
 function createAutoBackup(reason){
   var keys=['stages','subjects','teachers','students','parents','requests','payments','notifications','messages','honor','levels','settings','activity'];
   var data={reason:reason,date:new Date().toLocaleString('ar-IQ')};
@@ -296,13 +319,11 @@ function editItem(type,idv){
     qs('teacherPhotoGeneric').onchange=function(){
       var file=this.files[0];
       if(!file)return;
-      var r=new FileReader();
-      r.onload=function(e){
-        currentTeacherPhoto=e.target.result;
+      fileToSafeDataURL(file,function(data){
+        currentTeacherPhoto=data;
         qs('genericPreview').src=currentTeacherPhoto;
         qs('genericPreview').style.display='block';
-      };
-      r.readAsDataURL(file);
+      });
     };
   }
 

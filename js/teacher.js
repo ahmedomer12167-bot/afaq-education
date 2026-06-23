@@ -14,6 +14,29 @@ var nav = [
 ];
 
 function qs(x){ return document.getElementById(x); }
+function fileToSafeDataURL(file, cb){
+  var reader = new FileReader();
+  reader.onload = function(e){
+    if(file.type && file.type.indexOf('image/') === 0){
+      var img = new Image();
+      img.onload = function(){
+        var max = 900;
+        var w = img.width, h = img.height;
+        if(w > h && w > max){ h = Math.round(h * max / w); w = max; }
+        else if(h >= w && h > max){ w = Math.round(w * max / h); h = max; }
+        var canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img,0,0,w,h);
+        cb(canvas.toDataURL('image/jpeg',0.75));
+      };
+      img.onerror = function(){ cb(e.target.result); };
+      img.src = e.target.result;
+    }else{
+      cb(e.target.result);
+    }
+  };
+  reader.readAsDataURL(file);
+}
 function byTeacher(arr){ return arr.filter(x => x.teacherId === teacher.id || (x.teacherName === teacher.name && x.stage === teacher.stage && x.subject === teacher.subject)); }
 function baseItem(){ return {id: editId || id(), teacherId: teacher.id, teacherName: teacher.name, stage: teacher.stage, subject: teacher.subject, subjectCode: teacher.subjectCode, createdAt: new Date().toLocaleString('ar-IQ')}; }
 function panel(title, desc){ return `<section class="panel"><div class="section-title"><div><h2>${title}</h2><p class="muted">${desc || ''}</p></div></div>`; }
@@ -253,14 +276,49 @@ function editItem(type,idv){
 }
 teacherForm.onsubmit = function(e){
   e.preventDefault();
-  var obj=baseItem(); schemas[editType].forEach(f => { if(f!=='questionsBuilder') obj[f]=qs('f_'+f).value; });
+  var obj=baseItem();
+  schemas[editType].forEach(function(f){
+    if(f!=='questionsBuilder') obj[f]=qs('f_'+f).value;
+  });
+
   var store=stores[editType];
-  if(editType==='exam'){ var ids=[].slice.call(document.querySelectorAll('.bankPick:checked')).map(c => c.value); obj.questionsList=byTeacher(getData('questionBank')).filter(q => ids.indexOf(q.id)!==-1); }
-  if(uploadedFile){ obj.fileName=uploadedFile.fileName; obj.fileData=uploadedFile.fileData; }
-  else if(editId){ var old=getData(store).find(x => x.id===editId); if(old){ obj.fileName=old.fileName; obj.fileData=old.fileData; obj.questionsList=obj.questionsList || old.questionsList; } }
-  var arr=getData(store); if(editId) arr=arr.map(x => x.id===editId ? obj : x); else arr.unshift(obj);
-  setData(store,arr); teacherModal.classList.remove('active'); openSection(current);
+
+  if(editType==='exam'){
+    var ids=[].slice.call(document.querySelectorAll('.bankPick:checked')).map(function(c){return c.value});
+    obj.questionsList=byTeacher(getData('questionBank')).filter(function(q){return ids.indexOf(q.id)!==-1});
+  }
+
+  if(uploadedFile){
+    obj.fileName=uploadedFile.fileName;
+    obj.fileData=uploadedFile.fileData;
+    obj.fileType=uploadedFile.fileType || '';
+    obj.fileSize=uploadedFile.fileSize || '';
+  }else if(editId){
+    var old=getData(store).find(function(x){return x.id===editId});
+    if(old){
+      obj.fileName=old.fileName;
+      obj.fileData=old.fileData;
+      obj.fileType=old.fileType;
+      obj.fileSize=old.fileSize;
+      obj.questionsList=obj.questionsList || old.questionsList;
+    }
+  }
+
+  var arr=getData(store);
+  if(editId) arr=arr.map(function(x){return x.id===editId?obj:x});
+  else arr.unshift(obj);
+
+  try{
+    setData(store,arr);
+  }catch(err){
+    alert('لم يتم حفظ الدرس لأن حجم الملف كبير جداً. جرّب ملف PDF أصغر أو استخدم رابط الملف بدلاً من رفعه.');
+    return;
+  }
+
+  teacherModal.classList.remove('active');
+  openSection(current);
 };
+
 function deleteTeacherItem(key,idv){ if(!confirm('حذف؟'))return; setData(key,getData(key).filter(x => x.id!==idv)); openSection(current); }
 function details(key,idv){
   var obj=getData(key).find(x => x.id===idv); if(!obj)return;

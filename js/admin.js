@@ -1,328 +1,44 @@
 seedBase();
-
-var current = 'home';
-var editStudentId = null;
-var editTeacherId = null;
-var currentTeacherPhoto = '';
-
-var nav = [
-  ['الرئيسية','home'],
-  ['إدارة الطلاب','students'],
-  ['الطلاب المقبولون','acceptedStudents'],
-  ['الطلاب الموقوفون','stoppedStudents'],
-  ['إدارة المدرسين','teachers'],
-  ['إدارة المواد','subjects'],
-  ['إدارة المراحل','stages']
-];
-
-function drawSide(){
-  var side = document.getElementById('side');
-  side.innerHTML = '<h2>آفاق التعليمية</h2>';
-  for(var i=0;i<nav.length;i++){
-    var item = nav[i];
-    var btn = document.createElement('button');
-    btn.className = 'nav' + (current === item[1] ? ' active' : '');
-    btn.innerHTML = '<span>' + item[0] + '</span><span>›</span>';
-    btn.setAttribute('data-section', item[1]);
-    btn.onclick = function(){ openSection(this.getAttribute('data-section')); };
-    side.appendChild(btn);
-  }
-}
-
-function panel(title, desc){
-  return '<section class="panel"><h2>' + title + '</h2><p class="muted">' + (desc || '') + '</p>';
-}
-
-function openSection(section){
-  current = section;
-  drawSide();
-  if(section === 'home') showHome();
-  else if(section === 'students') showStudents('all');
-  else if(section === 'acceptedStudents') showStudents('accepted');
-  else if(section === 'stoppedStudents') showStudents('stopped');
-  else if(section === 'teachers') showTeachers();
-  else if(section === 'subjects') showSubjects();
-  else if(section === 'stages') showStages();
-}
-
-function showHome(){
-  var students = getData('students');
-  var html = panel('مركز إدارة آفاق', 'الإصدار 3.4.1: إدارة الطلاب الكاملة بعد إصلاح خطأ JavaScript.');
-  html += '<div class="stats">';
-  html += '<div class="stat"><h3>كل الطلاب</h3><strong>' + students.length + '</strong></div>';
-  html += '<div class="stat"><h3>المقبولون</h3><strong>' + students.filter(function(s){return s.status === 'مفعل';}).length + '</strong></div>';
-  html += '<div class="stat"><h3>الموقوفون</h3><strong>' + students.filter(function(s){return s.status === 'موقوف';}).length + '</strong></div>';
-  html += '<div class="stat"><h3>منتهي الاشتراك</h3><strong>' + students.filter(function(s){return isExpired(s.endDate);}).length + '</strong></div>';
-  html += '</div></section>';
-  document.getElementById('content').innerHTML = html;
-}
-
-function showStudents(mode){
-  var title = mode === 'accepted' ? 'الطلاب المقبولون' : mode === 'stopped' ? 'الطلاب الموقوفون' : 'إدارة الطلاب الكاملة';
-  var students = getData('students');
-  if(mode === 'accepted') students = students.filter(function(s){return s.status === 'مفعل';});
-  if(mode === 'stopped') students = students.filter(function(s){return s.status === 'موقوف';});
-
-  var html = panel(title, 'بحث، تعديل بيانات الطالب، تجديد الاشتراك، إيقاف/تفعيل الاشتراك، وحذف الطالب.');
-  html += '<div class="notice">يعرض هذا القسم الطلاب كبطاقات واضحة بدون تمرير أفقي.</div>';
-  html += '<div class="searchbar">';
-  html += '<input id="studentSearch" placeholder="بحث بالاسم أو الكود أو المرحلة أو الهاتف..." oninput="filterStudents()">';
-  html += '<select id="studentStageFilter" onchange="filterStudents()"><option value="">كل المراحل</option>' + stageOptions('') + '</select>';
-  html += '<button class="btn green" type="button" onclick="openStudentModal()">➕ إضافة طالب</button>';
-  html += '</div><div id="studentsArea">' + studentsHtml(students) + '</div></section>';
-  document.getElementById('content').innerHTML = html;
-}
-
-function studentsHtml(list){
-  var html = '<div class="card-grid">';
-  if(!list.length) html += '<div class="empty">لا توجد بيانات طلاب.</div>';
-  for(var i=0;i<list.length;i++){
-    var s = list[i];
-    var exp = isExpired(s.endDate);
-    html += '<div class="data-card">';
-    html += '<div class="student-avatar">🎓</div>';
-    html += '<h3>' + s.name + '</h3>';
-    html += '<p><span class="chip">' + s.stage + '</span></p>';
-    html += '<p><span class="chip">الكود: ' + s.code + '</span></p>';
-    html += '<p class="muted">الهاتف: ' + (s.phone || '—') + '</p>';
-    html += '<p class="muted">ولي الأمر: ' + (s.parentName || '—') + '</p>';
-    html += '<p><span class="status ' + (s.status === 'مفعل' ? 'show' : 'hide') + '">' + s.status + '</span> ';
-    html += '<span class="status ' + (exp ? 'hide' : 'show') + '">' + (exp ? 'منتهي' : 'نشط') + '</span></p>';
-    html += '<div class="actions">';
-    html += '<a class="btn blue" href="student-details.html?id=' + s.id + '">معلومات</a>';
-    html += '<button class="btn" type="button" onclick="openStudentModal(\'' + s.id + '\')">تعديل</button>';
-    html += '<button class="btn green" type="button" onclick="renewStudent(\'' + s.id + '\')">تجديد</button>';
-    html += '<button class="btn orange" type="button" onclick="toggleStudentStatus(\'' + s.id + '\')">' + (s.status === 'مفعل' ? 'إيقاف' : 'تفعيل') + '</button>';
-    html += '<button class="btn red" type="button" onclick="deleteStudent(\'' + s.id + '\')">حذف</button>';
-    html += '</div></div>';
-  }
-  html += '</div>';
-  return html;
-}
-
-function filterStudents(){
-  var q = (document.getElementById('studentSearch').value || '').trim().toLowerCase();
-  var st = document.getElementById('studentStageFilter').value;
-  var list = getData('students').filter(function(s){
-    return (s.name + ' ' + s.code + ' ' + s.stage + ' ' + s.phone).toLowerCase().indexOf(q) !== -1 && (!st || s.stage === st);
-  });
-  document.getElementById('studentsArea').innerHTML = studentsHtml(list);
-}
-
-function openStudentModal(studentId){
-  editStudentId = studentId || null;
-  var s = editStudentId ? getData('students').find(function(x){ return x.id === editStudentId; }) : null;
-  document.getElementById('studentTitle').textContent = s ? 'تعديل طالب' : 'إضافة طالب';
-  document.getElementById('studentName').value = s ? s.name : '';
-  document.getElementById('studentParent').value = s ? s.parentName : '';
-  document.getElementById('studentStage').innerHTML = stageOptions(s ? s.stage : '');
-  document.getElementById('studentPhone').value = s ? s.phone : '';
-  document.getElementById('studentCode').value = s ? s.code : randomStudentCode();
-  document.getElementById('studentStart').value = s ? s.startDate : today();
-  document.getElementById('studentEnd').value = s ? s.endDate : addDays(today(), 30);
-  document.getElementById('studentAmount').value = s ? s.amount : '';
-  document.getElementById('studentStatus').value = s ? s.status : 'مفعل';
-  document.getElementById('studentSubStatus').value = s ? s.subscriptionStatus : 'نشط';
-  document.getElementById('studentNote').value = s ? s.note : '';
-  document.getElementById('studentModal').classList.add('active');
-}
-
-document.getElementById('studentForm').onsubmit = function(e){
-  e.preventDefault();
-  var students = getData('students');
-  var obj = {
-    id: editStudentId || id(),
-    name: document.getElementById('studentName').value.trim(),
-    parentName: document.getElementById('studentParent').value.trim(),
-    stage: document.getElementById('studentStage').value,
-    phone: document.getElementById('studentPhone').value.trim(),
-    code: document.getElementById('studentCode').value.trim(),
-    startDate: document.getElementById('studentStart').value,
-    endDate: document.getElementById('studentEnd').value,
-    amount: document.getElementById('studentAmount').value,
-    status: document.getElementById('studentStatus').value,
-    subscriptionStatus: document.getElementById('studentSubStatus').value,
-    note: document.getElementById('studentNote').value
-  };
-
-  if(!obj.name || !obj.code){
-    alert('أكمل اسم الطالب والكود');
-    return;
-  }
-
-  var dup = students.find(function(x){ return x.code === obj.code && x.id !== editStudentId; });
-  if(dup){
-    alert('كود الطالب مستخدم مسبقاً');
-    return;
-  }
-
-  if(editStudentId){
-    students = students.map(function(x){ return x.id === editStudentId ? obj : x; });
-  }else{
-    students.push(obj);
-    var pays = getData('payments');
-    pays.unshift({id:id(), studentId:obj.id, studentName:obj.name, amount:obj.amount, date:today(), type:'اشتراك جديد'});
-    setData('payments', pays);
-  }
-
-  setData('students', students);
-  document.getElementById('studentModal').classList.remove('active');
-  showStudents('all');
-};
-
-function renewStudent(sid){
-  var days = prompt('عدد أيام التجديد:', '30');
-  if(!days) return;
-  var students = getData('students');
-  students = students.map(function(s){
-    if(s.id === sid){
-      var base = s.endDate && !isExpired(s.endDate) ? s.endDate : today();
-      s.endDate = addDays(base, days);
-      s.subscriptionStatus = 'نشط';
-      s.status = 'مفعل';
-    }
-    return s;
-  });
-  var s = students.find(function(x){ return x.id === sid; });
-  var pays = getData('payments');
-  pays.unshift({id:id(), studentId:s.id, studentName:s.name, amount:s.amount || '', date:today(), type:'تجديد اشتراك'});
-  setData('payments', pays);
-  setData('students', students);
-  openSection(current);
-}
-
-function toggleStudentStatus(sid){
-  var students = getData('students').map(function(s){
-    if(s.id === sid){
-      if(s.status === 'مفعل'){
-        s.status = 'موقوف';
-        s.subscriptionStatus = 'موقوف';
-      }else{
-        s.status = 'مفعل';
-        s.subscriptionStatus = 'نشط';
-      }
-    }
-    return s;
-  });
-  setData('students', students);
-  openSection(current);
-}
-
-function deleteStudent(sid){
-  if(confirm('هل تريد حذف الطالب؟')){
-    setData('students', getData('students').filter(function(s){ return s.id !== sid; }));
-    setData('studentSubjects', getData('studentSubjects').filter(function(x){ return x.studentId !== sid; }));
-    openSection(current);
-  }
-}
-
-function showTeachers(){
-  var teachers = getData('teachers');
-  var html = panel('إدارة المدرسين', 'عرض مختصر للمدرسين.');
-  html += '<button class="btn green" type="button" onclick="openTeacherModal()">➕ إضافة مدرس</button><div class="card-grid">';
-  if(!teachers.length) html += '<div class="empty">لا توجد حسابات مدرسين بعد.</div>';
-  for(var i=0;i<teachers.length;i++){
-    var t = teachers[i];
-    html += '<div class="data-card">';
-    html += t.photo ? '<img class="teacher-photo" src="' + t.photo + '">' : '<div class="teacher-placeholder">👨‍🏫</div>';
-    html += '<h3>' + t.name + '</h3><p><span class="chip">' + t.stage + '</span></p><p><span class="chip">' + t.subject + '</span></p>';
-    html += '<p><span class="status ' + (t.status === 'مفعل' ? 'show' : 'hide') + '">' + t.status + '</span></p>';
-    html += '<div class="actions"><a class="btn blue" href="teacher-details.html?id=' + t.id + '">معلومات</a><button class="btn" type="button" onclick="openTeacherModal(\'' + t.id + '\')">تعديل</button></div>';
-    html += '</div>';
-  }
-  html += '</div></section>';
-  document.getElementById('content').innerHTML = html;
-}
-
-function showSubjects(){
-  var subjects = getData('subjects').sort(sortByOrder);
-  var html = panel('إدارة المواد', 'عرض المواد كبطاقات.');
-  html += '<div class="card-grid">';
-  for(var i=0;i<subjects.length;i++){
-    var sub = subjects[i];
-    html += '<div class="data-card"><div class="icon-big">' + (sub.icon || '📘') + '</div><h3>' + sub.name + '</h3>';
-    html += '<p><span class="chip">الكود: ' + sub.code + '</span></p><p class="muted">المرحلة: ' + sub.stage + '</p><p class="muted">المدرس: ' + (sub.teacher || 'غير محدد') + '</p></div>';
-  }
-  html += '</div></section>';
-  document.getElementById('content').innerHTML = html;
-}
-
-function showStages(){
-  var stages = getData('stages').sort(sortByOrder);
-  var html = panel('إدارة المراحل', 'عرض المراحل كبطاقات.');
-  html += '<div class="card-grid">';
-  for(var i=0;i<stages.length;i++){
-    var st = stages[i];
-    var u = stageUsage(st.name);
-    html += '<div class="data-card"><div class="icon-big">📚</div><h3>' + st.name + '</h3><p class="muted">مواد: ' + u.subjects + ' | طلاب: ' + u.students + ' | مدرسون: ' + u.teachers + '</p></div>';
-  }
-  html += '</div></section>';
-  document.getElementById('content').innerHTML = html;
-}
-
-function openTeacherModal(teacherId){
-  editTeacherId = teacherId || null;
-  var t = editTeacherId ? getData('teachers').find(function(x){ return x.id === editTeacherId; }) : null;
-  document.getElementById('teacherTitle').textContent = t ? 'تعديل مدرس' : 'إضافة مدرس';
-  document.getElementById('teacherName').value = t ? t.name : '';
-  document.getElementById('teacherStage').innerHTML = stageOptions(t ? t.stage : '');
-  document.getElementById('teacherSubject').innerHTML = subjectOptions(t ? t.subject : '', document.getElementById('teacherStage').value);
-  document.getElementById('teacherCode').value = t ? t.teacherCode : randomTeacherCode();
-  document.getElementById('teacherSubjectCode').value = t ? t.subjectCode : getSubjectCodeByName(document.getElementById('teacherSubject').value);
-  document.getElementById('teacherPhone').value = t ? t.phone : '';
-  document.getElementById('teacherQualification').value = t ? t.qualification : '';
-  document.getElementById('teacherBio').value = t ? t.bio : '';
-  document.getElementById('teacherStatus').value = t ? t.status : 'مفعل';
-  currentTeacherPhoto = t ? t.photo : '';
-  document.getElementById('teacherPreview').style.display = currentTeacherPhoto ? 'block' : 'none';
-  document.getElementById('teacherPreview').src = currentTeacherPhoto || '';
-  document.getElementById('teacherModal').classList.add('active');
-}
-
-document.getElementById('teacherStage').onchange = function(){
-  document.getElementById('teacherSubject').innerHTML = subjectOptions('', this.value);
-  document.getElementById('teacherSubjectCode').value = getSubjectCodeByName(document.getElementById('teacherSubject').value);
-};
-
-document.getElementById('teacherSubject').onchange = function(){
-  document.getElementById('teacherSubjectCode').value = getSubjectCodeByName(this.value);
-};
-
-document.getElementById('teacherPhoto').onchange = function(){
-  var file = this.files[0];
-  if(!file) return;
-  var reader = new FileReader();
-  reader.onload = function(e){
-    currentTeacherPhoto = e.target.result;
-    document.getElementById('teacherPreview').src = currentTeacherPhoto;
-    document.getElementById('teacherPreview').style.display = 'block';
-  };
-  reader.readAsDataURL(file);
-};
-
-document.getElementById('teacherForm').onsubmit = function(e){
-  e.preventDefault();
-  var teachers = getData('teachers');
-  var obj = {
-    id: editTeacherId || id(),
-    name: document.getElementById('teacherName').value.trim(),
-    stage: document.getElementById('teacherStage').value,
-    subject: document.getElementById('teacherSubject').value,
-    teacherCode: document.getElementById('teacherCode').value.trim(),
-    subjectCode: document.getElementById('teacherSubjectCode').value.trim(),
-    phone: document.getElementById('teacherPhone').value.trim(),
-    qualification: document.getElementById('teacherQualification').value.trim(),
-    bio: document.getElementById('teacherBio').value.trim(),
-    status: document.getElementById('teacherStatus').value,
-    photo: currentTeacherPhoto
-  };
-  if(editTeacherId) teachers = teachers.map(function(x){ return x.id === editTeacherId ? obj : x; });
-  else teachers.push(obj);
-  setData('teachers', teachers);
-  setData('subjects', getData('subjects').map(function(s){ return s.name === obj.subject ? Object.assign({}, s, {teacher: obj.name}) : s; }));
-  document.getElementById('teacherModal').classList.remove('active');
-  showTeachers();
-};
-
-drawSide();
-openSection('home');
+var current='home', editType='', editId=null, currentTeacherPhoto='';
+var nav=[['الرئيسية','home'],['طلبات الاشتراك','requests'],['الطلاب','students'],['المدرسون','teachers'],['المواد','subjects'],['المراحل','stages'],['أولياء الأمور','parents'],['المدفوعات','payments'],['الإشعارات','notifications'],['الرسائل','messages'],['لوحة الشرف','honor'],['المستويات','levels'],['النسخ الاحتياطي','backup'],['الإعدادات','settings'],['إعادة الضبط','reset'],['سجل النشاط','activity']];
+function qs(x){return document.getElementById(x)}
+function panel(t,d){return '<section class="panel"><h2>'+t+'</h2><p class="muted">'+(d||'')+'</p>'}
+function drawSide(){var side=qs('side');side.innerHTML='<h2>آفاق التعليمية</h2>';nav.forEach(function(i){var b=document.createElement('button');b.className='nav'+(current===i[1]?' active':'');b.innerHTML='<span>'+i[0]+'</span><span>›</span>';b.onclick=function(){openSection(i[1])};side.appendChild(b)})}
+function openSection(s){current=s;drawSide();var f={home:showHome,requests:showRequests,students:showStudents,teachers:showTeachers,subjects:showSubjects,stages:showStages,parents:showParents,payments:showPayments,notifications:showNotifications,messages:showMessages,honor:showHonor,levels:showLevels,backup:showBackup,settings:showSettings,reset:showReset,activity:showActivity}[s]||showHome;f()}
+function actions(type,idv){return `<div class="actions"><button class="btn blue" onclick="details('${type}','${idv}')">معلومات</button><button class="btn" onclick="editItem('${type}','${idv}')">تعديل</button><button class="btn red" onclick="deleteItem('${type}','${idv}')">حذف</button></div>`}
+function showHome(){var students=getData('students'),teachers=getData('teachers'),requests=getData('requests'),payments=getData('payments');var revenue=payments.reduce(function(t,p){return t+(Number(p.amount)||0)},0);qs('content').innerHTML=panel('لوحة المدير الكاملة','نسخة جامعة لكل أقسام المدير، بدون جداول طويلة أو تمرير أفقي.')+`<div class="stats"><div class="stat"><h3>الطلاب</h3><strong>${students.length}</strong></div><div class="stat"><h3>المدرسون</h3><strong>${teachers.length}</strong></div><div class="stat"><h3>طلبات جديدة</h3><strong>${requests.filter(r=>r.status==='new').length}</strong></div><div class="stat"><h3>الإيرادات</h3><strong>${revenue.toLocaleString('ar-IQ')}</strong></div></div></section>`}
+function showRequests(){var data=getData('requests');var html=panel('طلبات الاشتراك','قبول، رفض، حذف، وتحويل الطلب إلى طالب مفعل مع سجل دفع.')+`<button class="btn green" onclick="editItem('request')">➕ إضافة طلب</button><div class="card-grid">`;if(!data.length)html+='<div class="empty">لا توجد طلبات</div>';data.forEach(function(r){html+=`<div class="data-card"><div class="student-avatar">📝</div><h3>${r.studentName||''}</h3><p><span class="chip">${r.grade||''}</span></p><p class="muted">ولي الأمر: ${r.parentName||'—'}</p><p class="muted">الهاتف: ${r.phone||'—'}</p><p><span class="status ${r.status==='new'?'hide':'show'}">${r.status==='new'?'بانتظار المراجعة':r.status}</span></p><div class="actions"><button class="btn green" onclick="acceptRequest('${r.id}')">قبول</button><button class="btn orange" onclick="rejectRequest('${r.id}')">رفض</button><button class="btn red" onclick="deleteItem('request','${r.id}')">حذف</button></div></div>`});qs('content').innerHTML=html+'</div></section>'}
+function acceptRequest(idv){var r=getData('requests').find(x=>x.id===idv);if(!r)return;var code=prompt('كود الطالب:',randomStudentCode());if(!code)return;var end=prompt('تاريخ انتهاء الاشتراك:',addDays(today(),30));var st={id:id(),name:r.studentName,parentName:r.parentName,stage:r.grade,phone:r.phone,code:code,startDate:today(),endDate:end,amount:r.amount,status:'مفعل',subscriptionStatus:'نشط',note:r.notes||''};var students=getData('students');students.push(st);setData('students',students);var parents=getData('parents');parents.push({id:id(),name:r.parentName,studentName:r.studentName,studentCode:code,phone:r.phone,code:code});setData('parents',parents);var pays=getData('payments');pays.unshift({id:id(),studentId:st.id,studentName:st.name,amount:r.amount,date:today(),type:'اشتراك جديد'});setData('payments',pays);setData('requests',getData('requests').map(x=>x.id===idv?Object.assign(x,{status:'accepted'}):x));logAction('قبول اشتراك الطالب '+st.name);showRequests()}
+function rejectRequest(idv){setData('requests',getData('requests').map(x=>x.id===idv?Object.assign(x,{status:'rejected'}):x));showRequests()}
+function showStudents(){var list=getData('students');var html=panel('إدارة الطلاب','المقبولون، الموقوفون، البحث، التعديل، الاشتراك، التجديد والإيقاف.')+`<div class="searchbar"><input id="studentSearch" placeholder="بحث عن طالب..." oninput="filterStudents()"><select id="studentFilter" onchange="filterStudents()"><option value="">الكل</option><option>مفعل</option><option>موقوف</option></select><button class="btn green" onclick="editItem('student')">➕ إضافة طالب</button></div><div id="studentsArea">${studentsHtml(list)}</div></section>`;qs('content').innerHTML=html}
+function studentsHtml(list){var html='<div class="card-grid">';if(!list.length)html+='<div class="empty">لا توجد بيانات</div>';list.forEach(function(s){var exp=isExpired(s.endDate);html+=`<div class="data-card"><div class="student-avatar">🎓</div><h3>${s.name||''}</h3><p><span class="chip">${s.stage||''}</span></p><p><span class="chip">كود: ${s.code||''}</span></p><p class="muted">ولي الأمر: ${s.parentName||'—'}</p><p><span class="status ${s.status==='مفعل'?'show':'hide'}">${s.status||''}</span> <span class="status ${exp?'hide':'show'}">${exp?'منتهي':'نشط'}</span></p><div class="actions"><button class="btn blue" onclick="details('student','${s.id}')">معلومات</button><button class="btn" onclick="editItem('student','${s.id}')">تعديل</button><button class="btn green" onclick="renewStudent('${s.id}')">تجديد</button><button class="btn orange" onclick="toggleStudent('${s.id}')">${s.status==='مفعل'?'إيقاف':'تفعيل'}</button><button class="btn red" onclick="deleteItem('student','${s.id}')">حذف</button></div></div>`});return html+'</div>'}
+function filterStudents(){var q=(qs('studentSearch').value||'').toLowerCase(),f=qs('studentFilter').value;var arr=getData('students').filter(s=>(s.name+' '+s.code+' '+s.stage+' '+s.phone).toLowerCase().includes(q)&&(!f||s.status===f));qs('studentsArea').innerHTML=studentsHtml(arr)}
+function renewStudent(idv){var days=prompt('عدد أيام التجديد','30');if(!days)return;var arr=getData('students').map(function(s){if(s.id===idv){s.endDate=addDays((s.endDate&&!isExpired(s.endDate))?s.endDate:today(),days);s.status='مفعل';s.subscriptionStatus='نشط'}return s});var s=arr.find(x=>x.id===idv);var p=getData('payments');p.unshift({id:id(),studentId:s.id,studentName:s.name,amount:s.amount||'',date:today(),type:'تجديد اشتراك'});setData('payments',p);setData('students',arr);showStudents()}
+function toggleStudent(idv){setData('students',getData('students').map(function(s){if(s.id===idv){s.status=s.status==='مفعل'?'موقوف':'مفعل';s.subscriptionStatus=s.status==='مفعل'?'نشط':'موقوف'}return s}));showStudents()}
+function showTeachers(){var data=getData('teachers');var html=panel('إدارة المدرسين','إضافة، تعديل، صورة المدرس، كود المدرس، وربط المادة والمرحلة.')+`<button class="btn green" onclick="editItem('teacher')">➕ إضافة مدرس</button><div class="card-grid">`;if(!data.length)html+='<div class="empty">لا توجد بيانات</div>';data.forEach(function(t){html+=`<div class="data-card">${t.photo?`<img class="teacher-photo" src="${t.photo}">`:'<div class="teacher-placeholder">👨‍🏫</div>'}<h3>${t.name||''}</h3><p><span class="chip">${t.stage||''}</span></p><p><span class="chip">${t.subject||''}</span></p><p><span class="status ${t.status==='مفعل'?'show':'hide'}">${t.status||''}</span></p><div class="actions"><button class="btn blue" onclick="details('teacher','${t.id}')">معلومات</button><button class="btn" onclick="editItem('teacher','${t.id}')">تعديل</button><button class="btn orange" onclick="toggleTeacher('${t.id}')">${t.status==='مفعل'?'إيقاف':'تفعيل'}</button><button class="btn red" onclick="deleteItem('teacher','${t.id}')">حذف</button></div></div>`});qs('content').innerHTML=html+'</div></section>'}
+function toggleTeacher(idv){setData('teachers',getData('teachers').map(t=>{if(t.id===idv)t.status=t.status==='مفعل'?'موقوف':'مفعل';return t}));showTeachers()}
+function showSubjects(){var data=getData('subjects').sort(sortByOrder);var html=panel('إدارة المواد','إضافة، تعديل، حذف، كود المادة، لون، أيقونة، وربط بمرحلة.')+`<button class="btn green" onclick="editItem('subject')">➕ إضافة مادة</button><div class="card-grid">`;data.forEach(s=>{html+=`<div class="data-card"><div class="icon-big">${s.icon||'📘'}</div><h3>${s.name}</h3><p><span class="chip">${s.code}</span></p><p class="muted">المرحلة: ${s.stage}</p><p class="muted">المدرس: ${s.teacher||'غير محدد'}</p>${actions('subject',s.id)}</div>`});qs('content').innerHTML=html+'</div></section>'}
+function showStages(){var data=getData('stages').sort(sortByOrder);var html=panel('إدارة المراحل','إضافة، تعديل، حذف، ترتيب، إظهار/إخفاء.')+`<button class="btn green" onclick="editItem('stage')">➕ إضافة مرحلة</button><div class="card-grid">`;data.forEach(st=>{var u=stageUsage(st.name);html+=`<div class="data-card"><div class="icon-big">📚</div><h3>${st.name}</h3><p><span class="chip">ترتيب ${st.order}</span></p><p class="muted">مواد: ${u.subjects} | طلاب: ${u.students} | مدرسون: ${u.teachers}</p>${actions('stage',st.id)}</div>`});qs('content').innerHTML=html+'</div></section>'}
+function showParents(){var data=getData('parents');var html=panel('أولياء الأمور','متابعة أولياء الأمور المرتبطين بالطلاب.')+`<button class="btn green" onclick="editItem('parent')">➕ إضافة ولي أمر</button><div class="card-grid">`;if(!data.length)html+='<div class="empty">لا توجد بيانات</div>';data.forEach(p=>html+=`<div class="data-card"><div class="student-avatar">👨‍👩‍👦</div><h3>${p.name||''}</h3><p class="muted">الطالب: ${p.studentName||'—'}</p><p><span class="chip">الكود: ${p.code||'—'}</span></p>${actions('parent',p.id)}</div>`);qs('content').innerHTML=html+'</div></section>'}
+function showPayments(){var data=getData('payments');var rev=data.reduce((t,p)=>t+(Number(p.amount)||0),0);var html=panel('سجل المدفوعات','إجمالي الإيرادات: '+rev.toLocaleString('ar-IQ'))+'<div class="card-grid">';if(!data.length)html+='<div class="empty">لا توجد مدفوعات</div>';data.forEach(p=>html+=`<div class="data-card"><div class="icon-big">💳</div><h3>${p.studentName||''}</h3><p><span class="chip">${p.amount||0} د.ع</span></p><p class="muted">${p.type||''} - ${p.date||''}</p></div>`);qs('content').innerHTML=html+'</div></section>'}
+function showNotifications(){var data=getData('notifications');var html=panel('الإشعارات','إرسال إشعار عام أو لمرحلة أو مادة أو طالب.')+`<button class="btn green" onclick="editItem('notification')">➕ إشعار جديد</button> <button class="btn red" onclick="clearKey('notifications')">حذف الكل</button><div class="card-grid">`;if(!data.length)html+='<div class="empty">لا توجد إشعارات</div>';data.forEach(n=>html+=`<div class="data-card"><div class="icon-big">🔔</div><h3>${n.title||''}</h3><p><span class="chip">${n.target||''}</span></p><p class="muted">${n.body||''}</p>${actions('notification',n.id)}</div>`);qs('content').innerHTML=html+'</div></section>'}
+function showMessages(){var data=getData('messages');var html=panel('الرسائل','الوارد، المرسل، الأرشيف، المحذوفات بشكل مبسط.')+`<button class="btn green" onclick="editItem('message')">➕ رسالة جديدة</button><div class="card-grid">`;if(!data.length)html+='<div class="empty">لا توجد رسائل</div>';data.forEach(m=>html+=`<div class="data-card"><div class="icon-big">💬</div><h3>${m.title||''}</h3><p><span class="chip">${m.box||''}</span></p><p class="muted">من: ${m.from||''} إلى: ${m.to||''}</p><p class="muted">${m.body||''}</p>${actions('message',m.id)}</div>`);qs('content').innerHTML=html+'</div></section>'}
+function showHonor(){var data=getData('honor');var html=panel('لوحة الشرف','ترتيب الطلاب حسب النقاط والمستوى.')+`<button class="btn green" onclick="editItem('honor')">➕ إضافة ترتيب</button><div class="card-grid">`;if(!data.length)html+='<div class="empty">لا توجد بيانات</div>';data.sort((a,b)=>Number(b.points||0)-Number(a.points||0)).forEach((h,i)=>html+=`<div class="data-card"><div class="icon-big">🏆</div><h3>${i+1} - ${h.studentName||''}</h3><p><span class="chip">${h.points||0} نقطة</span></p><p class="muted">${h.level||''}</p>${actions('honor',h.id)}</div>`);qs('content').innerHTML=html+'</div></section>'}
+function showLevels(){var data=getData('levels');var html=panel('المستويات','تعديل أسماء المستويات والنسب المطلوبة.')+`<button class="btn green" onclick="editItem('level')">➕ إضافة مستوى</button><div class="card-grid">`;data.forEach(l=>html+=`<div class="data-card"><div class="icon-big">⭐</div><h3>${l.name}</h3><p><span class="chip">${l.percent}%</span></p>${actions('level',l.id)}</div>`);qs('content').innerHTML=html+'</div></section>'}
+function showBackup(){qs('content').innerHTML=panel('النسخ الاحتياطي','إنشاء، تنزيل، رفع، واستعادة نسخة احتياطية.')+`<div class="actions"><button class="btn green" onclick="downloadBackup()">تنزيل نسخة</button><label class="file-button" for="restoreFile">رفع نسخة</label><input id="restoreFile" class="hidden" type="file" accept=".json" onchange="restoreBackup(this)"></div></section>`}
+function downloadBackup(){var keys=['stages','subjects','teachers','students','parents','requests','payments','notifications','messages','honor','levels','settings'];var data={};keys.forEach(k=>data[k]=k==='settings'?getObj(k,{}):getData(k));var blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='afaq-backup.json';a.click()}
+function restoreBackup(input){var file=input.files[0];if(!file)return;var r=new FileReader();r.onload=function(e){var data=JSON.parse(e.target.result);Object.keys(data).forEach(k=>{if(k==='settings')setObj(k,data[k]);else setData(k,data[k])});alert('تمت الاستعادة');openSection('home')};r.readAsText(file)}
+function showSettings(){var s=getObj('settings',{});qs('content').innerHTML=panel('إعدادات المنصة','اسم المنصة، الأكواد، الدفع، الفوتر، والمظهر.')+`<form id="settingsForm" class="formgrid"><div class="field"><label>اسم المنصة</label><input id="setName" value="${s.platformName||''}"></div><div class="field"><label>كود المدير</label><input id="setAdmin" value="${s.adminCode||''}"></div><div class="field"><label>رقم الماستر</label><input id="setMaster" value="${s.masterNumber||''}"></div><div class="field"><label>اسم صاحب البطاقة</label><input id="setOwner" value="${s.cardOwner||''}"></div><div class="field full"><label>الفوتر</label><input id="setFooter" value="${s.footer||''}"></div><button class="primary full">حفظ الإعدادات</button></form></section>`;qs('settingsForm').onsubmit=function(e){e.preventDefault();setObj('settings',{platformName:qs('setName').value,adminCode:qs('setAdmin').value,masterNumber:qs('setMaster').value,cardOwner:qs('setOwner').value,footer:qs('setFooter').value});alert('تم حفظ الإعدادات')}}
+function showReset(){qs('content').innerHTML=panel('إعادة ضبط المنصة','عمليات خطرة مع تأكيد كتابي.')+`<div class="card-grid"><div class="data-card danger"><h3>حذف الطلاب</h3><button class="btn red" onclick="dangerClear('students')">تنفيذ</button></div><div class="data-card danger"><h3>حذف المدرسين</h3><button class="btn red" onclick="dangerClear('teachers')">تنفيذ</button></div><div class="data-card danger"><h3>حذف كل البيانات</h3><button class="btn red" onclick="fullReset()">تنفيذ</button></div></div></section>`}
+function dangerClear(k){if(prompt('اكتب: أوافق على الحذف')==='أوافق على الحذف'){setData(k,[]);alert('تم الحذف');openSection('reset')}}
+function fullReset(){if(prompt('اكتب: أوافق على الحذف')==='أوافق على الحذف'){localStorage.removeItem(P+'seeded');seedBase();alert('تمت إعادة الضبط');openSection('home')}}
+function showActivity(){var data=getData('activity');var html=panel('سجل النشاط','سجل مختصر للعمليات المهمة.')+`<button class="btn red" onclick="clearKey('activity')">حذف الكل</button><div class="card-grid">`;if(!data.length)html+='<div class="empty">لا يوجد نشاط</div>';data.forEach(a=>html+=`<div class="data-card"><div class="icon-big">📌</div><h3>${a.text}</h3><p class="muted">${a.date}</p></div>`);qs('content').innerHTML=html+'</div></section>'}
+function clearKey(k){if(confirm('حذف الكل؟')){setData(k,[]);openSection(current)}}
+function details(type,idv){var map={student:'students',teacher:'teachers',subject:'subjects',stage:'stages',parent:'parents',notification:'notifications',message:'messages',honor:'honor',level:'levels',request:'requests'};var obj=getData(map[type]).find(x=>x.id===idv);if(!obj)return;var html='<div class="details-grid">';Object.keys(obj).forEach(k=>{if(k!=='photo')html+=`<div class="detail-box"><b>${k}</b>${obj[k]}</div>`});html+='</div>';qs('detailContent').innerHTML=(obj.photo?`<img class="detail-photo" src="${obj.photo}">`:'')+html;qs('detailModal').classList.add('active')}
+function deleteItem(type,idv){var map={student:'students',teacher:'teachers',subject:'subjects',stage:'stages',parent:'parents',notification:'notifications',message:'messages',honor:'honor',level:'levels',request:'requests'};var k=map[type];if(!confirm('حذف؟'))return;setData(k,getData(k).filter(x=>x.id!==idv));openSection(current)}
+var schemas={student:['name','parentName','stage','phone','code','startDate','endDate','amount','status'],teacher:['name','stage','subject','teacherCode','subjectCode','phone','qualification','status','bio'],subject:['name','code','stage','teacher','color','icon','order','status','visibility'],stage:['name','order','status','visibility'],parent:['name','studentName','studentCode','phone','code'],request:['studentName','parentName','grade','phone','amount','status'],notification:['title','target','body'],message:['from','to','title','body','box'],honor:['studentName','points','level'],level:['name','percent']};
+var stores={student:'students',teacher:'teachers',subject:'subjects',stage:'stages',parent:'parents',request:'requests',notification:'notifications',message:'messages',honor:'honor',level:'levels'};
+function defaultVal(type,f){if(f==='code'&&type==='student')return randomStudentCode();if(f==='teacherCode')return randomTeacherCode();if(f==='subjectCode')return '';if(f==='startDate')return today();if(f==='endDate')return addDays(today(),30);if(f==='status')return type==='request'?'new':'مفعل';if(f==='visibility')return 'ظاهر';if(f==='box')return 'الوارد';if(f==='order')return '1';return ''}
+function editItem(type,idv){editType=type;editId=idv||null;var obj=editId?getData(stores[type]).find(x=>x.id===editId):{};var html='';schemas[type].forEach(function(f){html+=`<div class="field"><label>${f}</label><input id="f_${f}" value="${obj[f]||defaultVal(type,f)}"></div>`});if(type==='teacher')html+=`<div class="field full"><label>صورة المدرس</label><label class="file-button" for="teacherPhotoGeneric">📎 اختيار صورة</label><input id="teacherPhotoGeneric" class="hidden" type="file" accept="image/*"><img id="genericPreview" class="preview"></div>`;qs('genericTitle').textContent=editId?'تعديل':'إضافة';qs('genericFields').innerHTML=html;qs('genericModal').classList.add('active');if(type==='teacher'){currentTeacherPhoto=obj.photo||'';qs('genericPreview').src=currentTeacherPhoto;qs('genericPreview').style.display=currentTeacherPhoto?'block':'none';qs('teacherPhotoGeneric').onchange=function(){var file=this.files[0];if(!file)return;var r=new FileReader();r.onload=function(e){currentTeacherPhoto=e.target.result;qs('genericPreview').src=currentTeacherPhoto;qs('genericPreview').style.display='block'};r.readAsDataURL(file)}}}
+qs('genericForm').onsubmit=function(e){e.preventDefault();var obj={id:editId||id()};schemas[editType].forEach(f=>obj[f]=qs('f_'+f).value);if(editType==='teacher')obj.photo=currentTeacherPhoto;var k=stores[editType],arr=getData(k);if(editId)arr=arr.map(x=>x.id===editId?obj:x);else arr.push(obj);setData(k,arr);qs('genericModal').classList.remove('active');openSection(current)}
+drawSide();openSection('home');

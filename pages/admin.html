@@ -1,1 +1,69 @@
-<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>لوحة المدير</title><link rel="stylesheet" href="../css/style.css"></head><body class="dash"><main class="wrap"><header class="head"><div><h1>لوحة المدير</h1><p class="muted">الإصدار 3.4 - إدارة الطلاب الكاملة</p></div><a class="btn" href="../index.html">خروج</a></header><section class="layout"><aside class="side" id="side"></aside><div id="content"></div></section></main><div class="modal" id="studentModal"><div class="box"><button class="x" onclick="studentModal.classList.remove('active')">×</button><h2 id="studentTitle">إضافة طالب</h2><form id="studentForm" class="formgrid"><div class="field"><label>الاسم الثلاثي</label><input id="studentName" required></div><div class="field"><label>اسم ولي الأمر</label><input id="studentParent"></div><div class="field"><label>المرحلة</label><select id="studentStage"></select></div><div class="field"><label>رقم الهاتف</label><input id="studentPhone"></div><div class="field"><label>كود الطالب</label><input id="studentCode" required></div><div class="field"><label>تاريخ البداية</label><input id="studentStart" type="date"></div><div class="field"><label>تاريخ الانتهاء</label><input id="studentEnd" type="date"></div><div class="field"><label>المبلغ</label><input id="studentAmount" type="number"></div><div class="field"><label>حالة الحساب</label><select id="studentStatus"><option>مفعل</option><option>موقوف</option></select></div><div class="field"><label>حالة الاشتراك</label><select id="studentSubStatus"><option>نشط</option><option>موقوف</option><option>منتهي</option></select></div><div class="field full"><label>ملاحظات</label><textarea id="studentNote"></textarea></div><button class="primary full">حفظ الطالب</button></form></div></div><div class="modal" id="teacherModal"><div class="box"><button class="x" onclick="teacherModal.classList.remove('active')">×</button><h2 id="teacherTitle">إضافة مدرس</h2><form id="teacherForm" class="formgrid"><div class="field"><label>الاسم الثلاثي</label><input id="teacherName" required></div><div class="field"><label>المرحلة</label><select id="teacherStage"></select></div><div class="field"><label>المادة</label><select id="teacherSubject"></select></div><div class="field"><label>كود المدرس</label><input id="teacherCode" required></div><div class="field"><label>كود المادة</label><input id="teacherSubjectCode" required></div><div class="field"><label>رقم الهاتف</label><input id="teacherPhone"></div><div class="field"><label>المؤهل العلمي</label><input id="teacherQualification"></div><div class="field"><label>الحالة</label><select id="teacherStatus"><option>مفعل</option><option>موقوف</option></select></div><div class="field full"><label>نبذة المدرس</label><textarea id="teacherBio"></textarea></div><div class="field full"><label>صورة المدرس</label><label class="file-button" for="teacherPhoto">📎 اختيار صورة من الجهاز</label><input class="hidden" id="teacherPhoto" type="file" accept="image/*"><img id="teacherPreview" class="preview"></div><button class="primary full">حفظ المدرس</button></form></div></div><script src="../js/admin-core.js?v=34"></script><script src="../js/admin.js?v=34"></script></body></html>
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>لوحة المدير</title>
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body class="dash">
+<main class="wrap">
+  <header class="head">
+    <div>
+      <h1>لوحة المدير</h1>
+      <p class="muted">الإصدار 3.4.1 - إدارة الطلاب الكاملة</p>
+    </div>
+    <a class="btn" href="../index.html">خروج</a>
+  </header>
+
+  <section class="layout">
+    <aside class="side" id="side"></aside>
+    <div id="content"></div>
+  </section>
+</main>
+
+<div class="modal" id="studentModal">
+  <div class="box">
+    <button class="x" type="button" onclick="document.getElementById('studentModal').classList.remove('active')">×</button>
+    <h2 id="studentTitle">إضافة طالب</h2>
+    <form id="studentForm" class="formgrid">
+      <div class="field"><label>الاسم الثلاثي</label><input id="studentName" required></div>
+      <div class="field"><label>اسم ولي الأمر</label><input id="studentParent"></div>
+      <div class="field"><label>المرحلة</label><select id="studentStage"></select></div>
+      <div class="field"><label>رقم الهاتف</label><input id="studentPhone"></div>
+      <div class="field"><label>كود الطالب</label><input id="studentCode" required></div>
+      <div class="field"><label>تاريخ البداية</label><input id="studentStart" type="date"></div>
+      <div class="field"><label>تاريخ الانتهاء</label><input id="studentEnd" type="date"></div>
+      <div class="field"><label>المبلغ</label><input id="studentAmount" type="number"></div>
+      <div class="field"><label>حالة الحساب</label><select id="studentStatus"><option>مفعل</option><option>موقوف</option></select></div>
+      <div class="field"><label>حالة الاشتراك</label><select id="studentSubStatus"><option>نشط</option><option>موقوف</option><option>منتهي</option></select></div>
+      <div class="field full"><label>ملاحظات</label><textarea id="studentNote"></textarea></div>
+      <button class="primary full" type="submit">حفظ الطالب</button>
+    </form>
+  </div>
+</div>
+
+<div class="modal" id="teacherModal">
+  <div class="box">
+    <button class="x" type="button" onclick="document.getElementById('teacherModal').classList.remove('active')">×</button>
+    <h2 id="teacherTitle">إضافة مدرس</h2>
+    <form id="teacherForm" class="formgrid">
+      <div class="field"><label>الاسم الثلاثي</label><input id="teacherName" required></div>
+      <div class="field"><label>المرحلة</label><select id="teacherStage"></select></div>
+      <div class="field"><label>المادة</label><select id="teacherSubject"></select></div>
+      <div class="field"><label>كود المدرس</label><input id="teacherCode" required></div>
+      <div class="field"><label>كود المادة</label><input id="teacherSubjectCode" required></div>
+      <div class="field"><label>رقم الهاتف</label><input id="teacherPhone"></div>
+      <div class="field"><label>المؤهل العلمي</label><input id="teacherQualification"></div>
+      <div class="field"><label>الحالة</label><select id="teacherStatus"><option>مفعل</option><option>موقوف</option></select></div>
+      <div class="field full"><label>نبذة المدرس</label><textarea id="teacherBio"></textarea></div>
+      <div class="field full"><label>صورة المدرس</label><label class="file-button" for="teacherPhoto">📎 اختيار صورة من الجهاز</label><input class="hidden" id="teacherPhoto" type="file" accept="image/*"><img id="teacherPreview" class="preview"></div>
+      <button class="primary full" type="submit">حفظ المدرس</button>
+    </form>
+  </div>
+</div>
+
+<script src="../js/admin-core.js?v=341"></script>
+<script src="../js/admin.js?v=341"></script>
+</body>
+</html>

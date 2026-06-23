@@ -1,1 +1,38 @@
-<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>طلب اشتراك</title><link rel="stylesheet" href="../css/style.css"></head><body class="dash"><main class="wrap"><header class="head"><h1>طلب اشتراك طالب جديد</h1><a class="btn" href="../index.html">رجوع</a></header><section class="panel"><form id="f" class="formgrid"><div class="field"><label>الاسم الثلاثي للطالب</label><input id="s" required></div><div class="field"><label>الاسم الثلاثي لولي الأمر</label><input id="p" required></div><div class="field"><label>المرحلة</label><select id="g"></select></div><div class="field"><label>رقم الهاتف</label><input id="ph" required></div><div class="field"><label>المبلغ المدفوع</label><input id="am" type="number" required></div><button class="primary full">إرسال الطلب</button></form></section></main><script src="../js/admin-core.js"></script><script>seedBase();getData('stages').filter(x=>x.visibility==='ظاهر'&&x.status==='مفعلة').sort(sortByOrder).forEach(st=>{let op=document.createElement('option');op.textContent=st.name;op.value=st.name;g.appendChild(op)});f.onsubmit=e=>{e.preventDefault();let requests=getData('requests');requests.unshift({id:id(),studentName:s.value,parentName:p.value,grade:g.value,phone:ph.value,amount:am.value,status:'new'});setData('requests',requests);alert('تم إرسال الطلب');location.href='../index.html'}</script></body></html>
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>طلب اشتراك</title><link rel="stylesheet" href="../css/style.css"></head>
+<body class="dash">
+<main class="wrap">
+<header class="head"><h1>طلب اشتراك طالب جديد</h1><a class="btn" href="../index.html">رجوع</a></header>
+<section class="panel">
+<form id="requestForm" class="formgrid">
+  <div class="field"><label>الاسم الثلاثي للطالب</label><input id="s" required></div>
+  <div class="field"><label>الاسم الثلاثي لولي الأمر</label><input id="p" required></div>
+  <div class="field"><label>المرحلة</label><select id="g"></select></div>
+  <div class="field"><label>رقم الهاتف</label><input id="ph" required></div>
+  <div class="field"><label>المبلغ المدفوع</label><input id="am" type="number" required></div>
+  <button class="primary full" type="submit">إرسال الطلب</button>
+</form>
+</section>
+</main>
+<script src="../js/admin-core.js"></script>
+<script>
+seedBase();
+var stages = getData('stages').filter(function(x){ return x.visibility === 'ظاهر' && x.status === 'مفعلة'; }).sort(sortByOrder);
+for(var i=0;i<stages.length;i++){
+  var op = document.createElement('option');
+  op.textContent = stages[i].name;
+  op.value = stages[i].name;
+  document.getElementById('g').appendChild(op);
+}
+document.getElementById('requestForm').onsubmit = function(e){
+  e.preventDefault();
+  var requests = getData('requests');
+  requests.unshift({id:id(), studentName:document.getElementById('s').value, parentName:document.getElementById('p').value, grade:document.getElementById('g').value, phone:document.getElementById('ph').value, amount:document.getElementById('am').value, status:'new'});
+  setData('requests', requests);
+  alert('تم إرسال الطلب');
+  location.href = '../index.html';
+};
+</script>
+</body>
+</html>

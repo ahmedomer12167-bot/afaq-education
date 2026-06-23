@@ -10,7 +10,7 @@ var nav = [
   ['الدروس والملفات','lessons'], ['الواجبات','assignments'], ['تصحيح الواجبات','assignmentReview'],
   ['الاختبارات','exams'], ['بنك الأسئلة','questionBank'], ['تصحيح المقالية','essayReview'],
   ['الحضور والغياب','attendance'], ['تقرير الحضور','attendanceReport'], ['النتائج','results'],
-  ['تقويم المادة','calendar'], ['الإشعارات','notifications'], ['الرسائل','messages'], ['الملف الشخصي','profile']
+  ['تقويم المادة','calendar'], ['إحصائيات المدرس','statistics'], ['الإشعارات','notifications'], ['الرسائل','messages'], ['الملف الشخصي','profile']
 ];
 
 function qs(x){ return document.getElementById(x); }
@@ -41,6 +41,7 @@ function openSection(section){
     attendanceReport: showAttendanceReport,
     results: () => showList('results','result','إضافة وتعديل درجات الطلاب.','📊','➕ إضافة نتيجة'),
     calendar: showCalendar,
+    statistics: showStatistics,
     notifications: () => showList('notifications','notification','إرسال إشعار لطلاب المادة.','🔔','➕ إرسال إشعار'),
     messages: () => showList('messages','message','رسائل المدرس مع الطلاب والإدارة وأولياء الأمور.','💬','➕ رسالة'),
     profile: showProfile
@@ -196,6 +197,22 @@ function showCalendar(){
   if(!items.length) html += '<div class="empty">لا توجد مواعيد بعد.</div>';
   items.forEach(x => html += `<div class="calendar-day"><h3>${x.title}</h3><p><span class="chip">${x.deadline || x.date || 'بدون موعد'}</span></p><p class="muted">${x.status || ''}</p></div>`);
   teacherContent.innerHTML = html + '</div></section>';
+}
+
+
+function showStatistics(){
+  var students = getTeacherStudents();
+  var results = byTeacher(getData('results'));
+  var exams = byTeacher(getData('exams'));
+  var assignments = byTeacher(getData('assignments'));
+  var scores = results.map(function(r){return Number(r.score || 0)}).filter(function(n){return !isNaN(n)});
+  var avg = scores.length ? Math.round(scores.reduce(function(a,b){return a+b},0)/scores.length) : 0;
+  var highest = results.slice().sort(function(a,b){return Number(b.score||0)-Number(a.score||0)})[0];
+  var lowest = results.slice().sort(function(a,b){return Number(a.score||0)-Number(b.score||0)})[0];
+  var pass = scores.length ? Math.round(scores.filter(function(n){return n>=50}).length/scores.length*100) : 0;
+  teacherContent.innerHTML = panel('إحصائيات المدرس','متابعة مستوى الطلاب ونتائج المادة بشكل سريع.') +
+  '<div class="stats"><div class="stat"><h3>عدد الطلاب</h3><strong>'+students.length+'</strong></div><div class="stat"><h3>متوسط الدرجات</h3><strong>'+avg+'</strong></div><div class="stat"><h3>نسبة النجاح</h3><strong>'+pass+'%</strong></div><div class="stat"><h3>الاختبارات</h3><strong>'+exams.length+'</strong></div></div>' +
+  '<div class="card-grid"><div class="data-card"><div class="icon-big">🏆</div><h3>أعلى نتيجة</h3><p class="muted">'+(highest?highest.studentName+' / '+highest.score:'لا توجد نتائج')+'</p></div><div class="data-card"><div class="icon-big">📉</div><h3>أقل نتيجة</h3><p class="muted">'+(lowest?lowest.studentName+' / '+lowest.score:'لا توجد نتائج')+'</p></div><div class="data-card"><div class="icon-big">📝</div><h3>عدد الواجبات</h3><p class="muted">'+assignments.length+'</p></div></div></section>';
 }
 
 function showProfile(){

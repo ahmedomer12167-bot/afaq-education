@@ -21,3 +21,9 @@ a{color:#fff}.top,.head{width:min(1180px,94%);margin:22px auto;padding:18px;bord
 .calendar-day{border:1px solid var(--line);border-radius:18px;background:#ffffff10;padding:14px}
 .progress-wrap{height:12px;border-radius:999px;background:#ffffff20;overflow:hidden;margin:10px 0}.progress-bar{height:100%;background:#22c55e}
 .bank-row{border:1px solid var(--line);border-radius:16px;background:#ffffff10;padding:12px;margin:8px 0}.answer-badge{display:inline-block;padding:5px 9px;border-radius:999px;background:#16a34a36;margin-top:6px}
+
+.exam-question{border:1px solid var(--line);border-radius:18px;background:#ffffff10;padding:14px;margin:12px 0}
+.exam-question h4{margin:0 0 10px}
+.option-row{display:block;padding:10px 12px;border-radius:14px;background:#ffffff12;margin:8px 0}
+.stat-note{padding:12px;border-radius:16px;background:#ffffff10;border:1px solid var(--line);margin:8px 0}
+.locked{opacity:.75;filter:grayscale(.25)}

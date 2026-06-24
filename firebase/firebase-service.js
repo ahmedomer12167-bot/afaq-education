@@ -22,7 +22,7 @@ import {
 
 import { firebaseConfig, AFAQ_FIREBASE_ENABLED } from "./firebase-config.js";
 
-const AFAQ_PREFIX = "afaq_";
+const AFAQ_PREFIX = "afaq40_";
 
 const COLLECTIONS = [
   "students",

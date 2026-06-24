@@ -129,3 +129,44 @@ body.light-mode a{color:#4c1d95}
 .approval-card{border:1px solid var(--line);border-radius:20px;background:#ffffff10;padding:16px;margin:10px 0}
 .profile-mini-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin:12px 0}
 .profile-mini{border:1px solid var(--line);border-radius:16px;background:#ffffff10;padding:12px}
+
+/* v8.0 Firebase status */
+html[data-firebase="ready"] body::after{
+  content:"Firebase متصل";
+  position:fixed;
+  left:14px;
+  bottom:14px;
+  z-index:9999;
+  background:#16a34a;
+  color:#fff;
+  padding:8px 12px;
+  border-radius:999px;
+  font-size:12px;
+  box-shadow:0 10px 25px #0005;
+}
+html[data-firebase="disabled"] body::after{
+  content:"Firebase غير مفعل";
+  position:fixed;
+  left:14px;
+  bottom:14px;
+  z-index:9999;
+  background:#f97316;
+  color:#fff;
+  padding:8px 12px;
+  border-radius:999px;
+  font-size:12px;
+  box-shadow:0 10px 25px #0005;
+}
+html[data-firebase="error"] body::after{
+  content:"خطأ Firebase";
+  position:fixed;
+  left:14px;
+  bottom:14px;
+  z-index:9999;
+  background:#dc2626;
+  color:#fff;
+  padding:8px 12px;
+  border-radius:999px;
+  font-size:12px;
+  box-shadow:0 10px 25px #0005;
+}

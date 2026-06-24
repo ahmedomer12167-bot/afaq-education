@@ -60,19 +60,9 @@ export async function saveSettings(o){await setObj("settings",{...settings(),...
 export function stages(){let a=getData("stages"); return a.length?a:[{id:"s1",name:"الأول متوسط",status:"مفعلة",visibility:"ظاهر"},{id:"s2",name:"الثاني متوسط",status:"مفعلة",visibility:"ظاهر"},{id:"s3",name:"الثالث متوسط",status:"مفعلة",visibility:"ظاهر"}]}
 export function subjects(stage=""){return getData("subjects").filter(s=>(!stage||eq(s.stage,stage)) && s.visibility!=="مخفي" && clean(s.status)!=="موقوفه")}
 export function subjectCode(subject,stage){let s=getData("subjects").find(x=>eq(x.name,subject)&&(!stage||eq(x.stage,stage)));return s?code(s.code):""}
-export function findStudent(name,stage,c){c=code(c);return getData("students").find(s=>eq(s.name||s.studentName,name)&&eq(s.stage||s.grade,stage)&&code(s.code||s.studentCode)===c&&isActive(s))}
-export function findTeacher(name,subject,stage,c){c=code(c);return getData("teachers").find(t=>eq(t.name,name)&&eq(t.subject,subject)&&eq(t.stage,stage)&&code(t.teacherCode||t.code)===c&&isActive(t))}
-export function findParent(name,c){c=code(c);return getData("parents").find(p=>eq(p.name,name)&&code(p.code||p.parentCode)===c) || getData("students").map(s=>({id:"p_"+s.id,name:s.parentName,code:s.parentCode||s.code,studentName:s.name,studentCode:s.code})).find(p=>eq(p.name,name)&&code(p.code)===c)}
-export async function approveSubscription(reqId, studentCode){
-  let req=getData("subscriptionRequests").find(x=>x.id===reqId); if(!req) return null;
-  let st=normalize("students",{name:req.name||req.studentName,parentName:req.parentName,stage:req.stage||req.grade,phone:req.phone,code:studentCode,status:"مفعل",subscriptionStatus:"نشط",amount:req.amount,startDate:req.startDate||today(),endDate:req.endDate});
-  await addOrUpdateBy("students",st,x=>code(x.code)===code(st.code)|| (eq(x.name,st.name)&&eq(x.stage,st.stage)));
-  if(st.parentName) await addOrUpdateBy("parents",{id:id(),name:st.parentName,studentName:st.name,studentCode:st.code,phone:st.phone,code:st.code,parentCode:st.code},x=>eq(x.name,st.parentName)&&code(x.code)===code(st.code));
-  await addItem("subscriptions",{...st,studentId:st.id,status:"نشط"});
-  await setData("subscriptionRequests",getData("subscriptionRequests").filter(x=>x.id!==reqId));
-  await notify({target:"student",studentCode:st.code,title:"تم تفعيل حسابك",body:"يمكنك الآن تسجيل الدخول إلى المنصة"});
-  return st;
-}
+export function findStudent(name,stage,c){return findStudentStrict(name,stage,c)}
+export function findTeacher(name,subject,stage,c){return findTeacherStrict(name,subject,stage,c)}
+export function findParent(name,c){return findParentStrict(name,c)}
 async function addOrUpdateBy(k,obj,pred){let arr=getData(k);let i=arr.findIndex(pred); if(i>=0) arr[i]={...arr[i],...obj}; else arr.unshift(obj); await setData(k,arr)}
 export async function requestSubject(student,sub){let exists=getData("subjectRequests").find(r=>r.studentId===student.id&&r.subjectCode===sub.code&&r.status!=="rejected"); if(exists) return exists; return await addItem("subjectRequests",{studentId:student.id,studentName:student.name,stage:student.stage,subject:sub.name,subjectCode:sub.code,status:"pending",createdAt:now()})}
 export async function decideSubjectRequest(idv,status,reason=""){let r=getData("subjectRequests").find(x=>x.id===idv); if(!r)return; await updateItem("subjectRequests",idv,{status,reason,decidedAt:now()}); await notify({target:"student",studentId:r.studentId,studentCode:r.studentCode,title:status==="accepted"?"تم قبول المادة":"تم رفض المادة",body:status==="accepted"?`تم قبولك في ${r.subject}`:`تم رفض ${r.subject}: ${reason}`})}
@@ -250,3 +240,126 @@ export function gradeExamAttempt(exam,student,answers){let autoScore=0,total=0,m
 export async function finalizeAttempt(attemptId){let a=getData("examAttempts").find(x=>x.id===attemptId);if(!a)return;let manual=(a.details||[]).reduce((t,d)=>t+Number(d.manualScore||0),0),auto=(a.details||[]).filter(d=>!d.needsManual).reduce((t,d)=>t+Number(d.autoScore||0),0),score=auto+manual;await updateItem("examAttempts",attemptId,{manualScore:manual,score,status:"مصحح بالكامل"});if(!getData("finalResults").find(r=>r.examAttemptId===attemptId))await addItem("finalResults",{examAttemptId:attemptId,studentId:a.studentId,studentCode:a.studentCode,studentName:a.studentName,subject:a.subject,subjectCode:a.subjectCode,score,grade:score,total:a.total,createdAt:now()});await notify({target:"student",studentId:a.studentId,studentCode:a.studentCode,title:"تم تصحيح الاختبار",body:`تم تصحيح ${a.examTitle} ودرجتك ${score}/${a.total}`});await notify({target:"parents",studentCode:a.studentCode,title:"نتيجة اختبار الطالب",body:`درجة ${a.studentName}: ${score}/${a.total} في ${a.subject}`})}
 export async function gradeAssignmentSubmission(idv,grade,note){let sub=getData("assignmentSubmissions").find(x=>x.id===idv);if(!sub)return;await updateItem("assignmentSubmissions",idv,{grade,teacherNote:note||"",status:"مصحح",gradedAt:now()});await notify({target:"student",studentId:sub.studentId,studentCode:sub.studentCode,title:"تم تصحيح الواجب",body:`تم تصحيح ${sub.assignmentTitle} بدرجة ${grade}`});await notify({target:"parents",studentCode:sub.studentCode,title:"تصحيح واجب",body:`تم تصحيح واجب ${sub.studentName} بدرجة ${grade}`})}
 export function resizeImageBase64(file,cb){if(!file){cb("");return}if(!file.type.startsWith("image/")){fileToBase64(file,cb);return}const img=new Image(),reader=new FileReader();reader.onload=e=>{img.onload=()=>{let canvas=document.createElement("canvas"),max=900,ratio=Math.min(max/img.width,max/img.height,1);canvas.width=img.width*ratio;canvas.height=img.height*ratio;canvas.getContext("2d").drawImage(img,0,0,canvas.width,canvas.height);cb(canvas.toDataURL("image/jpeg",0.75))};img.src=e.target.result};reader.readAsDataURL(file)}
+
+
+// ===== v12.1 Stability + Unified Student Login Fix =====
+export function hardClean(v){
+  return String(v||"")
+    .trim()
+    .replace(/\s+/g," ")
+    .replace(/[أإآ]/g,"ا")
+    .replace(/ى/g,"ي")
+    .replace(/ة/g,"ه")
+    .replace(/[ـ]/g,"")
+    .toLowerCase();
+}
+export function hardCode(v){
+  return String(v||"")
+    .trim()
+    .replace(/\s+/g,"")
+    .replace(/[٠-٩]/g,d=>"٠١٢٣٤٥٦٧٨٩".indexOf(d))
+    .replace(/[۰-۹]/g,d=>"۰۱۲۳۴۵۶۷۸۹".indexOf(d))
+    .toUpperCase();
+}
+export function sameName(a,b){return hardClean(a)===hardClean(b)}
+export function sameCode(a,b){return hardCode(a)===hardCode(b)}
+export function normalizeStudentFull(raw){
+  raw=raw||{};
+  let name=String(raw.name||raw.studentName||"").trim().replace(/\s+/g," ");
+  let stage=String(raw.stage||raw.grade||"").trim().replace(/\s+/g," ");
+  let c=hardCode(raw.code||raw.studentCode);
+  return {
+    ...raw,
+    id: raw.id||id(),
+    name,
+    studentName:name,
+    stage,
+    grade:stage,
+    code:c,
+    studentCode:c,
+    parentCode:hardCode(raw.parentCode||c),
+    parentName:String(raw.parentName||raw.parent||"").trim().replace(/\s+/g," "),
+    status: raw.status||"مفعل",
+    subscriptionStatus: raw.subscriptionStatus||"نشط",
+    approved:true
+  };
+}
+export function normalizeTeacherFull(raw){
+  raw=raw||{};
+  let name=String(raw.name||"").trim().replace(/\s+/g," ");
+  let subject=String(raw.subject||raw.subjectName||"").trim().replace(/\s+/g," ");
+  let stage=String(raw.stage||raw.grade||"").trim().replace(/\s+/g," ");
+  return {...raw,id:raw.id||id(),name,subject,subjectName:subject,stage,grade:stage,teacherCode:hardCode(raw.teacherCode||raw.code),subjectCode:hardCode(raw.subjectCode||subjectCode(subject,stage)),status:raw.status||"مفعل"};
+}
+export function isEnabledAccount(x){
+  let st=hardClean(x?.status), sub=hardClean(x?.subscriptionStatus);
+  return !["موقوف","موقوفه","معطل","متوقف","محذوف"].includes(st) && !["منتهي","موقوف","موقوفه","غيرنشط"].includes(sub);
+}
+export function findStudentStrict(name,stage,c){
+  name=String(name||"").trim(); stage=String(stage||"").trim(); c=hardCode(c);
+  let pools=[...getData("students"),...getData("subscriptions")].map(normalizeStudentFull);
+  return pools.find(s=>sameName(s.name,name)&&sameName(s.stage,stage)&&sameCode(s.code,c)&&isEnabledAccount(s))||null;
+}
+export function findTeacherStrict(name,subject,stage,c){
+  c=hardCode(c);
+  return getData("teachers").map(normalizeTeacherFull).find(t=>sameName(t.name,name)&&sameName(t.subject,subject)&&sameName(t.stage,stage)&&sameCode(t.teacherCode,c)&&isEnabledAccount(t))||null;
+}
+export function findParentStrict(name,c){
+  c=hardCode(c);
+  let p=getData("parents").find(p=>sameName(p.name,name)&&sameCode(p.code||p.parentCode,c));
+  if(p)return p;
+  let st=getData("students").map(normalizeStudentFull).find(s=>sameName(s.parentName,name)&&sameCode(s.parentCode||s.code,c));
+  return st?{id:"parent_"+st.id,name:st.parentName,code:st.parentCode||st.code,parentCode:st.parentCode||st.code,studentName:st.name,studentCode:st.code}:null;
+}
+export async function upsertStudentFull(raw){
+  let st=normalizeStudentFull(raw);
+  let arr=getData("students").map(normalizeStudentFull);
+  let idx=arr.findIndex(s=>s.id===st.id||sameCode(s.code,st.code)||(sameName(s.name,st.name)&&sameName(s.stage,st.stage)));
+  if(idx>=0)arr[idx]={...arr[idx],...st}; else arr.unshift(st);
+  await setData("students",arr);
+  return st;
+}
+export async function upsertParentFromStudent(st){
+  st=normalizeStudentFull(st);
+  if(!st.parentName)return;
+  let arr=getData("parents");
+  let exists=arr.find(p=>sameName(p.name,st.parentName)&&sameCode(p.code||p.parentCode,st.parentCode||st.code));
+  if(!exists){
+    arr.unshift({id:id(),name:st.parentName,studentName:st.name,studentCode:st.code,phone:st.phone||"",code:st.parentCode||st.code,parentCode:st.parentCode||st.code,createdAt:now()});
+    await setData("parents",arr);
+  }
+}
+export async function approveSubscriptionFixed(reqId, studentCode, extra={}){
+  let req=getData("subscriptionRequests").find(x=>x.id===reqId);
+  if(!req)return null;
+  let st=await upsertStudentFull({
+    id: req.studentId||undefined,
+    name:req.name||req.studentName,
+    studentName:req.name||req.studentName,
+    parentName:req.parentName||req.parent,
+    stage:req.stage||req.grade,
+    grade:req.stage||req.grade,
+    phone:req.phone||"",
+    code:studentCode,
+    studentCode:studentCode,
+    parentCode:studentCode,
+    amount:req.amount||extra.amount||"",
+    startDate:extra.startDate||req.startDate||today(),
+    endDate:extra.endDate||req.endDate||"",
+    status:"مفعل",
+    subscriptionStatus:"نشط",
+    approvedAt:now()
+  });
+  await upsertParentFromStudent(st);
+  let subs=getData("subscriptions");
+  subs.unshift({...st,id:id(),studentId:st.id,status:"نشط",subscriptionStatus:"نشط",createdAt:now()});
+  await setData("subscriptions",subs);
+  await setData("subscriptionRequests",getData("subscriptionRequests").filter(x=>x.id!==reqId));
+  await notify({target:"student",studentId:st.id,studentCode:st.code,title:"تم تفعيل حسابك",body:"يمكنك الآن تسجيل الدخول إلى المنصة"});
+  await notify({target:"parents",studentCode:st.code,title:"تم تفعيل حساب الطالب",body:`تم تفعيل حساب ${st.name}`});
+  return st;
+}
+export function scheduleRender(fn, delay=120){
+  clearTimeout(window.__afaqRenderTimer);
+  window.__afaqRenderTimer=setTimeout(fn,delay);
+}

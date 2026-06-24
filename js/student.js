@@ -19,4 +19,4 @@ function results(){let p=A.studentProfile(user);content.innerHTML=panel("الن�
 function leaderboard(){let arr=A.leaderboard(user.stage);content.innerHTML=panel("لوحة الشرف")+`<div class="card-grid">${arr.map((s,i)=>`<div class="data-card rank-card"><div class="rank-no">#${i+1}</div><h3>${s.name}</h3><span class="chip">${s.level}</span><span class="chip">${s.points} نقطة</span></div>`).join("")}</div>`}
 function messages(){content.innerHTML=panel("الرسائل")+`<button class="green" onclick="send()">إرسال رسالة</button>`}
 window.send=async()=>{let body=prompt("اكتب الرسالة");if(body)await A.addItem("messages",{from:user.name,to:"admin",title:"رسالة طالب",body,studentId:user.id,studentName:user.name,createdAt:A.now()})}
-A.onSync(()=>openSection(current));openSection("home");
+A.onSync(()=>A.scheduleRender(()=>openSection(current),180));openSection("home");

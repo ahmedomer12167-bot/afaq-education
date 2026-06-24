@@ -1,5 +1,13 @@
 
+import * as A from "./core.js";
 import {readyPromise,stages,subjects,settings,findStudent,findTeacher,findParent,addItem,clean,code,onSync} from "./core.js";
+
+// ===== v12.1 Login stability patch =====
+async function afaqReadyLogin(){
+  try{ await readyPromise; }catch(e){}
+  await new Promise(r=>setTimeout(r,350));
+}
+
 const roles={student:["الاسم الثلاثي","المرحلة الدراسية","كود الطالب"],teacher:["الاسم الثلاثي","المادة","المرحلة الدراسية","كود المدرس"],parent:["الاسم الثلاثي","كود ولي الأمر"],admin:["كود المدير"]};
 const pages={student:"pages/student.html",teacher:"pages/teacher.html",parent:"pages/parent.html",admin:"pages/admin.html"};
 let activeRole="";
@@ -19,11 +27,34 @@ document.getElementById("close").onclick=()=>modal.classList.remove("active");
 document.getElementById("theme").onclick=()=>{document.body.classList.toggle("light-mode");localStorage.setItem("afaq_theme",document.body.classList.contains("light-mode")?"light":"dark")};
 if(localStorage.getItem("afaq_theme")==="light")document.body.classList.add("light-mode");
 document.getElementById("loginForm").onsubmit=async e=>{
- e.preventDefault(); await readyPromise;
- if(activeRole==="admin"){let c=field("كود المدير"); if(clean(c)!==clean(settings().adminCode||"1234")) return alert("كود المدير غير صحيح"); sessionStorage.setItem("afaq_current_admin","true"); location.href=pages.admin; return}
- if(activeRole==="teacher"){let u=findTeacher(field("الاسم الثلاثي"),field("المادة"),field("المرحلة الدراسية"),field("كود المدرس")); if(!u)return alert("بيانات المدرس غير مطابقة"); sessionStorage.setItem("afaq_current_teacher",JSON.stringify(u)); location.href=pages.teacher;return}
- if(activeRole==="student"){let u=findStudent(field("الاسم الثلاثي"),field("المرحلة الدراسية"),field("كود الطالب")); if(!u)return alert("بيانات الطالب غير مطابقة أو الحساب غير مفعل"); sessionStorage.setItem("afaq_current_student",JSON.stringify(u)); location.href=pages.student;return}
- if(activeRole==="parent"){let u=findParent(field("الاسم الثلاثي"),field("كود ولي الأمر")); if(!u)return alert("بيانات ولي الأمر غير مطابقة"); sessionStorage.setItem("afaq_current_parent",JSON.stringify(u)); location.href=pages.parent}
+ e.preventDefault();
+ let btn=e.target.querySelector("button[type=submit]"); let old=btn?btn.textContent:"";
+ if(btn){btn.disabled=true;btn.textContent="جاري التحقق...";}
+ try{
+  await afaqReadyLogin();
+  if(activeRole==="admin"){
+    let c=field("كود المدير");
+    if(clean(c)!==clean(settings().adminCode||"1234")) return alert("كود المدير غير صحيح");
+    sessionStorage.setItem("afaq_current_admin","true"); location.href=pages.admin; return;
+  }
+  if(activeRole==="teacher"){
+    let u=A.findTeacherStrict?A.findTeacherStrict(field("الاسم الثلاثي"),field("المادة"),field("المرحلة الدراسية"),field("كود المدرس")):findTeacher(field("الاسم الثلاثي"),field("المادة"),field("المرحلة الدراسية"),field("كود المدرس"));
+    if(!u)return alert("بيانات المدرس غير مطابقة. تأكد من الاسم والمرحلة والمادة والكود كما أضافها المدير.");
+    sessionStorage.setItem("afaq_current_teacher",JSON.stringify(u)); location.href=pages.teacher;return;
+  }
+  if(activeRole==="student"){
+    let u=A.findStudentStrict?A.findStudentStrict(field("الاسم الثلاثي"),field("المرحلة الدراسية"),field("كود الطالب")):findStudent(field("الاسم الثلاثي"),field("المرحلة الدراسية"),field("كود الطالب"));
+    if(!u)return alert("بيانات الطالب غير مطابقة. تأكد أن المدير قبل الاشتراك وأن الاسم والمرحلة والكود مطابقة.");
+    sessionStorage.setItem("afaq_current_student",JSON.stringify(u)); location.href=pages.student;return;
+  }
+  if(activeRole==="parent"){
+    let u=A.findParentStrict?A.findParentStrict(field("الاسم الثلاثي"),field("كود ولي الأمر")):findParent(field("الاسم الثلاثي"),field("كود ولي الأمر"));
+    if(!u)return alert("بيانات ولي الأمر غير مطابقة");
+    sessionStorage.setItem("afaq_current_parent",JSON.stringify(u)); location.href=pages.parent;
+  }
+ } finally {
+  if(btn){btn.disabled=false;btn.textContent=old;}
+ }
 };
 document.getElementById("registerBtn").onclick=()=>{modal.classList.remove("active");document.getElementById("r_stage").innerHTML=stages().map(s=>`<option>${s.name}</option>`).join("");document.getElementById("reqModal").classList.add("active")};
 document.getElementById("closeReq").onclick=()=>document.getElementById("reqModal").classList.remove("active");

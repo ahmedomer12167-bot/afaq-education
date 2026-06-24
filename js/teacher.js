@@ -30,4 +30,4 @@ function students(){let arr=myStudents();content.innerHTML=panel("طلابي")+`
 function messages(){let arr=A.getData("messages").filter(m=>m.to===user.name||m.teacherId===user.id);content.innerHTML=panel("صندوق الرسائل")+`<button onclick="sendMsg()">رسالة للإدارة</button><div class="card-grid">${arr.map(m=>card(m.title||"رسالة",`<p>${m.body}</p><p class="muted">من: ${m.from}</p>`)).join("")||'<div class="empty">لا توجد رسائل</div>'}</div>`}
 window.sendMsg=async()=>{let body=prompt("الرسالة");if(body)await A.addItem("messages",{from:user.name,to:"admin",title:"رسالة مدرس",body,teacherId:user.id,createdAt:A.now()})}
 window.del=async(k,idv)=>{await A.deleteItem(k,idv);openSection(current)}
-A.onSync(()=>openSection(current));openSection("home");
+A.onSync(()=>A.scheduleRender(()=>openSection(current),180));openSection("home");

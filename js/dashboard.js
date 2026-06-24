@@ -7,7 +7,7 @@ document.getElementById("logout").onclick=()=>A.logout();
 document.getElementById("theme").onclick=()=>{document.body.classList.toggle("light-mode");localStorage.setItem("afaq_theme",document.body.classList.contains("light-mode")?"light":"dark")};
 document.getElementById("fullScreenBtn").onclick=()=>{if(!document.fullscreenElement)document.documentElement.requestFullscreen?.();else document.exitFullscreen?.()};
 document.getElementById("menuToggle").onclick=()=>document.getElementById("sidebar").classList.toggle("open");
-document.getElementById("quickSearchBtn").onclick=()=>{window.__quickSearchValue=document.getElementById("globalTopSearch").value;if(typeof window.openSection==="function")window.openSection("search")};
+document.getElementById("quickSearchBtn").onclick=()=>{window.__quickSearchValue=document.getElementById("globalTopSearch").value;if(typeof window.openSection==="function"){try{window.openSection("search")}catch(e){}}};
 document.getElementById("globalTopSearch").addEventListener("keydown",e=>{if(e.key==="Enter")document.getElementById("quickSearchBtn").click()});
 if(localStorage.getItem("afaq_theme")==="light")document.body.classList.add("light-mode");
 return renderNav(nav)}

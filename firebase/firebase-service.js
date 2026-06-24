@@ -30,6 +30,7 @@ const COLLECTIONS = [
   "parents",
   "subjects",
   "stages",
+  "grades",
   "subscriptions",
   "subscriptionRequests",
   "rejectedSubscriptions",

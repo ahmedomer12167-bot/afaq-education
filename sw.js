@@ -1,7 +1,13 @@
-// sw.js v12.1 safe network-first
-self.addEventListener('install', e => self.skipWaiting());
-self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
-self.addEventListener('fetch', e => {
-  if(e.request.method !== 'GET') return;
-  e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
+// sw.js v12.2 safe network-first
+self.addEventListener('install', event => self.skipWaiting());
+self.addEventListener('activate', event => event.waitUntil(self.clients.claim()));
+self.addEventListener('fetch', event => {
+  if (event.request.method !== 'GET') return;
+  event.respondWith(
+    fetch(event.request).catch(async () => {
+      const cached = await caches.match(event.request);
+      if (cached) return cached;
+      return new Response('', {status: 504, statusText: 'Offline'});
+    })
+  );
 });

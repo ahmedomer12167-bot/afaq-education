@@ -170,3 +170,8 @@ html[data-firebase="error"] body::after{
   font-size:12px;
   box-shadow:0 10px 25px #0005;
 }
+
+/* v8.0.2 notification badge and sync fix */
+.badge-count{display:inline-flex;min-width:22px;height:22px;border-radius:999px;background:#ef4444;color:#fff;align-items:center;justify-content:center;font-size:12px;margin-inline-start:6px;padding:0 6px}
+.unread-card{border-color:#ef444488!important;background:#ef444420!important}
+.small-dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:#ef4444;margin-inline-end:6px}

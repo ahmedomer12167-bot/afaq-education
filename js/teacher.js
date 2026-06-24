@@ -11,7 +11,7 @@ var nav = [
   ['الدروس والملفات','lessons'], ['الواجبات','assignments'], ['تصحيح الواجبات','assignmentReview'],
   ['الاختبارات','exams'], ['بنك الأسئلة','questionBank'], ['تصحيح المقالية','essayReview'],
   ['الحضور والغياب','attendance'], ['تقرير الحضور','attendanceReport'], ['النتائج','results'], ['النتائج النهائية','finalGrades'],
-  ['تقويم المادة','calendar'], ['إحصائيات المدرس','statistics'], ['الإشعارات','notifications'], ['الرسائل','messages'], ['الملف الشخصي','profile']
+  ['تقويم المادة','calendar'], ['إحصائيات المدرس','statistics'], ['الإشعارات','notifications'], ['الرسائل','messages'], ['رسائل أولياء الأمور','parentMessages'], ['الملف الشخصي','profile']
 ];
 
 function qs(x){ return document.getElementById(x); }
@@ -67,7 +67,7 @@ function openSection(section){
     calendar: showCalendar,
     statistics: showStatistics,
     notifications: () => showList('notifications','notification','إرسال إشعار لطلاب المادة.','🔔','➕ إرسال إشعار'),
-    messages: () => showList('messages','message','رسائل المدرس مع الطلاب والإدارة وأولياء الأمور.','💬','➕ رسالة'),
+    messages: () => showList('messages','message','رسائل المدرس مع الطلاب والإدارة وأولياء الأمور.','💬','➕ رسالة'), parentMessages:showParentMessages,
     profile: showProfile
   };
   (routes[section] || showHome)();
@@ -153,7 +153,7 @@ function showAssignmentReview(){
   subs.forEach(s => html += `<div class="data-card"><div class="icon-big">📮</div><h3>${s.studentName}</h3><p><span class="chip">${s.assignmentTitle || 'واجب'}</span></p><p class="muted">${s.answer || '—'}</p><div class="actions"><button class="btn green" onclick="gradeAssignment('${s.id}')">تصحيح</button></div></div>`);
   teacherContent.innerHTML = html + '</div></section>';
 }
-function gradeAssignment(idv){ var grade = prompt('درجة الواجب:','100'); if(!grade) return; setData('assignmentSubmissions', getData('assignmentSubmissions').map(x => { if(x.id === idv){ x.grade=grade; x.status='مصَحح'; } return x; })); showAssignmentReview(); }
+function gradeAssignment(idv){ var grade = prompt('درجة الواجب:','100'); if(!grade) return; setData('assignmentSubmissions', getData('assignmentSubmissions').map(x => { if(x.id === idv){ x.grade=grade; x.status='مصَحح'; notifyParentAfterTeacherAction(x.studentName,'تم تصحيح واجب','تم تصحيح واجب '+(x.assignmentTitle||'')+' بدرجة '+grade,'assignment-graded'); } return x; })); showAssignmentReview(); }
 
 function showExams(){
   var data = byTeacher(getData('exams'));
@@ -200,7 +200,7 @@ function showEssayReview(){
   essays.forEach(e => html += `<div class="data-card"><div class="icon-big">✍️</div><h3>${e.studentName}</h3><p class="muted">${e.answer || '—'}</p><p><span class="chip">${e.grade ? 'مصَحح' : 'بانتظار التصحيح'}</span></p><button class="btn green" onclick="gradeEssay('${e.id}')">إدخال درجة</button></div>`);
   teacherContent.innerHTML = html + '</div></section>';
 }
-function gradeEssay(idv){ var g=prompt('درجة السؤال المقالي:','10'); if(!g)return; setData('essayAnswers', getData('essayAnswers').map(x => { if(x.id===idv)x.grade=g; return x; })); showEssayReview(); }
+function gradeEssay(idv){ var g=prompt('درجة السؤال المقالي:','10'); if(!g)return; setData('essayAnswers', getData('essayAnswers').map(x => { if(x.id===idv){x.grade=g;notifyParentAfterTeacherAction(x.studentName,'تم تصحيح سؤال مقالي','تم إدخال درجة سؤال مقالي: '+g,'essay-graded');} return x; })); showEssayReview(); }
 
 function showAttendanceReport(){
   var sessions = byTeacher(getData('attendance'));
@@ -382,3 +382,24 @@ function autoNotifyAfterSave(type,obj){
  touchSync(type);
 }
 window.addEventListener('storage',function(e){if(e.key&&e.key.indexOf(P)===0){try{openSection(current)}catch(err){}}});
+
+function showParentMessages(){
+  var data=getData('messages').filter(function(m){return m.to===teacher.name||m.teacherName===teacher.name});
+  var html=panel('رسائل أولياء الأمور','صندوق وارد ورسائل أولياء الأمور.')+'<div class="card-grid">';
+  if(!data.length)html+='<div class="empty">لا توجد رسائل.</div>';
+  data.forEach(function(m){
+    html+='<div class="message-box"><h3>'+m.title+'</h3><p class="muted">من: '+m.from+' / الطالب: '+(m.studentName||'—')+'</p><p>'+m.body+'</p><button class="btn green" onclick="replyParentMessage(&quot;'+m.id+'&quot;)">رد</button></div>';
+  });
+  teacherContent.innerHTML=html+'</div></section>';
+}
+function replyParentMessage(idv){
+  var m=getData('messages').find(function(x){return x.id===idv}); if(!m)return;
+  var body=prompt('اكتب الرد:'); if(!body)return;
+  var arr=getData('messages');
+  arr.unshift({id:id(),from:teacher.name,to:m.from,title:'رد: '+m.title,body:body,box:'الوارد',studentId:m.studentId,studentName:m.studentName,subject:teacher.subject,subjectCode:teacher.subjectCode,teacherName:teacher.name,createdAt:new Date().toLocaleString('ar-IQ')});
+  setData('messages',arr);
+  var st=getData('students').find(function(s){return s.id===m.studentId||s.name===m.studentName});
+  if(st)notifyParentOfStudent(st,'رد من المدرس',body,'teacher-reply');
+  showParentMessages();
+}
+function notifyParentAfterTeacherAction(studentName,title,body,type){var st=getData('students').find(function(s){return s.name===studentName});if(st)notifyParentOfStudent(st,title,body,type)}

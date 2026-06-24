@@ -95,3 +95,52 @@ function markStudentNotificationsRead(student){
  setData('notifications',arr);
 }
 function touchSync(key){localStorage.setItem(P+'sync_'+key,String(Date.now()))}
+
+function getChildrenForParent(parentUser){
+  var students=getData('students'), linked=[];
+  if(parentUser.children&&Array.isArray(parentUser.children)){
+    parentUser.children.forEach(function(c){var s=students.find(function(st){return st.id===c.studentId||st.code===c.studentCode||st.name===c.studentName});if(s)linked.push(s)});
+  }
+  students.forEach(function(s){
+    var ok=s.code===parentUser.studentCode||s.code===parentUser.code||s.name===parentUser.studentName||s.parentName===parentUser.name;
+    if(ok&&!linked.find(function(x){return x.id===s.id}))linked.push(s);
+  });
+  return linked;
+}
+function parentUnreadNotifications(parentUser){return getChildrenForParent(parentUser).reduce(function(t,s){return t+unreadNotificationsForStudent(s)},0)}
+function notifyParentOfStudent(student,title,body,type){
+  var arr=getData('notifications');
+  arr.unshift({id:id(),title:title,body:body,target:'ولي الأمر',studentId:student.id,studentName:student.name,stage:student.stage,type:type||'parent-alert',createdAt:new Date().toLocaleString('ar-IQ'),readBy:[]});
+  setData('notifications',arr);
+}
+function getVisibleNotificationsForParent(parentUser){
+  var children=getChildrenForParent(parentUser),ids=children.map(function(s){return s.id}),names=children.map(function(s){return s.name});
+  return getData('notifications').filter(function(n){
+    if(n.target==='ولي الأمر')return ids.indexOf(n.studentId)!==-1||names.indexOf(n.studentName)!==-1;
+    if(n.target==='عام')return true;
+    if(n.target==='طلاب المادة')return children.some(function(s){return s.stage===n.stage&&isStudentAcceptedInSubject(s,n.subjectCode)});
+    return false;
+  });
+}
+function markParentNotificationsRead(parentUser){
+  var children=getChildrenForParent(parentUser);
+  setData('notifications',getData('notifications').map(function(n){
+    var ok=n.target==='عام'||(n.target==='ولي الأمر'&&children.some(function(s){return s.id===n.studentId||s.name===n.studentName}))||(n.target==='طلاب المادة'&&children.some(function(s){return s.stage===n.stage&&isStudentAcceptedInSubject(s,n.subjectCode)}));
+    if(ok){n.readBy=n.readBy||[];children.forEach(function(s){if(n.readBy.indexOf(s.id)===-1)n.readBy.push(s.id)})}
+    return n;
+  }));
+}
+function subjectProgressForStudent(student, subjectCode){
+  var lessons=getData('lessons').filter(function(x){return x.subjectCode===subjectCode&&x.status!=='مخفي'}).length;
+  var assignments=getData('assignments').filter(function(x){return x.subjectCode===subjectCode&&x.status!=='مخفي'});
+  var exams=getData('exams').filter(function(x){return x.subjectCode===subjectCode&&x.status!=='مخفي'});
+  var submissions=getData('assignmentSubmissions').filter(function(x){return x.studentId===student.id&&x.subjectCode===subjectCode}).length;
+  var attempts=getData('examAttempts').filter(function(x){return x.studentId===student.id&&x.subjectCode===subjectCode}).length;
+  var total=assignments.length+exams.length, done=submissions+attempts;
+  return {lessons:lessons,assignments:assignments.length,exams:exams.length,submitted:submissions,attempts:attempts,percent:total?Math.round(done/total*100):(lessons?25:0)};
+}
+function monthlyStudentReport(student){
+  var sessions=getData('attendance').filter(function(a){return student.stage===a.stage&&isStudentAcceptedInSubject(student,a.subjectCode)});
+  var present=getData('attendanceRecords').filter(function(a){return a.studentId===student.id&&a.status==='حاضر'}).length;
+  return {points:calcStudentPoints(student),level:levelFromPoints(calcStudentPoints(student)),finals:getData('finalGrades').filter(function(g){return g.studentName===student.name}).length,attempts:getData('examAttempts').filter(function(a){return a.studentId===student.id}).length,assignments:getData('assignmentSubmissions').filter(function(a){return a.studentId===student.id}).length,present:present,absent:Math.max(0,sessions.length-present)};
+}

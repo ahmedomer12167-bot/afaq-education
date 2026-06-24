@@ -49,3 +49,72 @@ a{color:#fff}.top,.head{width:min(1180px,94%);margin:22px auto;padding:18px;bord
 .progress-fill{height:100%;background:#22c55e}
 .report-box{border:1px solid var(--line);background:#ffffff10;border-radius:20px;padding:16px;margin:12px 0}
 .inbox-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+
+/* v6.1.1 Light/Dark mode fix */
+body.light-mode{
+  color:#1f1235;
+  background:linear-gradient(135deg,#f8f4ff,#efe7ff,#ffffff);
+}
+body.light-mode .top,
+body.light-mode .head,
+body.light-mode .side,
+body.light-mode .panel,
+body.light-mode .stat,
+body.light-mode .data-card,
+body.light-mode .box,
+body.light-mode .detail-box,
+body.light-mode .level-card,
+body.light-mode .parent-subject,
+body.light-mode .message-box,
+body.light-mode .report-box,
+body.light-mode .calendar-day,
+body.light-mode .bank-row,
+body.light-mode .q-card,
+body.light-mode .exam-question,
+body.light-mode .notice{
+  background:#ffffffcc;
+  color:#1f1235;
+  border-color:#d8c7ff;
+  box-shadow:0 14px 35px #7c3aed18;
+}
+body.light-mode .muted,
+body.light-mode .home p,
+body.light-mode .cards small{
+  color:#5b4b75;
+}
+body.light-mode .field input,
+body.light-mode .field select,
+body.light-mode .field textarea,
+body.light-mode .searchbar input,
+body.light-mode .searchbar select{
+  background:#fff;
+  color:#1f1235;
+  border-color:#d8c7ff;
+}
+body.light-mode .btn,
+body.light-mode .ghost,
+body.light-mode button{
+  color:#1f1235;
+  background:#efe7ff;
+}
+body.light-mode .primary,
+body.light-mode .green,
+body.light-mode .blue,
+body.light-mode .red,
+body.light-mode .orange{
+  color:#fff;
+}
+body.light-mode .cards button{
+  background:#ffffffcc;
+  color:#1f1235;
+  border-color:#d8c7ff;
+}
+body.light-mode .chip,
+body.light-mode .status,
+body.light-mode .badge,
+body.light-mode .pill{
+  background:#efe7ff;
+  color:#3b216a;
+}
+body.light-mode a{color:#4c1d95}
+.theme-toggle{min-width:48px;font-size:20px}

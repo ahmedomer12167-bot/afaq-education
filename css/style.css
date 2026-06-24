@@ -42,3 +42,10 @@ a{color:#fff}.top,.head{width:min(1180px,94%);margin:22px auto;padding:18px;bord
 .parent-good{border:1px solid #22c55e80;background:#22c55e18;border-radius:18px;padding:14px;margin:10px 0}
 .parent-subject{border:1px solid var(--line);border-radius:22px;background:#ffffff10;padding:16px}
 .message-box{border:1px solid var(--line);border-radius:18px;background:#ffffff10;padding:14px;margin:10px 0}
+
+.child-switch{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}
+.child-switch button.active,.inbox-tabs button.active{background:#22c55e55}
+.progress-line{height:12px;border-radius:999px;background:#ffffff20;overflow:hidden;margin:8px 0}
+.progress-fill{height:100%;background:#22c55e}
+.report-box{border:1px solid var(--line);background:#ffffff10;border-radius:20px;padding:16px;margin:12px 0}
+.inbox-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}

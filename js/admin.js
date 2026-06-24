@@ -132,11 +132,11 @@ function deleteItem(type,idv){
   openSection(current);
 }
 var schemas={
-student:['name','parentName','stage','phone','code','startDate','endDate','amount','status'],
+student:['name','parentName','stage','phone','code','startDate','endDate','amount','status','photo'],
 teacher:['name','stage','subject','teacherCode','subjectCode','phone','qualification','status','bio'],
 subject:['name','code','stage','teacher','color','icon','order','status','visibility'],
 stage:['name','order','status','visibility'],
-parent:['name','studentName','studentCode','phone','code'],
+parent:['name','studentName','studentCode','phone','code','photo'],
 request:['studentName','parentName','grade','phone','amount','status'],
 notification:['title','target','body'],
 message:['from','to','title','body','box'],
@@ -306,7 +306,7 @@ function editItem(type,idv){
   });
 
   if(type==='teacher'){
-    html += '<div class="field full"><label>صورة المدرس</label><label class="file-button" for="teacherPhotoGeneric">📎 اختيار صورة من الجهاز</label><input id="teacherPhotoGeneric" class="hidden" type="file" accept="image/*"><img id="genericPreview" class="preview"></div>';
+    html += '<div class="field full"><label>صورة المدرس</label><div class="media-help">الصورة تحفظ Base64 داخل Firestore مجاناً، ويفضل أن تكون صغيرة وواضحة.</div><label class="file-button" for="teacherPhotoGeneric">📎 اختيار صورة من الجهاز</label><input id="teacherPhotoGeneric" class="hidden" type="file" accept="image/*"><img id="genericPreview" class="media-preview preview"></div>';
   }
 
   qs('genericTitle').textContent=editId?'تعديل':'إضافة';
@@ -739,3 +739,50 @@ window.addEventListener('afaq:data-changed',function(e){
     try{ if(e.detail.key==='settings' && current==='settings'){} drawSide(); }catch(err){}
   }
 });
+
+
+// ===== v8.1 Admin Full Sync patch =====
+function afaqNormalizeTeacherBeforeSave(obj){
+  obj=obj||{};
+  obj.name=String(obj.name||'').trim();
+  obj.stage=String(obj.stage||'').trim();
+  obj.subject=String(obj.subject||'').trim();
+  obj.teacherCode=String(obj.teacherCode||obj.code||'').trim();
+  obj.subjectCode=String(obj.subjectCode||afaqSubjectCodeByNameStage(obj.subject,obj.stage)||'').trim();
+  obj.status=obj.status||'مفعل';
+  return obj;
+}
+function afaqRenderAdminNotificationBadge(){
+  var unread=afaqUnreadForRole('admin',{id:'admin',name:'admin'});
+  document.querySelectorAll('.side .nav, .side button').forEach(function(b){
+    if((b.textContent||'').indexOf('الإشعارات')!==-1){
+      var old=b.querySelector('.badge-count'); if(old)old.remove();
+      if(unread){(b.querySelector('span')||b).insertAdjacentHTML('beforeend','<span class="badge-count">'+unread+'</span>')}
+    }
+  });
+}
+var __adminDrawOld_v81=typeof drawSide==='function'?drawSide:null;
+drawSide=function(){if(__adminDrawOld_v81)__adminDrawOld_v81();afaqRenderAdminNotificationBadge()};
+var __adminOpenOld_v81=typeof openSection==='function'?openSection:null;
+openSection=function(section){
+  current=section;
+  if(__adminOpenOld_v81)__adminOpenOld_v81(section);
+  if(section==='notifications')afaqMarkNotificationsRead('admin',{id:'admin',name:'admin'});
+  setTimeout(afaqRenderAdminNotificationBadge,100);
+};
+
+
+// ===== v8.2 Admin Base64 profile images =====
+function afaqAttachImagePicker(inputId, previewId, setter){
+  var input=document.getElementById(inputId);
+  if(!input)return;
+  input.onchange=function(){
+    var file=this.files[0];
+    if(!file)return;
+    afaqFileToSmallBase64(file,function(data){
+      setter(data);
+      var prev=document.getElementById(previewId);
+      if(prev){prev.src=data;prev.style.display=data?'block':'none';}
+    });
+  };
+}

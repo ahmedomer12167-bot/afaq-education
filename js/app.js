@@ -39,6 +39,24 @@ function seedBaseForLogin(){
 }
 seedBaseForLogin();
 
+// ===== v8.1 robust login from Firestore mirror =====
+function loginClean(v){return String(v||'').trim().replace(/\s+/g,' ').replace(/[أإآ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه').toLowerCase()}
+function loginEq(a,b){return loginClean(a)===loginClean(b)}
+function loginNotStopped(x){var st=loginClean((x&&x.status)||'');return st!=='موقوف'&&st!=='موقوفه'&&st!=='متوقف'&&st!=='معطل'}
+function findTeacherLogin(name,subject,stage,code){
+  return getStore('teachers').find(function(t){
+    return loginEq(t.name,name)&&loginEq(t.stage,stage)&&(loginEq(t.subject,subject)||loginEq(t.subjectName,subject))&&loginEq(t.teacherCode||t.code,code)&&loginNotStopped(t);
+  });
+}
+function findStudentLogin(name,stage,code){
+  return getStore('students').find(function(s){return loginEq(s.name,name)&&loginEq(s.stage,stage)&&loginEq(s.code||s.studentCode,code)&&loginNotStopped(s)});
+}
+function findParentLogin(name,code){
+  return getStore('parents').find(function(p){return loginEq(p.name,name)&&loginEq(p.code||p.parentCode,code)}) ||
+  getStore('students').map(function(s){return {id:'parent_'+s.id,name:s.parentName||name,code:s.parentCode||s.code,studentName:s.name,studentCode:s.code}}).find(function(p){return loginEq(p.name,name)&&loginEq(p.code,code)});
+}
+
+
 // ===== v8.0.2 robust login matching =====
 function loginClean(v){
   return String(v||'').trim().replace(/\s+/g,' ').replace(/[أإآ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه').toLowerCase();

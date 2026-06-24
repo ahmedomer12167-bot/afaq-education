@@ -39,3 +39,9 @@ window.addEventListener('afaq:data-changed',function(e){
     try{drawSide(); if(current==='notifications')showNotifications(); else openSection(current);}catch(err){}
   }
 });
+
+
+// ===== v8.1 page live refresh =====
+window.addEventListener('afaq:data-changed',function(e){
+  if(e.detail){try{if(typeof drawSide==='function')drawSide(); if(typeof openSection==='function'&&typeof current!=='undefined')openSection(current)}catch(err){}}
+});

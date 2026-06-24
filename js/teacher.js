@@ -486,3 +486,46 @@ window.addEventListener('afaq:data-changed',function(e){
     try{drawSide();if(current==='notifications')showTeacherNotificationsV802();else if(['lessons','assignments','exams','attendance','joinRequests','materialApprovals'].indexOf(current)!==-1)openSection(current)}catch(err){}
   }
 });
+
+
+// ===== v8.1 Teacher Full Sync patch =====
+function autoNotifyAfterSave(type,obj){
+  if(['lesson','assignment','exam','attendance','notification'].indexOf(type)===-1)return;
+  var names={lesson:'درس جديد',assignment:'واجب جديد',exam:'اختبار جديد',attendance:'تسجيل حضور جديد',notification:'تبليغ جديد'};
+  afaqNotifySubject(teacher.stage,teacher.subject,teacher.subjectCode,names[type]||'تحديث جديد',(obj.title||obj.body||'تحديث جديد')+' في مادة '+teacher.subject,teacher);
+}
+function afaqTeacherBadge(){
+  var unread=afaqUnreadForRole('teacher',teacher);
+  document.querySelectorAll('.side .nav, .side button').forEach(function(b){
+    if((b.textContent||'').indexOf('الإشعارات')!==-1){
+      var old=b.querySelector('.badge-count'); if(old)old.remove();
+      if(unread){(b.querySelector('span')||b).insertAdjacentHTML('beforeend','<span class="badge-count">'+unread+'</span>')}
+    }
+  });
+}
+var __teacherDrawOld_v81=typeof drawSide==='function'?drawSide:null;
+drawSide=function(){if(__teacherDrawOld_v81)__teacherDrawOld_v81();afaqTeacherBadge()};
+window.addEventListener('afaq:data-changed',function(e){
+  if(e.detail){try{drawSide(); if(typeof current!=='undefined'&&current==='notifications'&&typeof openSection==='function')openSection('notifications')}catch(err){}}
+});
+
+
+// ===== v8.2 Teacher free PDF/video links =====
+function afaqValidateMediaBeforeSave(type,obj){
+  if(['lesson','assignment','exam'].indexOf(type)===-1)return true;
+  if(obj.pdfUrl && !afaqIsValidUrl(obj.pdfUrl)){alert('رابط PDF غير صحيح');return false;}
+  if(obj.pdfUrl && !afaqIsDriveOrOneDrive(obj.pdfUrl)){alert('يفضل وضع رابط Google Drive أو OneDrive للـ PDF');}
+  if(obj.videoUrl && !afaqIsValidUrl(obj.videoUrl)){alert('رابط الفيديو غير صحيح');return false;}
+  if(obj.videoUrl && !afaqIsVideoUrl(obj.videoUrl)){alert('يفضل وضع رابط YouTube أو Google Drive للفيديو');}
+  return true;
+}
+var __oldRenderCard_v82 = typeof renderCard==='function' ? renderCard : null;
+if(__oldRenderCard_v82){
+  renderCard=function(type,item){
+    var html=__oldRenderCard_v82(type,item);
+    if(['lesson','assignment','exam'].indexOf(type)!==-1 && (item.pdfUrl||item.videoUrl)){
+      html=html.replace('</div>', afaqRenderMediaLinks(item)+'</div>');
+    }
+    return html;
+  };
+}

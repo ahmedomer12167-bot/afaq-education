@@ -322,3 +322,132 @@ function afaqNotify(obj){
 function afaqNotifySubject(stage,subject,subjectCode,title,body,teacher){
   afaqNotify({title:title,body:body,target:'طلاب المادة',stage:stage,subject:subject,subjectCode:subjectCode,teacherId:teacher&&teacher.id,teacherName:teacher&&teacher.name,type:'subject-update'});
 }
+
+
+// ===== v8.1 Firestore Full Sync helpers =====
+function afaqSyncKeys(){
+  return ['students','teachers','parents','subjects','stages','grades','subscriptions','subscriptionRequests','rejectedSubscriptions','studentSubjects','lessons','assignments','assignmentSubmissions','exams','examAttempts','essayAnswers','attendance','attendanceRecords','notifications','messages','results','finalGrades','activityLog','settings','levels','leaderboard','requests','payments','honor'];
+}
+function afaqRefreshCurrentSafe(){
+  try{
+    if(typeof drawSide==='function') drawSide();
+    if(typeof openSection==='function' && typeof current!=='undefined') openSection(current);
+  }catch(e){}
+}
+window.addEventListener('afaq:data-changed', function(e){
+  if(!e.detail) return;
+  if(afaqSyncKeys().indexOf(e.detail.key)!==-1){
+    clearTimeout(window.__afaqFullSyncTimer);
+    window.__afaqFullSyncTimer=setTimeout(afaqRefreshCurrentSafe,120);
+  }
+});
+function afaqClean(v){
+  return String(v||'').trim().replace(/\s+/g,' ').replace(/[أإآ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه').toLowerCase();
+}
+function afaqEq(a,b){return afaqClean(a)===afaqClean(b)}
+function afaqNotStopped(x){
+  var st=afaqClean((x&&x.status)||'');
+  return st!=='موقوف' && st!=='موقوفه' && st!=='متوقف' && st!=='معطل';
+}
+function afaqGetSettings(){
+  return getObj('settings',{platformName:'آفاق التعليمية',footer:'جميع الحقوق محفوظة',masterNumber:'0000 0000 0000 0000',cardOwner:'اسم صاحب البطاقة',adminCode:'1234'});
+}
+function afaqSetSettings(obj){
+  var old=afaqGetSettings();
+  setObj('settings',Object.assign({},old,obj||{}));
+}
+function afaqSubjectCodeByNameStage(subject,stage){
+  var s=getData('subjects').find(function(x){return afaqEq(x.name||x.subject,subject)&&(!stage||afaqEq(x.stage,stage))});
+  return s ? (s.code||s.subjectCode||'') : '';
+}
+function afaqUnreadForRole(role,user){
+  user=user||{};
+  var uid=user.id||user.code||user.name||role;
+  return getData('notifications').filter(function(n){
+    n.readBy=n.readBy||[];
+    if(n.readBy.indexOf(uid)!==-1)return false;
+    if(role==='admin')return true;
+    if(role==='teacher')return n.target==='عام'||n.target==='المدرسين'||n.teacherId===user.id||afaqEq(n.teacherName,user.name)||afaqEq(n.subject,user.subject)||afaqEq(n.subjectCode,user.subjectCode);
+    if(role==='student' && typeof getVisibleNotificationsForStudent==='function')return getVisibleNotificationsForStudent(user).some(function(x){return x.id===n.id});
+    if(role==='parent')return true;
+    return false;
+  }).length;
+}
+function afaqMarkNotificationsRead(role,user){
+  user=user||{};
+  var uid=user.id||user.code||user.name||role;
+  setData('notifications',getData('notifications').map(function(n){
+    n.readBy=n.readBy||[];
+    var ok=false;
+    if(role==='admin')ok=true;
+    else if(role==='teacher')ok=n.target==='عام'||n.target==='المدرسين'||n.teacherId===user.id||afaqEq(n.teacherName,user.name)||afaqEq(n.subject,user.subject)||afaqEq(n.subjectCode,user.subjectCode);
+    else if(role==='student' && typeof getVisibleNotificationsForStudent==='function')ok=getVisibleNotificationsForStudent(user).some(function(x){return x.id===n.id});
+    else if(role==='parent')ok=true;
+    if(ok && n.readBy.indexOf(uid)===-1)n.readBy.push(uid);
+    return n;
+  }));
+}
+function afaqNotify(obj){
+  var arr=getData('notifications');
+  obj=obj||{};
+  obj.id=obj.id||id();
+  obj.createdAt=obj.createdAt||new Date().toLocaleString('ar-IQ');
+  obj.readBy=obj.readBy||[];
+  arr.unshift(obj);
+  setData('notifications',arr);
+}
+function afaqNotifySubject(stage,subject,subjectCode,title,body,teacher){
+  afaqNotify({title:title,body:body,target:'طلاب المادة',stage:stage,subject:subject,subjectCode:subjectCode,teacherId:teacher&&teacher.id,teacherName:teacher&&teacher.name,type:'subject-update'});
+}
+
+
+// ===== v8.2 Free media system helpers =====
+function afaqIsValidUrl(v){
+  try{ new URL(String(v||'').trim()); return true; }catch(e){ return false; }
+}
+function afaqIsDriveOrOneDrive(url){
+  url=String(url||'').toLowerCase();
+  return url.indexOf('drive.google.com')!==-1 || url.indexOf('docs.google.com')!==-1 || url.indexOf('onedrive.live.com')!==-1 || url.indexOf('1drv.ms')!==-1 || url.indexOf('sharepoint.com')!==-1;
+}
+function afaqIsVideoUrl(url){
+  url=String(url||'').toLowerCase();
+  return url.indexOf('youtube.com')!==-1 || url.indexOf('youtu.be')!==-1 || url.indexOf('drive.google.com')!==-1 || url.indexOf('onedrive.live.com')!==-1 || url.indexOf('1drv.ms')!==-1;
+}
+function afaqFileToSmallBase64(file, done){
+  if(!file){done('');return;}
+  if(!file.type || file.type.indexOf('image/')!==0){alert('اختر صورة فقط');done('');return;}
+  var maxBytes=250*1024;
+  var img=new Image();
+  var reader=new FileReader();
+  reader.onload=function(e){
+    img.onload=function(){
+      var canvas=document.createElement('canvas');
+      var size=360;
+      var ratio=Math.min(size/img.width,size/img.height,1);
+      canvas.width=Math.round(img.width*ratio);
+      canvas.height=Math.round(img.height*ratio);
+      var ctx=canvas.getContext('2d');
+      ctx.drawImage(img,0,0,canvas.width,canvas.height);
+      var quality=0.82;
+      var out=canvas.toDataURL('image/jpeg',quality);
+      while(out.length>maxBytes*1.37 && quality>0.45){
+        quality-=0.08;
+        out=canvas.toDataURL('image/jpeg',quality);
+      }
+      done(out);
+    };
+    img.src=e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+function afaqRenderMediaLinks(item){
+  item=item||{};
+  var html='';
+  if(item.pdfUrl){
+    html+='<div class="link-card"><b>📄 ملف PDF / رابط الدرس</b><p class="muted">'+item.pdfUrl+'</p><a href="'+item.pdfUrl+'" target="_blank" rel="noopener">فتح الملف</a></div>';
+  }
+  if(item.videoUrl){
+    html+='<div class="link-card"><b>🎥 رابط الفيديو</b><p class="muted">'+item.videoUrl+'</p><a href="'+item.videoUrl+'" target="_blank" rel="noopener">فتح الفيديو</a></div>';
+  }
+  return html;
+}

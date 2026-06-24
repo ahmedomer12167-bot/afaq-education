@@ -9,4 +9,4 @@ function results(){let p=A.studentProfile(st());content.innerHTML=panel("نتا�
 function alerts(){let s=st();let arr=A.monthlyAlerts(s);content.innerHTML=panel("تنبيهات ولي الأمر")+`<div class="card-grid">${arr.map(a=>card("تنبيه",`<p>${a}</p>`)).join("")||'<div class="empty">لا توجد تنبيهات</div>'}</div>`}
 function messages(){content.innerHTML=panel("الرسائل")+`<button class="green" onclick="send()">رسالة للإدارة</button>`}
 window.send=async()=>{let body=prompt("اكتب الرسالة"); if(body)await A.addItem("messages",{from:user.name,to:"admin",title:"رسالة ولي أمر",body,studentCode:user.studentCode,createdAt:A.now()})}
-A.onSync(()=>A.scheduleRender(()=>openSection(current),180));openSection("home");
+A.onSync(()=>A.scheduleRender(()=>openSection(current),300));openSection("home");

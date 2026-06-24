@@ -363,3 +363,37 @@ export function scheduleRender(fn, delay=120){
   clearTimeout(window.__afaqRenderTimer);
   window.__afaqRenderTimer=setTimeout(fn,delay);
 }
+
+
+// ===== v12.2 Professional result modal + UI helpers =====
+export function showResultModal(result){
+  const old=document.getElementById("afaqResultModal");
+  if(old) old.remove();
+  const percent=result.total?Math.round((Number(result.score||0)/Number(result.total||1))*100):0;
+  const needsManual=result.status && result.status.includes("بانتظار");
+  const html=`
+  <div class="modal active" id="afaqResultModal">
+    <div class="modal-box result-modal-card">
+      <button type="button" class="close" onclick="document.getElementById('afaqResultModal').remove()">×</button>
+      <h2>${needsManual?"تم تسليم الاختبار":"نتيجة الاختبار"}</h2>
+      <p class="muted">${result.examTitle||""}</p>
+      <div class="result-score" style="--p:${percent}%"><div class="result-score-inner"><div><strong>${result.score||0}</strong><br><span>من ${result.total||0}</span></div></div></div>
+      <div class="result-breakdown">
+        <div class="profile-box"><b>${percent}%</b><br><span class="muted">النسبة</span></div>
+        <div class="profile-box"><b>${result.autoScore||result.score||0}</b><br><span class="muted">تصحيح تلقائي</span></div>
+        <div class="profile-box"><b>${result.manualTotal||0}</b><br><span class="muted">بانتظار المدرس</span></div>
+      </div>
+      <p class="muted">${needsManual?"تم حفظ إجاباتك، وستظهر الدرجة النهائية بعد تصحيح الأسئلة المقالية أو الملفات.":"تم حفظ نتيجتك وإضافتها إلى النتائج ولوحة الشرف."}</p>
+      <button class="primary" onclick="document.getElementById('afaqResultModal').remove()">تم</button>
+    </div>
+  </div>`;
+  document.body.insertAdjacentHTML("beforeend",html);
+}
+export function setAnswerVisual(container, selector){
+  container.querySelectorAll(".answer-option").forEach(b=>b.classList.remove("selected"));
+  selector.classList.add("selected");
+}
+export function rafRender(fn){
+  cancelAnimationFrame(window.__afaqRaf||0);
+  window.__afaqRaf=requestAnimationFrame(fn);
+}

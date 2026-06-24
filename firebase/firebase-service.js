@@ -70,6 +70,8 @@ let unsubscribeMap = {};
 let remoteIds = {};
 let firstSnapshotDone = {};
 let bootStarted = false;
+let resolveReadyPromise = null;
+let readyPromise = new Promise(function(resolve){ resolveReadyPromise = resolve; });
 
 function localKey(key){ return AFAQ_PREFIX + key; }
 
@@ -272,7 +274,9 @@ function installBridge(){
     db: function(){ return db; },
     collections: COLLECTIONS,
     syncNow: flushPendingWrites,
-    status: function(){ return document.documentElement.getAttribute("data-firebase") || "loading"; }
+    status: function(){ return document.documentElement.getAttribute("data-firebase") || "loading"; },
+    waitForReady: function(){ return readyPromise; },
+    isReady: function(){ return ready; }
   };
 
   window.getData = function(key){
@@ -329,6 +333,7 @@ async function initFirebase(){
   if(!AFAQ_FIREBASE_ENABLED){
     console.warn("AFAQ Firebase: firebase-config.js still has placeholders. Running in local fallback mode.");
     markStatus("disabled");
+    if(resolveReadyPromise) resolveReadyPromise(false);
     return;
   }
 
@@ -350,6 +355,7 @@ async function initFirebase(){
         await migrateLocalDataToFirestore();
         startRealtimeListeners();
         await flushPendingWrites();
+        if(resolveReadyPromise) resolveReadyPromise(true);
         console.log("AFAQ Firebase full sync connected:", user.uid);
       }
     });
@@ -357,6 +363,7 @@ async function initFirebase(){
     ready = false;
     console.error("AFAQ Firebase connection error:", e);
     markStatus("error");
+    if(resolveReadyPromise) resolveReadyPromise(false);
     alert("تعذر الاتصال بـ Firebase. تأكد من firebase-config.js و Anonymous Authentication و Firestore Rules.");
   }
 }

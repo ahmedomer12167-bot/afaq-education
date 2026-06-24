@@ -1,0 +1,31 @@
+
+import {readyPromise,stages,subjects,settings,findStudent,findTeacher,findParent,addItem,clean,code,onSync} from "./core.js";
+const roles={student:["الاسم الثلاثي","المرحلة الدراسية","كود الطالب"],teacher:["الاسم الثلاثي","المادة","المرحلة الدراسية","كود المدرس"],parent:["الاسم الثلاثي","كود ولي الأمر"],admin:["كود المدير"]};
+const pages={student:"pages/student.html",teacher:"pages/teacher.html",parent:"pages/parent.html",admin:"pages/admin.html"};
+let activeRole="";
+const modal=document.getElementById("loginModal"),fields=document.getElementById("fields");
+function field(label){return document.querySelector(`[data-label="${label}"]`)?.value.trim()||""}
+function make(label){
+ let wrap=document.createElement("div");wrap.className="field";wrap.innerHTML=`<label>${label}</label>`;
+ let el;
+ if(label.includes("المرحلة")){el=document.createElement("select");stages().filter(s=>s.visibility!=="مخفي").forEach(s=>el.innerHTML+=`<option value="${s.name}">${s.name}</option>`)}
+ else if(label.includes("المادة")){el=document.createElement("select");subjects().forEach(s=>el.innerHTML+=`<option value="${s.name}">${s.name}</option>`)}
+ else{el=document.createElement("input");el.required=true}
+ el.dataset.label=label;wrap.appendChild(el);return wrap
+}
+function openRole(r){activeRole=r;fields.innerHTML="";roles[r].forEach(x=>fields.appendChild(make(x)));document.getElementById("modalTitle").textContent=document.querySelector(`[data-role="${r}"] b`).textContent;document.getElementById("registerBtn").classList.toggle("hidden",r!=="student");modal.classList.add("active")}
+document.querySelectorAll("[data-role]").forEach(x=>x.onclick=()=>openRole(x.dataset.role));
+document.getElementById("close").onclick=()=>modal.classList.remove("active");
+document.getElementById("theme").onclick=()=>{document.body.classList.toggle("light-mode");localStorage.setItem("afaq_theme",document.body.classList.contains("light-mode")?"light":"dark")};
+if(localStorage.getItem("afaq_theme")==="light")document.body.classList.add("light-mode");
+document.getElementById("loginForm").onsubmit=async e=>{
+ e.preventDefault(); await readyPromise;
+ if(activeRole==="admin"){let c=field("كود المدير"); if(clean(c)!==clean(settings().adminCode||"1234")) return alert("كود المدير غير صحيح"); sessionStorage.setItem("afaq_current_admin","true"); location.href=pages.admin; return}
+ if(activeRole==="teacher"){let u=findTeacher(field("الاسم الثلاثي"),field("المادة"),field("المرحلة الدراسية"),field("كود المدرس")); if(!u)return alert("بيانات المدرس غير مطابقة"); sessionStorage.setItem("afaq_current_teacher",JSON.stringify(u)); location.href=pages.teacher;return}
+ if(activeRole==="student"){let u=findStudent(field("الاسم الثلاثي"),field("المرحلة الدراسية"),field("كود الطالب")); if(!u)return alert("بيانات الطالب غير مطابقة أو الحساب غير مفعل"); sessionStorage.setItem("afaq_current_student",JSON.stringify(u)); location.href=pages.student;return}
+ if(activeRole==="parent"){let u=findParent(field("الاسم الثلاثي"),field("كود ولي الأمر")); if(!u)return alert("بيانات ولي الأمر غير مطابقة"); sessionStorage.setItem("afaq_current_parent",JSON.stringify(u)); location.href=pages.parent}
+};
+document.getElementById("registerBtn").onclick=()=>{modal.classList.remove("active");document.getElementById("r_stage").innerHTML=stages().map(s=>`<option>${s.name}</option>`).join("");document.getElementById("reqModal").classList.add("active")};
+document.getElementById("closeReq").onclick=()=>document.getElementById("reqModal").classList.remove("active");
+document.getElementById("reqForm").onsubmit=async e=>{e.preventDefault(); await addItem("subscriptionRequests",{name:r_name.value,parentName:r_parent.value,stage:r_stage.value,phone:r_phone.value,amount:r_amount.value,status:"pending",createdAt:new Date().toLocaleString("ar-IQ")});alert("تم إرسال الطلب إلى المدير");reqForm.reset();reqModal.classList.remove("active")};
+onSync(()=>{});

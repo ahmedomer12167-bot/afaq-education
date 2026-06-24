@@ -1,6 +1,6 @@
 // firebase/firebase-service.js
-// v8.0 Firebase Firestore integration layer
-// هذه الطبقة تربط الدوال القديمة getData/setData مع Firestore بدون تكسير الواجهات الحالية.
+// v8.1 Firebase Full Sync Layer
+// Firestore يصبح مصدر البيانات الرئيسي، مع نسخة محلية مرآة فقط لتسريع الواجهة.
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
 import {
@@ -12,7 +12,8 @@ import {
   deleteDoc,
   onSnapshot,
   serverTimestamp,
-  enableIndexedDbPersistence
+  enableIndexedDbPersistence,
+  writeBatch
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 import {
   getAuth,
@@ -50,59 +51,153 @@ const COLLECTIONS = [
   "activityLog",
   "settings",
   "levels",
-  "leaderboard"
+  "leaderboard",
+  "requests",
+  "payments",
+  "honor"
 ];
+
+const OBJECT_STORES = ["settings"];
 
 let app = null;
 let db = null;
 let auth = null;
 let ready = false;
 let syncingFromFirestore = false;
-let unsubscribeMap = {};
-let pendingWrites = [];
 let listenersStarted = false;
+let pendingWrites = [];
+let unsubscribeMap = {};
+let remoteIds = {};
+let firstSnapshotDone = {};
+let bootStarted = false;
 
-function localKey(key){
-  return AFAQ_PREFIX + key;
-}
+function localKey(key){ return AFAQ_PREFIX + key; }
 
 function safeParse(value, fallback){
   try { return JSON.parse(value); } catch(e){ return fallback; }
 }
 
-function isArrayStore(key){
-  return COLLECTIONS.indexOf(key) !== -1 && key !== "settings";
+function isObjectStore(key){
+  return OBJECT_STORES.indexOf(key) !== -1;
+}
+
+function makeId(){
+  if(window.id) return window.id();
+  return (crypto.randomUUID ? crypto.randomUUID() : ("id_" + Date.now() + "_" + Math.random().toString(16).slice(2)));
 }
 
 function normalizeDoc(item){
   if(!item || typeof item !== "object") item = {};
-  if(!item.id) item.id = (crypto.randomUUID ? crypto.randomUUID() : ("id_" + Date.now() + "_" + Math.random().toString(16).slice(2)));
+  if(!item.id) item.id = makeId();
   return item;
+}
+
+function getLocalArray(key){
+  const value = safeParse(localStorage.getItem(localKey(key)), []);
+  return Array.isArray(value) ? value : [];
+}
+
+function setLocalArray(key, arr){
+  localStorage.setItem(localKey(key), JSON.stringify(Array.isArray(arr) ? arr : []));
+}
+
+function getLocalObject(key){
+  const value = safeParse(localStorage.getItem(localKey(key)), {});
+  return value && typeof value === "object" && !Array.isArray(value) ? value : {};
+}
+
+function setLocalObject(key, obj){
+  localStorage.setItem(localKey(key), JSON.stringify(obj || {}));
 }
 
 function dispatchSync(key){
   try{
+    localStorage.setItem(localKey("sync_" + key), String(Date.now()));
     window.dispatchEvent(new CustomEvent("afaq:data-changed", {detail:{key:key}}));
   }catch(e){}
 }
 
-async function writeArrayToFirestore(key, arr){
+function markStatus(status){
+  document.documentElement.setAttribute("data-firebase", status);
+  window.dispatchEvent(new CustomEvent("afaq:firebase-status", {detail:{status:status}}));
+}
+
+async function collectionEmpty(key){
+  const snap = await getDocs(collection(db, key));
+  return snap.empty;
+}
+
+async function migrateLocalCollectionIfNeeded(key){
+  if(!ready) return;
+  if(isObjectStore(key)){
+    const obj = getLocalObject(key);
+    if(obj && Object.keys(obj).length){
+      const empty = await collectionEmpty(key);
+      if(empty){
+        await setDoc(doc(collection(db, key), "main"), Object.assign({}, obj, {id:"main", updatedAtServer:serverTimestamp()}), {merge:true});
+      }
+    }
+    return;
+  }
+
+  const arr = getLocalArray(key).map(normalizeDoc);
+  if(arr.length){
+    const empty = await collectionEmpty(key);
+    if(empty){
+      await writeArrayToFirestore(key, arr, {replace:false});
+    }
+  }
+}
+
+async function migrateLocalDataToFirestore(){
+  for(const key of COLLECTIONS){
+    try{ await migrateLocalCollectionIfNeeded(key); }
+    catch(e){ console.warn("AFAQ migration skipped:", key, e); }
+  }
+}
+
+async function writeArrayToFirestore(key, arr, opts){
   if(!ready || syncingFromFirestore) return;
-  arr = Array.isArray(arr) ? arr : [];
-  const col = collection(db, key);
-  await Promise.all(arr.map(function(item){
-    item = normalizeDoc(item);
-    item.updatedAtServer = serverTimestamp();
-    return setDoc(doc(col, item.id), item, {merge:true});
-  }));
+  opts = opts || {};
+  arr = Array.isArray(arr) ? arr.map(normalizeDoc) : [];
+
+  const colRef = collection(db, key);
+  const batch = writeBatch(db);
+  const nextIds = new Set();
+
+  arr.forEach(function(item){
+    nextIds.add(item.id);
+    const data = Object.assign({}, item, {
+      updatedAtServer: serverTimestamp(),
+      updatedAtLocal: new Date().toISOString()
+    });
+    batch.set(doc(colRef, item.id), data, {merge:true});
+  });
+
+  if(opts.replace !== false){
+    let currentIds = remoteIds[key];
+    if(!currentIds){
+      const snap = await getDocs(colRef);
+      currentIds = new Set();
+      snap.forEach(function(d){ currentIds.add(d.id); });
+    }
+    currentIds.forEach(function(oldId){
+      if(!nextIds.has(oldId)) batch.delete(doc(colRef, oldId));
+    });
+  }
+
+  await batch.commit();
 }
 
 async function writeObjectToFirestore(key, obj){
   if(!ready || syncingFromFirestore) return;
   obj = obj || {};
-  obj.id = "main";
-  obj.updatedAtServer = serverTimestamp();
-  await setDoc(doc(collection(db, key), "main"), obj, {merge:true});
+  const data = Object.assign({}, obj, {
+    id:"main",
+    updatedAtServer: serverTimestamp(),
+    updatedAtLocal: new Date().toISOString()
+  });
+  await setDoc(doc(collection(db, key), "main"), data, {merge:true});
 }
 
 async function flushPendingWrites(){
@@ -111,10 +206,10 @@ async function flushPendingWrites(){
   pendingWrites = [];
   for(const item of list){
     try{
-      if(item.kind === "array") await writeArrayToFirestore(item.key, item.value);
+      if(item.kind === "array") await writeArrayToFirestore(item.key, item.value, {replace:true});
       else await writeObjectToFirestore(item.key, item.value);
     }catch(e){
-      console.warn("AFAQ Firebase pending write failed:", item.key, e);
+      console.warn("AFAQ pending write failed:", item.key, e);
       pendingWrites.push(item);
     }
   }
@@ -122,36 +217,45 @@ async function flushPendingWrites(){
 
 function startCollectionListener(key){
   if(unsubscribeMap[key]) return;
+
   unsubscribeMap[key] = onSnapshot(collection(db, key), function(snapshot){
     syncingFromFirestore = true;
     try{
-      if(key === "settings"){
+      const ids = new Set();
+
+      if(isObjectStore(key)){
         let obj = {};
         snapshot.forEach(function(d){
+          ids.add(d.id);
           if(d.id === "main") obj = Object.assign({}, d.data());
         });
         delete obj.updatedAtServer;
-        localStorage.setItem(localKey(key), JSON.stringify(obj));
+        setLocalObject(key, obj);
       }else{
         const arr = [];
         snapshot.forEach(function(d){
+          ids.add(d.id);
           const data = Object.assign({id:d.id}, d.data());
           delete data.updatedAtServer;
           arr.push(data);
         });
         arr.sort(function(a,b){
-          const da = a.createdAt || a.createdAtLocal || "";
-          const dbb = b.createdAt || b.createdAtLocal || "";
-          return String(dbb).localeCompare(String(da));
+          const aa = a.createdAt || a.createdAtLocal || a.updatedAtLocal || "";
+          const bb = b.createdAt || b.createdAtLocal || b.updatedAtLocal || "";
+          return String(bb).localeCompare(String(aa));
         });
-        localStorage.setItem(localKey(key), JSON.stringify(arr));
+        setLocalArray(key, arr);
       }
+
+      remoteIds[key] = ids;
+      firstSnapshotDone[key] = true;
       dispatchSync(key);
     }finally{
       syncingFromFirestore = false;
     }
   }, function(err){
     console.warn("AFAQ Firebase listener error:", key, err);
+    markStatus("error");
   });
 }
 
@@ -161,101 +265,99 @@ function startRealtimeListeners(){
   COLLECTIONS.forEach(startCollectionListener);
 }
 
-function installLegacyBridge(){
-  const originalSetItem = localStorage.setItem.bind(localStorage);
-
+function installBridge(){
   window.afaqFirebase = {
     enabled: AFAQ_FIREBASE_ENABLED,
     ready: function(){ return ready; },
     db: function(){ return db; },
     collections: COLLECTIONS,
     syncNow: flushPendingWrites,
-    startRealtimeListeners: startRealtimeListeners
+    status: function(){ return document.documentElement.getAttribute("data-firebase") || "loading"; }
   };
 
-  const oldGetData = window.getData;
-  const oldSetData = window.setData;
-  const oldGetObj = window.getObj;
-  const oldSetObj = window.setObj;
-
   window.getData = function(key){
-    const value = safeParse(localStorage.getItem(localKey(key)), []);
-    return Array.isArray(value) ? value : [];
+    return getLocalArray(key);
   };
 
   window.setData = function(key, arr){
     arr = Array.isArray(arr) ? arr.map(normalizeDoc) : [];
-    originalSetItem(localKey(key), JSON.stringify(arr));
+    setLocalArray(key, arr);
     dispatchSync(key);
 
     if(AFAQ_FIREBASE_ENABLED){
-      if(ready) writeArrayToFirestore(key, arr).catch(function(e){ console.warn("AFAQ write failed:", key, e); });
+      if(ready) writeArrayToFirestore(key, arr, {replace:true}).catch(function(e){ console.warn("AFAQ write failed:", key, e); markStatus("error"); });
       else pendingWrites.push({kind:"array", key:key, value:arr});
     }
   };
 
-  window.getObj = function(key){
-    const value = safeParse(localStorage.getItem(localKey(key)), {});
-    return value && typeof value === "object" && !Array.isArray(value) ? value : {};
+  window.getObj = function(key, fallback){
+    const obj = getLocalObject(key);
+    return Object.keys(obj).length ? obj : (fallback || {});
   };
 
   window.setObj = function(key, obj){
     obj = obj || {};
-    originalSetItem(localKey(key), JSON.stringify(obj));
+    setLocalObject(key, obj);
     dispatchSync(key);
 
     if(AFAQ_FIREBASE_ENABLED){
-      if(ready) writeObjectToFirestore(key, obj).catch(function(e){ console.warn("AFAQ object write failed:", key, e); });
+      if(ready) writeObjectToFirestore(key, obj).catch(function(e){ console.warn("AFAQ object write failed:", key, e); markStatus("error"); });
       else pendingWrites.push({kind:"object", key:key, value:obj});
     }
   };
 
-  // Compatibility if some code still reads direct localStorage.
-  window.addEventListener("afaq:data-changed", function(e){
-    try{
-      const key = e.detail && e.detail.key;
-      if(key) localStorage.setItem(AFAQ_PREFIX + "sync_" + key, String(Date.now()));
-    }catch(err){}
-  });
+  window.afaqDeleteFromStore = async function(key, id){
+    const arr = getLocalArray(key).filter(function(x){ return x.id !== id; });
+    window.setData(key, arr);
+    if(ready){
+      try{ await deleteDoc(doc(collection(db, key), id)); }
+      catch(e){ console.warn("AFAQ delete failed:", key, id, e); }
+    }
+  };
+
+  window.afaqForcePull = function(){
+    COLLECTIONS.forEach(function(k){ dispatchSync(k); });
+  };
 }
 
 async function initFirebase(){
-  installLegacyBridge();
+  if(bootStarted) return;
+  bootStarted = true;
+
+  installBridge();
 
   if(!AFAQ_FIREBASE_ENABLED){
     console.warn("AFAQ Firebase: firebase-config.js still has placeholders. Running in local fallback mode.");
-    document.documentElement.setAttribute("data-firebase","disabled");
+    markStatus("disabled");
     return;
   }
 
   try{
+    markStatus("connecting");
     app = initializeApp(firebaseConfig);
     db = getFirestore(app);
     auth = getAuth(app);
 
-    try{
-      await enableIndexedDbPersistence(db);
-    }catch(e){
-      // Persistence may fail in multi-tab mode; Firestore still works.
-      console.warn("AFAQ Firebase persistence skipped:", e && e.code ? e.code : e);
-    }
+    try{ await enableIndexedDbPersistence(db); }
+    catch(e){ console.warn("AFAQ persistence skipped:", e && e.code ? e.code : e); }
 
     await signInAnonymously(auth);
 
-    onAuthStateChanged(auth, function(user){
+    onAuthStateChanged(auth, async function(user){
       if(user){
         ready = true;
-        document.documentElement.setAttribute("data-firebase","ready");
+        markStatus("ready");
+        await migrateLocalDataToFirestore();
         startRealtimeListeners();
-        flushPendingWrites();
-        console.log("AFAQ Firebase connected:", user.uid);
+        await flushPendingWrites();
+        console.log("AFAQ Firebase full sync connected:", user.uid);
       }
     });
   }catch(e){
     ready = false;
-    document.documentElement.setAttribute("data-firebase","error");
     console.error("AFAQ Firebase connection error:", e);
-    alert("تعذر الاتصال بـ Firebase. تأكد من apiKey و appId في firebase-config.js ومن تفعيل Anonymous Authentication.");
+    markStatus("error");
+    alert("تعذر الاتصال بـ Firebase. تأكد من firebase-config.js و Anonymous Authentication و Firestore Rules.");
   }
 }
 

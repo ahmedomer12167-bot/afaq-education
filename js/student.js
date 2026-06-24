@@ -110,3 +110,11 @@ function showSubjects(){
   });
   studentContent.innerHTML=html+'</div></section>';
 }
+
+
+// ===== v8.0.2 student full live refresh =====
+window.addEventListener('afaq:data-changed',function(e){
+  if(e.detail&&['notifications','studentSubjects','lessons','assignments','exams','attendance','results','finalGrades'].indexOf(e.detail.key)!==-1){
+    try{drawSide(); if(current==='notifications')showNotifications(); else openSection(current);}catch(err){}
+  }
+});

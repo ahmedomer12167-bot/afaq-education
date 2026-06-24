@@ -438,3 +438,51 @@ openSection=function(section){
   if(section==='profile'){showTeacherAdvancedProfile();return;}
   if(__teacherOpenSectionOld)__teacherOpenSectionOld(section);
 };
+
+
+// ===== v8.0.2 teacher notifications and live sync =====
+function autoNotifyAfterSave(type,obj){
+  if(['lesson','assignment','exam','attendance','notification'].indexOf(type)===-1)return;
+  var names={lesson:'درس جديد',assignment:'واجب جديد',exam:'اختبار جديد',attendance:'تسجيل حضور جديد',notification:'تبليغ جديد'};
+  afaqNotifySubject(teacher.stage, teacher.subject, teacher.subjectCode, names[type]||'تحديث جديد', (obj.title||obj.body||'تحديث جديد')+' في مادة '+teacher.subject, teacher);
+}
+function showTeacherNotificationsV802(){
+  var data=getData('notifications').filter(function(n){
+    return n.target==='عام'||n.target==='المدرسين'||n.teacherId===teacher.id||afaqEq(n.teacherName,teacher.name)||afaqEq(n.subjectCode,teacher.subjectCode)||afaqEq(n.subject,teacher.subject);
+  });
+  var html=panel('الإشعارات','إشعارات المدرس وتحديثات المادة.')+'<div class="card-grid">';
+  if(!data.length)html+='<div class="empty">لا توجد إشعارات.</div>';
+  data.forEach(function(n){
+    var unread=!(n.readBy||[]).includes(teacher.id||teacher.name);
+    html+='<div class="data-card '+(unread?'unread-card':'')+'"><div class="icon-big">🔔</div><h3>'+(unread?'<span class="small-dot"></span>':'')+(n.title||'إشعار')+'</h3><p class="muted">'+(n.body||'')+'</p></div>';
+  });
+  teacherContent.innerHTML=html+'</div></section>';
+  afaqMarkNotificationsRead('teacher',teacher);
+  drawSide();
+}
+function afaqTeacherBadge(){
+  var unread=afaqUnreadForRole('teacher',teacher);
+  document.querySelectorAll('.side .nav, .side button').forEach(function(b){
+    if((b.textContent||'').indexOf('الإشعارات')!==-1){
+      var old=b.querySelector('.badge-count'); if(old)old.remove();
+      if(unread){
+        var span=b.querySelector('span')||b;
+        span.insertAdjacentHTML('beforeend','<span class="badge-count">'+unread+'</span>');
+      }
+    }
+  });
+}
+var __teacherDrawSideOld802=typeof drawSide==='function'?drawSide:null;
+drawSide=function(){if(__teacherDrawSideOld802)__teacherDrawSideOld802();afaqTeacherBadge();};
+var __teacherOpenSectionOld802=typeof openSection==='function'?openSection:null;
+openSection=function(section){
+  current=section;
+  if(section==='notifications'){drawSide();showTeacherNotificationsV802();return;}
+  if(__teacherOpenSectionOld802)__teacherOpenSectionOld802(section);
+  setTimeout(afaqTeacherBadge,100);
+};
+window.addEventListener('afaq:data-changed',function(e){
+  if(e.detail&&['notifications','lessons','assignments','exams','attendance','studentSubjects'].indexOf(e.detail.key)!==-1){
+    try{drawSide();if(current==='notifications')showTeacherNotificationsV802();else if(['lessons','assignments','exams','attendance','joinRequests','materialApprovals'].indexOf(current)!==-1)openSection(current)}catch(err){}
+  }
+});

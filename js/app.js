@@ -9,9 +9,12 @@ var pages={student:'pages/student.html',teacher:'pages/teacher.html',parent:'pag
 var activeRole='';
 
 function getStore(key){
+  if(typeof getData==='function') return getData(key);
   return JSON.parse(localStorage.getItem('afaq40_'+key)||'[]');
 }
 function getSettings(){
+  if(typeof afaqGetSettings==='function') return afaqGetSettings();
+  if(typeof getObj==='function') return getObj('settings',{adminCode:'1234'});
   return JSON.parse(localStorage.getItem('afaq40_settings')||'{"adminCode":"1234"}');
 }
 function seedBaseForLogin(){
@@ -35,6 +38,59 @@ function seedBaseForLogin(){
   localStorage.setItem('afaq40_seeded','1');
 }
 seedBaseForLogin();
+
+// ===== v8.0.2 robust login matching =====
+function loginClean(v){
+  return String(v||'').trim().replace(/\s+/g,' ').replace(/[أإآ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه').toLowerCase();
+}
+function loginEq(a,b){return loginClean(a)===loginClean(b)}
+function loginNotStopped(x){
+  var st=loginClean((x&&x.status)||'');
+  return st!=='موقوف' && st!=='موقوفه' && st!=='متوقف' && st!=='معطل';
+}
+function findTeacherLogin(name,subject,stage,code){
+  return getStore('teachers').find(function(t){
+    var tCode=t.teacherCode||t.code||t.teacher_code||'';
+    var okCode=loginEq(tCode,code);
+    var okName=loginEq(t.name,name);
+    var okStage=loginEq(t.stage,stage);
+    var okSubject=loginEq(t.subject,subject)||loginEq(t.subjectName,subject);
+    return okName&&okStage&&okSubject&&okCode&&loginNotStopped(t);
+  });
+}
+function findStudentLogin(name,stage,code){
+  return getStore('students').find(function(s){
+    return loginEq(s.name,name)&&loginEq(s.stage,stage)&&loginEq(s.code||s.studentCode,code)&&loginNotStopped(s);
+  });
+}
+function findParentLogin(name,code){
+  return getStore('parents').find(function(p){
+    return loginEq(p.name,name)&&loginEq(p.code||p.parentCode,code);
+  }) || getStore('students').map(function(s){
+    return {id:'parent_'+s.id,name:s.parentName||name,code:s.parentCode||s.code,studentName:s.name,studentCode:s.code};
+  }).find(function(p){return loginEq(p.name,name)&&loginEq(p.code,code)});
+}
+function refreshLoginSelects(){
+  document.querySelectorAll('[data-label="المرحلة الدراسية"]').forEach(function(sel){
+    if(sel.tagName!=='SELECT')return;
+    var old=sel.value;
+    var stages=(typeof afaqStageOptions==='function')?afaqStageOptions():getStore('stages').map(function(x){return x.name});
+    sel.innerHTML='';
+    stages.forEach(function(v){var op=document.createElement('option');op.value=v;op.textContent=v;sel.appendChild(op)});
+    if(old)sel.value=old;
+  });
+  document.querySelectorAll('[data-label="المادة"]').forEach(function(sel){
+    if(sel.tagName!=='SELECT')return;
+    var old=sel.value;
+    var stageEl=document.querySelector('[data-label="المرحلة الدراسية"]');
+    var stage=stageEl?stageEl.value:'';
+    var subjects=(typeof afaqSubjectOptions==='function')?afaqSubjectOptions(stage):getStore('subjects');
+    sel.innerHTML='';
+    subjects.forEach(function(s){var op=document.createElement('option');op.value=s.name||s.subject;op.textContent=s.name||s.subject;sel.appendChild(op)});
+    if(old)sel.value=old;
+  });
+}
+
 
 function makeInput(label){
   var input;
@@ -71,6 +127,7 @@ document.querySelectorAll('[data-role]').forEach(function(btn){
     });
     document.getElementById('studentRegisterBtn').classList.toggle('hidden',activeRole!=='student');
     document.getElementById('loginModal').classList.add('active');
+    setTimeout(refreshLoginSelects,100);
   };
 });
 
@@ -89,7 +146,7 @@ document.getElementById('loginForm').onsubmit=function(e){
   if(activeRole==='admin'){
     var code=fieldValue('كود المدير');
     var settings=getSettings();
-    if(code !== (settings.adminCode || '1234')){
+    if(!loginEq(code, (settings.adminCode || '1234'))){
       alert('كود المدير غير صحيح');
       return;
     }
@@ -103,13 +160,12 @@ document.getElementById('loginForm').onsubmit=function(e){
     var subject=fieldValue('المادة');
     var stage=fieldValue('المرحلة الدراسية');
     var code=fieldValue('كود المدرس');
-    var teacher=getStore('teachers').find(function(t){
-      return t.name===name && t.subject===subject && t.stage===stage && t.teacherCode===code && t.status!=='موقوف';
-    });
+    var teacher=findTeacherLogin(name,subject,stage,code);
     if(!teacher){
-      alert('بيانات المدرس غير مطابقة أو الحساب موقوف');
+      alert('بيانات المدرس غير مطابقة أو كود المدرس غير صحيح أو الحساب موقوف');
       return;
     }
+    if(!teacher.subjectCode && typeof afaqSubjectCodeByNameStage==='function') teacher.subjectCode=afaqSubjectCodeByNameStage(teacher.subject,teacher.stage);
     sessionStorage.setItem('afaq_current_teacher', JSON.stringify(teacher));
     window.location.href=pages.teacher;
     return;
@@ -119,9 +175,7 @@ document.getElementById('loginForm').onsubmit=function(e){
     var sname=fieldValue('الاسم الثلاثي');
     var sstage=fieldValue('المرحلة الدراسية');
     var scode=fieldValue('كود الطالب');
-    var student=getStore('students').find(function(s){
-      return s.name===sname && s.stage===sstage && s.code===scode && s.status!=='موقوف';
-    });
+    var student=findStudentLogin(sname,sstage,scode);
     if(!student){
       alert('بيانات الطالب غير مطابقة أو الحساب موقوف');
       return;
@@ -134,9 +188,7 @@ document.getElementById('loginForm').onsubmit=function(e){
   if(activeRole==='parent'){
     var pname=fieldValue('الاسم الثلاثي');
     var pcode=fieldValue('كود ولي الأمر');
-    var parent=getStore('parents').find(function(p){
-      return p.name===pname && p.code===pcode;
-    });
+    var parent=findParentLogin(pname,pcode);
     if(!parent){
       alert('بيانات ولي الأمر غير مطابقة');
       return;
@@ -149,3 +201,5 @@ document.getElementById('loginForm').onsubmit=function(e){
 document.getElementById('studentRegisterBtn').onclick=function(){
   window.location.href='pages/student-register.html';
 };
+
+window.addEventListener('afaq:data-changed',function(e){if(e.detail&&['teachers','subjects','stages','settings'].indexOf(e.detail.key)!==-1){try{refreshLoginSelects()}catch(err){}}});

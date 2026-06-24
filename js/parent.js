@@ -31,3 +31,11 @@ function messageAdmin(){modalTitle.textContent='رسالة إلى الإدارة
 parentForm.onsubmit=function(e){e.preventDefault();var arr=getData('messages');arr.unshift({id:id(),from:parentUser.name,to:qs('msgTo').value,title:qs('msgTitle').value,body:qs('msgBody').value,box:'المرسل',studentId:student.id,studentName:student.name,createdAt:new Date().toLocaleString('ar-IQ')});setData('messages',arr);parentModal.classList.remove('active');showMessages()}
 window.addEventListener('storage',function(e){if(e.key&&e.key.indexOf(P)===0){try{drawSide();openSection(current)}catch(err){}}})
 parentInfo.textContent=parentUser.name+' / الطالب الحالي: '+student.name;drawSide();openSection('home');
+
+
+// ===== v8.0.2 parent full live refresh =====
+window.addEventListener('afaq:data-changed',function(e){
+  if(e.detail&&['notifications','results','finalGrades','attendanceRecords','assignmentSubmissions','studentSubjects'].indexOf(e.detail.key)!==-1){
+    try{drawSide(); if(current==='notifications')showNotifications(); else openSection(current);}catch(err){}
+  }
+});

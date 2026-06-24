@@ -233,3 +233,92 @@ function rejectSubjectJoin(requestId, teacher, reason){
     }catch(e){}
   });
 })();
+
+
+// ===== v8.0.2 complete matching, settings, sync and notifications helpers =====
+function afaqClean(v){
+  return String(v||'').trim().replace(/\s+/g,' ').replace(/[أإآ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه').toLowerCase();
+}
+function afaqEq(a,b){return afaqClean(a)===afaqClean(b)}
+function afaqNotStopped(x){
+  var st=afaqClean((x&&x.status)||'');
+  return st!=='موقوف' && st!=='موقوفه' && st!=='متوقف' && st!=='معطل';
+}
+function afaqGetSettings(){
+  return getObj('settings',{platformName:'آفاق التعليمية',footer:'جميع الحقوق محفوظة',masterNumber:'0000 0000 0000 0000',cardOwner:'اسم صاحب البطاقة',adminCode:'1234'});
+}
+function afaqSetSettings(obj){
+  var old=afaqGetSettings();
+  setObj('settings',Object.assign({},old,obj||{}));
+  try{touchSync('settings')}catch(e){}
+}
+function afaqSubjectCodeByNameStage(subject,stage){
+  var s=getData('subjects').find(function(x){return afaqEq(x.name||x.subject,subject)&&(!stage||afaqEq(x.stage,stage))});
+  return s ? (s.code||s.subjectCode||'') : '';
+}
+function afaqStageOptions(){
+  var arr=getData('stages');
+  if(!arr.length)arr=getData('grades');
+  if(!arr.length)arr=[
+    {name:'الأول متوسط',status:'مفعلة',visibility:'ظاهر'},
+    {name:'الثاني متوسط',status:'مفعلة',visibility:'ظاهر'},
+    {name:'الثالث متوسط',status:'مفعلة',visibility:'ظاهر'},
+    {name:'الرابع الإعدادي',status:'مفعلة',visibility:'ظاهر'},
+    {name:'الخامس الإعدادي',status:'مفعلة',visibility:'ظاهر'},
+    {name:'السادس الإعدادي',status:'مفعلة',visibility:'ظاهر'}
+  ];
+  return arr.filter(function(x){return (x.visibility||'ظاهر')!=='مخفي' && afaqClean(x.status||'مفعلة')!=='موقوفه' && afaqClean(x.status||'مفعلة')!=='موقوف'})
+    .map(function(x){return x.name||x.stage||x.grade||x.title||String(x)}).filter(Boolean);
+}
+function afaqSubjectOptions(stage){
+  return getData('subjects').filter(function(x){
+    return (!stage||afaqEq(x.stage,stage)) && (x.visibility||'ظاهر')!=='مخفي' && afaqClean(x.status||'مفعلة')!=='موقوفه' && afaqClean(x.status||'مفعلة')!=='موقوف';
+  });
+}
+function afaqUnreadForRole(role,user){
+  user=user||{};
+  var uid=user.id||user.code||user.name||role;
+  return getData('notifications').filter(function(n){
+    n.readBy=n.readBy||[];
+    if(n.readBy.indexOf(uid)!==-1)return false;
+    if(role==='admin')return true;
+    if(role==='teacher'){
+      return n.target==='عام'||n.target==='المدرسين'||n.teacherId===user.id||afaqEq(n.teacherName,user.name)||afaqEq(n.subject,user.subject)||afaqEq(n.subjectCode,user.subjectCode);
+    }
+    if(role==='student'){
+      if(typeof getVisibleNotificationsForStudent==='function'){
+        return getVisibleNotificationsForStudent(user).some(function(x){return x.id===n.id});
+      }
+      return false;
+    }
+    if(role==='parent')return true;
+    return false;
+  }).length;
+}
+function afaqMarkNotificationsRead(role,user){
+  user=user||{};
+  var uid=user.id||user.code||user.name||role;
+  setData('notifications',getData('notifications').map(function(n){
+    n.readBy=n.readBy||[];
+    var ok=false;
+    if(role==='admin')ok=true;
+    else if(role==='teacher')ok=n.target==='عام'||n.target==='المدرسين'||n.teacherId===user.id||afaqEq(n.teacherName,user.name)||afaqEq(n.subject,user.subject)||afaqEq(n.subjectCode,user.subjectCode);
+    else if(role==='student')ok=(typeof getVisibleNotificationsForStudent==='function')&&getVisibleNotificationsForStudent(user).some(function(x){return x.id===n.id});
+    else if(role==='parent')ok=true;
+    if(ok && n.readBy.indexOf(uid)===-1)n.readBy.push(uid);
+    return n;
+  }));
+}
+function afaqNotify(obj){
+  var arr=getData('notifications');
+  obj=obj||{};
+  obj.id=obj.id||id();
+  obj.createdAt=obj.createdAt||new Date().toLocaleString('ar-IQ');
+  obj.readBy=obj.readBy||[];
+  arr.unshift(obj);
+  setData('notifications',arr);
+  try{touchSync('notifications')}catch(e){}
+}
+function afaqNotifySubject(stage,subject,subjectCode,title,body,teacher){
+  afaqNotify({title:title,body:body,target:'طلاب المادة',stage:stage,subject:subject,subjectCode:subjectCode,teacherId:teacher&&teacher.id,teacherName:teacher&&teacher.name,type:'subject-update'});
+}

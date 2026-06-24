@@ -343,6 +343,7 @@ function editItem(type,idv){
     };
   }
   updateStageMaterialSelects();
+  setTimeout(afaqRefreshAdminDynamicSelects,50);
 }
 
 qs('genericForm').onsubmit=function(e){
@@ -351,19 +352,19 @@ qs('genericForm').onsubmit=function(e){
   schemas[editType].forEach(function(f){
     obj[f]=qs('f_'+f).value;
   });
-  if(editType==='teacher') obj.photo=currentTeacherPhoto;
+  if(editType==='teacher') { obj.photo=currentTeacherPhoto; obj=afaqNormalizeTeacherBeforeSave(obj); }
 
   var k=stores[editType];
   var arr=getData(k);
 
-  if(editId) arr=arr.map(function(x){return x.id===editId?obj:x});
+  if(editId) arr=arr.map(function(x){return x.id===editId?Object.assign({},x,obj):x});
   else arr.push(obj);
 
   setData(k,arr);
 
   if(editType==='teacher'){
     setData('subjects',getData('subjects').map(function(s){
-      return s.name===obj.subject ? Object.assign({},s,{teacher:obj.name}) : s;
+      return (afaqEq(s.name,obj.subject)&&afaqEq(s.stage,obj.stage)) ? Object.assign({},s,{teacher:obj.name,code:obj.subjectCode||s.code}) : s;
     }));
   }
 
@@ -664,4 +665,77 @@ document.addEventListener('click', function(e){
 
 document.addEventListener('DOMContentLoaded', function(){
   setTimeout(afaqRefreshDynamicSelects, 500);
+});
+
+
+// ===== v8.0.2 admin normalization, settings and notification badge =====
+function afaqNormalizeTeacherBeforeSave(obj){
+  obj=obj||{};
+  obj.name=String(obj.name||'').trim();
+  obj.stage=String(obj.stage||'').trim();
+  obj.subject=String(obj.subject||'').trim();
+  obj.teacherCode=String(obj.teacherCode||obj.code||'').trim();
+  obj.subjectCode=String(obj.subjectCode||afaqSubjectCodeByNameStage(obj.subject,obj.stage)||'').trim();
+  obj.status=obj.status||'مفعل';
+  return obj;
+}
+function afaqRefreshAdminDynamicSelects(){
+  var stages=afaqStageOptions();
+  document.querySelectorAll('#f_stage,#f_grade').forEach(function(sel){
+    if(sel.tagName!=='SELECT')return;
+    var old=sel.value;
+    sel.innerHTML='<option value="">اختر المرحلة</option>'+stages.map(function(v){return '<option value="'+v+'" '+(v===old?'selected':'')+'>'+v+'</option>'}).join('');
+  });
+  var stageField=document.querySelector('#f_stage,#f_grade');
+  document.querySelectorAll('#f_subject').forEach(function(sel){
+    if(sel.tagName!=='SELECT')return;
+    var old=sel.value;
+    var stage=stageField?stageField.value:'';
+    var subjects=afaqSubjectOptions(stage);
+    sel.innerHTML='<option value="">اختر المادة</option>'+subjects.map(function(s){var v=s.name||s.subject;return '<option value="'+v+'" '+(v===old?'selected':'')+'>'+v+'</option>'}).join('');
+  });
+}
+function afaqRenderAdminNotificationBadge(){
+  var unread=afaqUnreadForRole('admin',{id:'admin',name:'admin'});
+  document.querySelectorAll('.side .nav, .side button').forEach(function(b){
+    if((b.textContent||'').indexOf('الإشعارات')!==-1){
+      var old=b.querySelector('.badge-count'); if(old)old.remove();
+      if(unread){
+        var span=b.querySelector('span')||b;
+        span.insertAdjacentHTML('beforeend','<span class="badge-count">'+unread+'</span>');
+      }
+    }
+  });
+}
+
+
+// ===== v8.0.2 settings save compatibility =====
+var __oldShowSettings_v802 = typeof showSettings==='function'?showSettings:null;
+if(__oldShowSettings_v802){
+  showSettings=function(){
+    __oldShowSettings_v802();
+    setTimeout(function(){
+      var form=document.querySelector('#content form');
+      if(form && !form.__afaqSettingsPatched){
+        form.__afaqSettingsPatched=true;
+        form.addEventListener('submit',function(){
+          setTimeout(function(){try{afaqSetSettings(afaqGetSettings());}catch(e){}},50);
+        });
+      }
+    },150);
+  };
+}
+var __oldDrawSideAdmin_v802=typeof drawSide==='function'?drawSide:null;
+drawSide=function(){ if(__oldDrawSideAdmin_v802)__oldDrawSideAdmin_v802(); afaqRenderAdminNotificationBadge(); };
+var __oldOpenSectionAdmin_v802=typeof openSection==='function'?openSection:null;
+openSection=function(section){
+  current=section;
+  if(__oldOpenSectionAdmin_v802)__oldOpenSectionAdmin_v802(section);
+  if(section==='notifications')afaqMarkNotificationsRead('admin',{id:'admin',name:'admin'});
+  setTimeout(afaqRenderAdminNotificationBadge,100);
+};
+window.addEventListener('afaq:data-changed',function(e){
+  if(e.detail&&['notifications','settings','teachers','subjects','stages'].indexOf(e.detail.key)!==-1){
+    try{ if(e.detail.key==='settings' && current==='settings'){} drawSide(); }catch(err){}
+  }
 });

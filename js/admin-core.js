@@ -451,3 +451,134 @@ function afaqRenderMediaLinks(item){
   }
   return html;
 }
+
+
+// ===== v8.3 Stable unified data helpers =====
+function afaqClean(v){
+  return String(v||'').trim().replace(/\s+/g,' ').replace(/[أإآ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه').toLowerCase();
+}
+function afaqEq(a,b){ return afaqClean(a)===afaqClean(b); }
+function afaqActive(x){
+  var st=afaqClean((x&&x.status)||'');
+  var sub=afaqClean((x&&x.subscriptionStatus)||'');
+  return st!=='موقوف' && st!=='موقوفه' && st!=='متوقف' && st!=='معطل' && sub!=='موقوف' && sub!=='منتهي';
+}
+function afaqCanonicalStage(v){return String(v||'').trim().replace(/\s+/g,' ');}
+function afaqCanonicalCode(v){return String(v||'').trim().replace(/\s+/g,'').toUpperCase();}
+function afaqCanonicalName(v){return String(v||'').trim().replace(/\s+/g,' ');}
+function afaqNormalizeStudent(raw){
+  raw=raw||{};
+  var name=afaqCanonicalName(raw.name||raw.studentName);
+  var stage=afaqCanonicalStage(raw.stage||raw.grade);
+  var code=afaqCanonicalCode(raw.code||raw.studentCode);
+  return Object.assign({},raw,{
+    id: raw.id||id(),
+    name:name,
+    studentName:name,
+    stage:stage,
+    grade:stage,
+    code:code,
+    studentCode:code,
+    parentCode:afaqCanonicalCode(raw.parentCode||code),
+    parentName:afaqCanonicalName(raw.parentName||raw.parent),
+    status:raw.status||'مفعل',
+    subscriptionStatus:raw.subscriptionStatus||'نشط'
+  });
+}
+function afaqNormalizeTeacher(raw){
+  raw=raw||{};
+  var subject=afaqCanonicalName(raw.subject||raw.subjectName);
+  var stage=afaqCanonicalStage(raw.stage||raw.grade);
+  return Object.assign({},raw,{
+    id:raw.id||id(),
+    name:afaqCanonicalName(raw.name),
+    subject:subject,
+    subjectName:subject,
+    stage:stage,
+    grade:stage,
+    teacherCode:afaqCanonicalCode(raw.teacherCode||raw.code),
+    subjectCode:afaqCanonicalCode(raw.subjectCode||afaqSubjectCodeByNameStage(subject,stage)),
+    status:raw.status||'مفعل'
+  });
+}
+function afaqGetSettings(){
+  return getObj('settings',{platformName:'آفاق التعليمية',footer:'جميع الحقوق محفوظة',masterNumber:'0000 0000 0000 0000',cardOwner:'اسم صاحب البطاقة',adminCode:'1234'});
+}
+function afaqSetSettings(obj){setObj('settings',Object.assign({},afaqGetSettings(),obj||{}));}
+function afaqSubjectCodeByNameStage(subject,stage){
+  var s=getData('subjects').find(function(x){return afaqEq(x.name||x.subject,subject)&&(!stage||afaqEq(x.stage||x.grade,stage))});
+  return s ? afaqCanonicalCode(s.code||s.subjectCode) : '';
+}
+function afaqFindStudentUnified(name,stage,code){
+  name=afaqCanonicalName(name); stage=afaqCanonicalStage(stage); code=afaqCanonicalCode(code);
+  var all=getData('students').map(afaqNormalizeStudent);
+  var found=all.find(function(s){
+    return afaqEq(s.name,name)&&afaqEq(s.stage,stage)&&afaqCanonicalCode(s.code)===code&&afaqActive(s);
+  });
+  if(found)return found;
+  return getData('subscriptions').map(afaqNormalizeStudent).find(function(s){
+    return afaqEq(s.name,name)&&afaqEq(s.stage,stage)&&afaqCanonicalCode(s.code)===code&&afaqActive(s);
+  })||null;
+}
+function afaqFindTeacherUnified(name,subject,stage,code){
+  name=afaqCanonicalName(name); subject=afaqCanonicalName(subject); stage=afaqCanonicalStage(stage); code=afaqCanonicalCode(code);
+  return getData('teachers').map(afaqNormalizeTeacher).find(function(t){
+    return afaqEq(t.name,name)&&afaqEq(t.subject,subject)&&afaqEq(t.stage,stage)&&afaqCanonicalCode(t.teacherCode)===code&&afaqActive(t);
+  })||null;
+}
+function afaqFindParentUnified(name,code){
+  name=afaqCanonicalName(name); code=afaqCanonicalCode(code);
+  var p=getData('parents').find(function(x){return afaqEq(x.name,name)&&afaqCanonicalCode(x.code||x.parentCode)===code});
+  if(p)return p;
+  var st=getData('students').map(afaqNormalizeStudent).find(function(s){return afaqEq(s.parentName,name)&&afaqCanonicalCode(s.parentCode||s.code)===code});
+  if(st)return {id:'parent_'+st.id,name:st.parentName,code:st.parentCode||st.code,parentCode:st.parentCode||st.code,studentName:st.name,studentCode:st.code};
+  return null;
+}
+function afaqUpsertStudent(student){
+  student=afaqNormalizeStudent(student);
+  var arr=getData('students').map(afaqNormalizeStudent);
+  var idx=arr.findIndex(function(s){return s.id===student.id||afaqCanonicalCode(s.code)===afaqCanonicalCode(student.code)||(afaqEq(s.name,student.name)&&afaqEq(s.stage,student.stage));});
+  if(idx>=0)arr[idx]=Object.assign({},arr[idx],student); else arr.unshift(student);
+  setData('students',arr);
+  return student;
+}
+function afaqUpsertParentFromStudent(st){
+  st=afaqNormalizeStudent(st);
+  if(!st.parentName)return;
+  var arr=getData('parents');
+  var exists=arr.find(function(p){return afaqEq(p.name,st.parentName)&&afaqCanonicalCode(p.code||p.parentCode)===afaqCanonicalCode(st.parentCode||st.code)});
+  if(!exists){
+    arr.unshift({id:id(),name:st.parentName,code:st.parentCode||st.code,parentCode:st.parentCode||st.code,studentName:st.name,studentCode:st.code,phone:st.phone||'',createdAt:new Date().toLocaleString('ar-IQ')});
+    setData('parents',arr);
+  }
+}
+function afaqUnreadForRole(role,user){
+  user=user||{}; var uid=user.id||user.code||user.name||role;
+  return getData('notifications').filter(function(n){
+    n.readBy=n.readBy||[];
+    if(n.readBy.indexOf(uid)!==-1)return false;
+    if(role==='admin')return true;
+    if(role==='teacher')return n.target==='عام'||n.target==='المدرسين'||n.teacherId===user.id||afaqEq(n.teacherName,user.name)||afaqEq(n.subject,user.subject)||afaqEq(n.subjectCode,user.subjectCode);
+    if(role==='student' && typeof getVisibleNotificationsForStudent==='function')return getVisibleNotificationsForStudent(user).some(function(x){return x.id===n.id});
+    if(role==='parent')return true;
+    return false;
+  }).length;
+}
+function afaqMarkNotificationsRead(role,user){
+  user=user||{}; var uid=user.id||user.code||user.name||role;
+  setData('notifications',getData('notifications').map(function(n){
+    n.readBy=n.readBy||[]; var ok=false;
+    if(role==='admin')ok=true;
+    else if(role==='teacher')ok=n.target==='عام'||n.target==='المدرسين'||n.teacherId===user.id||afaqEq(n.teacherName,user.name)||afaqEq(n.subject,user.subject)||afaqEq(n.subjectCode,user.subjectCode);
+    else if(role==='student' && typeof getVisibleNotificationsForStudent==='function')ok=getVisibleNotificationsForStudent(user).some(function(x){return x.id===n.id});
+    else if(role==='parent')ok=true;
+    if(ok&&n.readBy.indexOf(uid)===-1)n.readBy.push(uid);
+    return n;
+  }));
+}
+function afaqNotify(obj){
+  var arr=getData('notifications'); obj=obj||{}; obj.id=obj.id||id(); obj.createdAt=obj.createdAt||new Date().toLocaleString('ar-IQ'); obj.readBy=obj.readBy||[]; arr.unshift(obj); setData('notifications',arr);
+}
+function afaqNotifySubject(stage,subject,subjectCode,title,body,teacher){
+  afaqNotify({title:title,body:body,target:'طلاب المادة',stage:stage,subject:subject,subjectCode:subjectCode,teacherId:teacher&&teacher.id,teacherName:teacher&&teacher.name,type:'subject-update'});
+}

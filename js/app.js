@@ -39,6 +39,19 @@ function seedBaseForLogin(){
 }
 seedBaseForLogin();
 
+// ===== v8.3 stable login wait =====
+function afaqWaitForDataReady(cb){
+  var done=false;
+  function finish(){if(done)return;done=true;cb();}
+  if(window.afaqFirebase && window.afaqFirebase.waitForReady){
+    window.afaqFirebase.waitForReady().then(function(){setTimeout(finish,250)}).catch(finish);
+    setTimeout(finish,2500);
+  }else{
+    setTimeout(finish,400);
+  }
+}
+
+
 // ===== v8.1 robust login from Firestore mirror =====
 function loginClean(v){return String(v||'').trim().replace(/\s+/g,' ').replace(/[أإآ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه').toLowerCase()}
 function loginEq(a,b){return loginClean(a)===loginClean(b)}
@@ -161,59 +174,68 @@ function fieldValue(label){
 document.getElementById('loginForm').onsubmit=function(e){
   e.preventDefault();
 
-  if(activeRole==='admin'){
-    var code=fieldValue('كود المدير');
-    var settings=getSettings();
-    if(!loginEq(code, (settings.adminCode || '1234'))){
-      alert('كود المدير غير صحيح');
-      return;
-    }
-    sessionStorage.setItem('afaq_current_admin','true');
-    window.location.href=pages.admin;
-    return;
-  }
+  var submitBtn=this.querySelector('button[type="submit"],button.primary');
+  var oldText=submitBtn?submitBtn.textContent:'';
+  if(submitBtn){submitBtn.disabled=true;submitBtn.textContent='جاري التحقق...';}
 
-  if(activeRole==='teacher'){
-    var name=fieldValue('الاسم الثلاثي');
-    var subject=fieldValue('المادة');
-    var stage=fieldValue('المرحلة الدراسية');
-    var code=fieldValue('كود المدرس');
-    var teacher=findTeacherLogin(name,subject,stage,code);
-    if(!teacher){
-      alert('بيانات المدرس غير مطابقة أو كود المدرس غير صحيح أو الحساب موقوف');
-      return;
-    }
-    if(!teacher.subjectCode && typeof afaqSubjectCodeByNameStage==='function') teacher.subjectCode=afaqSubjectCodeByNameStage(teacher.subject,teacher.stage);
-    sessionStorage.setItem('afaq_current_teacher', JSON.stringify(teacher));
-    window.location.href=pages.teacher;
-    return;
-  }
+  afaqWaitForDataReady(function(){
+    try{
+      if(activeRole==='admin'){
+        var code=fieldValue('كود المدير');
+        var settings=(typeof afaqGetSettings==='function')?afaqGetSettings():getSettings();
+        if(!afaqEq(code, (settings.adminCode || '1234'))){
+          alert('كود المدير غير صحيح');
+          return;
+        }
+        sessionStorage.setItem('afaq_current_admin','true');
+        window.location.href=pages.admin;
+        return;
+      }
 
-  if(activeRole==='student'){
-    var sname=fieldValue('الاسم الثلاثي');
-    var sstage=fieldValue('المرحلة الدراسية');
-    var scode=fieldValue('كود الطالب');
-    var student=findStudentLogin(sname,sstage,scode);
-    if(!student){
-      alert('بيانات الطالب غير مطابقة أو الحساب موقوف');
-      return;
-    }
-    sessionStorage.setItem('afaq_current_student', JSON.stringify(student));
-    window.location.href=pages.student;
-    return;
-  }
+      if(activeRole==='teacher'){
+        var name=fieldValue('الاسم الثلاثي');
+        var subject=fieldValue('المادة');
+        var stage=fieldValue('المرحلة الدراسية');
+        var code=fieldValue('كود المدرس');
+        var teacher=(typeof afaqFindTeacherUnified==='function')?afaqFindTeacherUnified(name,subject,stage,code):null;
+        if(!teacher){
+          alert('بيانات المدرس غير مطابقة. تأكد من الاسم والمرحلة والمادة وكود المدرس كما أدخلها المدير.');
+          return;
+        }
+        sessionStorage.setItem('afaq_current_teacher', JSON.stringify(teacher));
+        window.location.href=pages.teacher;
+        return;
+      }
 
-  if(activeRole==='parent'){
-    var pname=fieldValue('الاسم الثلاثي');
-    var pcode=fieldValue('كود ولي الأمر');
-    var parent=findParentLogin(pname,pcode);
-    if(!parent){
-      alert('بيانات ولي الأمر غير مطابقة');
-      return;
+      if(activeRole==='student'){
+        var sname=fieldValue('الاسم الثلاثي');
+        var sstage=fieldValue('المرحلة الدراسية');
+        var scode=fieldValue('كود الطالب');
+        var student=(typeof afaqFindStudentUnified==='function')?afaqFindStudentUnified(sname,sstage,scode):null;
+        if(!student){
+          alert('بيانات الطالب غير مطابقة أو الحساب غير مفعل. تأكد أن المدير وافق على الاشتراك وأن الاسم والمرحلة والكود مطابقة تماماً.');
+          return;
+        }
+        sessionStorage.setItem('afaq_current_student', JSON.stringify(student));
+        window.location.href=pages.student;
+        return;
+      }
+
+      if(activeRole==='parent'){
+        var pname=fieldValue('الاسم الثلاثي');
+        var pcode=fieldValue('كود ولي الأمر');
+        var parent=(typeof afaqFindParentUnified==='function')?afaqFindParentUnified(pname,pcode):null;
+        if(!parent){
+          alert('بيانات ولي الأمر غير مطابقة');
+          return;
+        }
+        sessionStorage.setItem('afaq_current_parent', JSON.stringify(parent));
+        window.location.href=pages.parent;
+      }
+    }finally{
+      if(submitBtn){submitBtn.disabled=false;submitBtn.textContent=oldText;}
     }
-    sessionStorage.setItem('afaq_current_parent', JSON.stringify(parent));
-    window.location.href=pages.parent;
-  }
+  });
 };
 
 document.getElementById('studentRegisterBtn').onclick=function(){

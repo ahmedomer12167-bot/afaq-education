@@ -786,3 +786,43 @@ function afaqAttachImagePicker(inputId, previewId, setter){
     });
   };
 }
+
+
+// ===== v8.3 stable approval and teacher normalization =====
+function afaqNormalizeTeacherBeforeSave(obj){return afaqNormalizeTeacher(obj)}
+function approveSubscriptionRequest(requestId){
+  var req = getData('subscriptionRequests').find(function(x){return x.id===requestId;}) ||
+            getData('requests').find(function(x){return x.id===requestId;}) ||
+            getData('pendingSubscriptions').find(function(x){return x.id===requestId;});
+  if(!req){alert('لم يتم العثور على الطلب');return;}
+
+  var studentName=req.name||req.studentName||'';
+  var stage=req.stage||req.grade||'';
+  var phone=req.phone||'';
+  var parentName=req.parentName||req.parent||'';
+  var studentCode=prompt('أدخل كود الطالب:', req.studentCode||req.code||('ST-'+Math.floor(1000+Math.random()*9000)));
+  if(!studentCode)return;
+  var startDate=prompt('تاريخ بداية الاشتراك:', req.startDate||new Date().toISOString().slice(0,10))||'';
+  var endDate=prompt('تاريخ انتهاء الاشتراك:', req.endDate||'')||'';
+
+  var student=afaqUpsertStudent({
+    name:studentName,studentName:studentName,parentName:parentName,stage:stage,grade:stage,phone:phone,
+    code:studentCode,studentCode:studentCode,parentCode:studentCode,status:'مفعل',subscriptionStatus:'نشط',
+    startDate:startDate,endDate:endDate,amount:req.amount||req.paid||'',note:req.note||'',approvedAt:new Date().toLocaleString('ar-IQ')
+  });
+  afaqUpsertParentFromStudent(student);
+
+  var subs=getData('subscriptions');
+  subs.unshift({id:id(),studentId:student.id,studentName:student.name,name:student.name,parentName:student.parentName,stage:student.stage,grade:student.stage,phone:student.phone,amount:student.amount,code:student.code,studentCode:student.code,status:'نشط',subscriptionStatus:'نشط',startDate:startDate,endDate:endDate,createdAt:new Date().toLocaleString('ar-IQ')});
+  setData('subscriptions',subs);
+
+  if(typeof removeSubscriptionRequestEverywhere==='function')removeSubscriptionRequestEverywhere(requestId,student.name,student.phone);
+  else{
+    setData('subscriptionRequests',getData('subscriptionRequests').filter(function(x){return x.id!==requestId}));
+    setData('requests',getData('requests').filter(function(x){return x.id!==requestId}));
+  }
+
+  afaqNotify({title:'تم تفعيل اشتراك الطالب',body:'تم تفعيل حساب الطالب '+student.name,target:'admin',type:'subscription-approved'});
+  alert('تم قبول الطلب وتفعيل الطالب. يمكنه الآن تسجيل الدخول بالكود: '+student.code);
+  if(typeof showSubscriptionRequests==='function')showSubscriptionRequests(); else if(typeof openSection==='function')openSection(current);
+}

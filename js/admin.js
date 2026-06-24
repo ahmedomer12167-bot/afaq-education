@@ -581,3 +581,87 @@ openSection=function(section){
   if(special[section]){special[section]();return;}
   if(__adminOpenSectionOld)__adminOpenSectionOld(section);
 };
+
+
+// ===== v8.0.1 Dynamic stages in admin forms =====
+function afaqGetActiveStages(){
+  var stages = getData('stages');
+  if(!Array.isArray(stages) || !stages.length){
+    stages = getData('grades');
+  }
+  if(!Array.isArray(stages) || !stages.length){
+    stages = [
+      {name:'الأول متوسط',visibility:'ظاهر'},
+      {name:'الثاني متوسط',visibility:'ظاهر'},
+      {name:'الثالث متوسط',visibility:'ظاهر'},
+      {name:'الرابع الإعدادي',visibility:'ظاهر'},
+      {name:'الخامس الإعدادي',visibility:'ظاهر'},
+      {name:'السادس الإعدادي',visibility:'ظاهر'}
+    ];
+  }
+  return stages
+    .filter(function(s){ return (s.visibility || s.status || 'ظاهر') !== 'مخفي'; })
+    .map(function(s){ return s.name || s.title || s.stage || s.grade || String(s); })
+    .filter(Boolean);
+}
+
+function afaqGetActiveSubjects(){
+  var subjects = getData('subjects');
+  if(!Array.isArray(subjects) || !subjects.length){
+    subjects = [
+      {name:'الأحياء'},
+      {name:'الكيمياء'},
+      {name:'الفيزياء'},
+      {name:'الرياضيات'},
+      {name:'العربي'},
+      {name:'الإنكليزي'},
+      {name:'الإسلامية'},
+      {name:'الاجتماعيات'}
+    ];
+  }
+  return subjects
+    .filter(function(s){ return (s.visibility || s.status || 'ظاهر') !== 'مخفي' && (s.status || '') !== 'موقوفة'; })
+    .map(function(s){ return s.name || s.title || s.subject || String(s); })
+    .filter(Boolean);
+}
+
+function afaqOptionsHtml(items, selected){
+  return items.map(function(x){
+    return '<option value="'+x+'" '+(x===selected?'selected':'')+'>'+x+'</option>';
+  }).join('');
+}
+
+function afaqRefreshDynamicSelects(){
+  var stages = afaqGetActiveStages();
+  var subjects = afaqGetActiveSubjects();
+
+  document.querySelectorAll('select[id*="stage"], select[name*="stage"], select[id*="grade"], select[name*="grade"], select[id="f_stage"], select[id="f_grade"]').forEach(function(sel){
+    var old = sel.value;
+    sel.innerHTML = '<option value="">اختر المرحلة</option>' + afaqOptionsHtml(stages, old);
+  });
+
+  document.querySelectorAll('select[id*="subject"], select[name*="subject"], select[id="f_subject"]').forEach(function(sel){
+    var old = sel.value;
+    sel.innerHTML = '<option value="">اختر المادة</option>' + afaqOptionsHtml(subjects, old);
+  });
+}
+
+window.addEventListener('afaq:data-changed', function(e){
+  if(e.detail && (e.detail.key === 'stages' || e.detail.key === 'subjects')){
+    setTimeout(afaqRefreshDynamicSelects, 100);
+  }
+});
+
+document.addEventListener('click', function(e){
+  var t = e.target;
+  if(!t) return;
+  var text = (t.textContent || '') + ' ' + (t.getAttribute('onclick') || '');
+  if(text.indexOf('مدرس') !== -1 || text.indexOf('teacher') !== -1 || text.indexOf('إضافة') !== -1 || text.indexOf('تعديل') !== -1){
+    setTimeout(afaqRefreshDynamicSelects, 250);
+    setTimeout(afaqRefreshDynamicSelects, 700);
+  }
+}, true);
+
+document.addEventListener('DOMContentLoaded', function(){
+  setTimeout(afaqRefreshDynamicSelects, 500);
+});

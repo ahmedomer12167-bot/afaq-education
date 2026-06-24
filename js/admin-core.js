@@ -217,3 +217,19 @@ function rejectSubjectJoin(requestId, teacher, reason){
     touchSync('studentSubjects');
   }
 }
+
+
+// ===== v8.0.1 stages compatibility alias =====
+(function(){
+  if(window.__afaqStagesAliasInstalled) return;
+  window.__afaqStagesAliasInstalled = true;
+  document.addEventListener('DOMContentLoaded', function(){
+    try{
+      var stages = getData('stages');
+      var grades = getData('grades');
+      if((!stages || !stages.length) && grades && grades.length){
+        setData('stages', grades);
+      }
+    }catch(e){}
+  });
+})();

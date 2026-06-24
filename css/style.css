@@ -76,3 +76,18 @@ html[data-firebase="disabled"] .status-dot{background:var(--orange)}
 .kpi{font-size:30px;font-weight:900}
 .calendar-item{border-inline-start:5px solid #a855f7;padding:10px 14px;background:#ffffff10;border-radius:14px;margin:8px 0}
 @media(max-width:620px){.profile-grid{grid-template-columns:1fr}.report-actions button{width:100%}}
+
+/* v11.0 advanced exams and assignments */
+.q-builder{border:1px solid var(--line);border-radius:20px;background:#ffffff10;padding:14px;margin:12px 0}
+.builder-toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.q-meta{display:grid;grid-template-columns:1fr 120px 170px;gap:8px}
+.q-options{display:grid;gap:8px;margin-top:8px}
+.pending-manual{border-color:#f97316!important;background:#f9731622!important}
+.graded-manual{border-color:#22c55e!important;background:#22c55e22!important}
+.answer-image{max-width:220px;max-height:220px;border-radius:16px;border:1px solid var(--line);display:block;margin:8px 0;object-fit:cover}
+.answer-area{min-height:140px}
+.file-answer-box{border:1px dashed var(--line);border-radius:16px;padding:12px;margin:8px 0;background:#ffffff0c}
+.exam-progress{height:14px;background:#ffffff22;border-radius:999px;overflow:hidden;margin:12px 0}
+.exam-progress span{display:block;height:100%;background:linear-gradient(90deg,#22c55e,#a855f7)}
+.manual-grade-form{display:grid;grid-template-columns:120px 1fr auto;gap:8px;align-items:end;margin-top:10px}
+@media(max-width:700px){.q-meta,.manual-grade-form{grid-template-columns:1fr}.builder-toolbar button{width:100%}}

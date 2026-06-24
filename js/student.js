@@ -90,3 +90,23 @@ function showNotifications(){
 }
 window.addEventListener('storage',function(e){if(e.key&&e.key.indexOf(P)===0){try{drawSide();if(current!=='notifications')openSection(current)}catch(err){}}});
 studentInfo.textContent=student.name+' / '+student.stage+' / كود الطالب: '+student.code;drawSide();openSection('home');
+
+// ===== v7.0 student subject request reason =====
+function showSubjects(){
+  var accepted=acceptedSubjects ? acceptedSubjects() : visibleSubjects();
+  var all=availableSubjectsForRequest ? availableSubjectsForRequest() : getData('subjects').filter(function(sub){return sub.stage===student.stage});
+  var html=panel('موادي الدراسية','المواد المقبول بها تفتح مباشرة، والمواد غير المقبولة ترسل طلباً للمدرس بدون إظهار كود المادة.')+'<h3>المواد المقبول بها</h3><div class="card-grid">';
+  if(!accepted.length)html+='<div class="empty">لم يتم قبولك في أي مادة بعد.</div>';
+  accepted.forEach(function(sub){html+='<div class="data-card subject-open"><div class="icon-big">'+(sub.icon||'📘')+'</div><h3>'+sub.name+'</h3><p class="muted">المدرس: '+(sub.teacher||'غير محدد')+'</p><button class="btn green" onclick="openSubject(&quot;'+sub.code+'&quot;)">فتح المادة</button></div>'});
+  html+='</div><h3>مواد مرحلتي</h3><div class="card-grid">';
+  all.forEach(function(sub){
+    var req=studentSubjectRequest(student,sub.code);
+    if(req&&req.status==='accepted')return;
+    html+='<div class="data-card subject-locked"><div class="icon-big">'+(sub.icon||'📘')+'</div><h3>'+sub.name+'</h3><p class="muted">المدرس: '+(sub.teacher||'غير محدد')+'</p>';
+    if(req&&req.status==='pending')html+='<span class="request-state">بانتظار موافقة المدرس</span>';
+    else if(req&&req.status==='rejected')html+='<span class="request-state">تم الرفض: '+(req.rejectReason||'غير محدد')+'</span>';
+    else html+='<button class="btn blue" onclick="requestJoin(&quot;'+sub.id+'&quot;)">إرسال طلب للمدرس</button>';
+    html+='</div>';
+  });
+  studentContent.innerHTML=html+'</div></section>';
+}

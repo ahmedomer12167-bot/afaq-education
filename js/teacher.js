@@ -7,7 +7,7 @@ if(!teacher){ alert('يجب تسجيل دخول المدرس أولاً'); locat
 var current = 'home', editType = '', editId = null, uploadedFile = null;
 
 var nav = [
-  ['الرئيسية','home'], ['طلابي','students'], ['طلبات الانضمام','joinRequests'],
+  ['الرئيسية','home'], ['طلابي','students'], ['طلبات الانضمام','joinRequests'], ['الموافقات الحقيقية','materialApprovals'],
   ['الدروس والملفات','lessons'], ['الواجبات','assignments'], ['تصحيح الواجبات','assignmentReview'],
   ['الاختبارات','exams'], ['بنك الأسئلة','questionBank'], ['تصحيح المقالية','essayReview'],
   ['الحضور والغياب','attendance'], ['تقرير الحضور','attendanceReport'], ['النتائج','results'], ['النتائج النهائية','finalGrades'],
@@ -56,7 +56,7 @@ function drawSide(){
 function openSection(section){
   current = section; drawSide();
   var routes = {
-    home: showHome, students: showStudents, joinRequests: showJoinRequests,
+    home: showHome, students: showStudents, joinRequests: showJoinRequests, materialApprovals:showMaterialApprovals,
     lessons: () => showList('lessons','lesson','الدروس والملفات','إضافة دروس وروابط وملفات PDF أو صور أو فيديو.','📚','➕ إضافة درس'),
     assignments: () => showList('assignments','assignment','الواجبات','إضافة واجب مع موعد نهائي وحالة نشر.','📝','➕ إضافة واجب'),
     assignmentReview: showAssignmentReview,
@@ -68,7 +68,7 @@ function openSection(section){
     statistics: showStatistics,
     notifications: () => showList('notifications','notification','إرسال إشعار لطلاب المادة.','🔔','➕ إرسال إشعار'),
     messages: () => showList('messages','message','رسائل المدرس مع الطلاب والإدارة وأولياء الأمور.','💬','➕ رسالة'), parentMessages:showParentMessages,
-    profile: showProfile
+    profile: showTeacherAdvancedProfile
   };
   (routes[section] || showHome)();
 }
@@ -403,3 +403,38 @@ function replyParentMessage(idv){
   showParentMessages();
 }
 function notifyParentAfterTeacherAction(studentName,title,body,type){var st=getData('students').find(function(s){return s.name===studentName});if(st)notifyParentOfStudent(st,title,body,type)}
+
+
+// ===== v7.0 Teacher Core Priorities =====
+function showMaterialApprovals(){
+  var all=subjectJoinRequestsForTeacher(teacher);
+  var html=panel('الموافقات الحقيقية للمواد','طلبات جديدة / مقبولة / مرفوضة مع سبب الرفض وإشعار الطالب.')+'<h3>طلبات جديدة</h3><div class="card-grid">';
+  var pending=all.filter(function(x){return x.status==='pending'});
+  if(!pending.length)html+='<div class="empty">لا توجد طلبات جديدة.</div>';
+  pending.forEach(function(r){html+='<div class="approval-card"><h3>'+r.studentName+'</h3><p><span class="chip">'+r.stage+'</span><span class="chip">'+r.subject+'</span></p><div class="actions"><button class="btn green" onclick="approveMaterialRequest(&quot;'+r.id+'&quot;)">قبول</button><button class="btn red" onclick="rejectMaterialRequest(&quot;'+r.id+'&quot;)">رفض مع سبب</button></div></div>'});
+  html+='</div><h3>المقبولة</h3><div class="card-grid">';
+  var accepted=all.filter(function(x){return x.status==='accepted'});
+  if(!accepted.length)html+='<div class="empty">لا توجد طلبات مقبولة.</div>';
+  accepted.forEach(function(r){html+='<div class="approval-card"><h3>'+r.studentName+'</h3><p><span class="chip">مقبول</span></p><p class="muted">'+(r.acceptedAt||'')+'</p></div>'});
+  html+='</div><h3>المرفوضة</h3><div class="card-grid">';
+  var rejected=all.filter(function(x){return x.status==='rejected'});
+  if(!rejected.length)html+='<div class="empty">لا توجد طلبات مرفوضة.</div>';
+  rejected.forEach(function(r){html+='<div class="approval-card"><h3>'+r.studentName+'</h3><p><span class="chip">مرفوض</span></p><p class="muted">السبب: '+(r.rejectReason||'غير محدد')+'</p></div>'});
+  teacherContent.innerHTML=html+'</div></section>';
+}
+function approveMaterialRequest(idv){approveSubjectJoin(idv,teacher);showMaterialApprovals()}
+function rejectMaterialRequest(idv){var reason=prompt('اكتب سبب الرفض:','العدد مكتمل');rejectSubjectJoin(idv,teacher,reason);showMaterialApprovals()}
+function showTeacherAdvancedProfile(){
+  var p=getTeacherFullProfile(teacher);
+  teacherContent.innerHTML=panel('ملفي المتقدم','ملف المدرس مع إحصائيات النشاط.')+'<div class="profile-hero"><div class="profile-avatar">'+(teacher.photo?'<img src="'+teacher.photo+'">':'👨‍🏫')+'</div><div><h3>'+teacher.name+'</h3><p><span class="chip">'+teacher.stage+'</span><span class="chip">'+teacher.subject+'</span></p></div></div><div class="profile-mini-grid"><div class="profile-mini">طلاب المادة: '+p.students+'</div><div class="profile-mini">دروس: '+p.lessons.length+'</div><div class="profile-mini">اختبارات: '+p.exams.length+'</div><div class="profile-mini">واجبات: '+p.assignments.length+'</div><div class="profile-mini">نتائج: '+p.results.length+'</div><div class="profile-mini">متوسط الدرجات: '+p.avg+'</div></div></section>';
+}
+
+var v7TeacherOpenSectionPatch=true;
+var __teacherOpenSectionOld=typeof openSection==='function'?openSection:null;
+openSection=function(section){
+  current=section;
+  if(typeof drawSide==='function')drawSide();
+  if(section==='materialApprovals'){showMaterialApprovals();return;}
+  if(section==='profile'){showTeacherAdvancedProfile();return;}
+  if(__teacherOpenSectionOld)__teacherOpenSectionOld(section);
+};

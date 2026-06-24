@@ -521,3 +521,63 @@ function normalizeSubscriptionRequestStatus(){
   setData('subscriptionRequests', arr);
 }
 normalizeSubscriptionRequestStatus();
+
+
+// ===== v7.0 Admin Core Priorities =====
+function showStudentProfiles(){
+  var data=getData('students');
+  qs('content').innerHTML=panel('الملف الأكاديمي الكامل للطالب','بطاقة متابعة كاملة لكل طالب.')+'<div class="searchbar"><input id="studentProfileSearch" placeholder="بحث عن طالب..." oninput="filterStudentProfiles()"></div><div id="studentProfilesArea">'+studentProfilesHtml(data)+'</div></section>';
+}
+function studentProfilesHtml(data){
+  var html='<div class="card-grid">';
+  if(!data.length)html+='<div class="empty">لا يوجد طلاب.</div>';
+  data.forEach(function(s){
+    var p=getStudentFullProfile(s);
+    html+='<div class="data-card"><div class="profile-hero"><div class="profile-avatar">🎓</div><div><h3>'+s.name+'</h3><p><span class="chip">'+s.stage+'</span><span class="chip">'+p.level+'</span><span class="chip">'+p.points+' نقطة</span></p></div></div><div class="profile-mini-grid"><div class="profile-mini">المواد: '+p.accepted.length+'</div><div class="profile-mini">اختبارات: '+p.attempts.length+'</div><div class="profile-mini">واجبات: '+p.assignments.length+'</div><div class="profile-mini">حضور: '+p.attendance.length+'</div><div class="profile-mini">غياب: '+p.absent+'</div><div class="profile-mini">نتائج: '+p.results.length+'</div></div></div>';
+  });
+  return html+'</div>';
+}
+function filterStudentProfiles(){
+  var q=(qs('studentProfileSearch').value||'').toLowerCase();
+  qs('studentProfilesArea').innerHTML=studentProfilesHtml(getData('students').filter(function(s){return (s.name+' '+s.code+' '+s.stage+' '+s.phone).toLowerCase().indexOf(q)!==-1}));
+}
+function showTeacherProfiles(){
+  var data=getData('teachers'),html=panel('الملف الشخصي الكامل للمدرس','إحصائيات كل مدرس حسب مادته ومرحلته.')+'<div class="card-grid">';
+  if(!data.length)html+='<div class="empty">لا يوجد مدرسون.</div>';
+  data.forEach(function(t){
+    var p=getTeacherFullProfile(t);
+    html+='<div class="data-card"><div class="profile-hero"><div class="profile-avatar">'+(t.photo?'<img src="'+t.photo+'">':'👨‍🏫')+'</div><div><h3>'+t.name+'</h3><p><span class="chip">'+t.stage+'</span><span class="chip">'+t.subject+'</span></p></div></div><div class="profile-mini-grid"><div class="profile-mini">طلاب المادة: '+p.students+'</div><div class="profile-mini">دروس: '+p.lessons.length+'</div><div class="profile-mini">اختبارات: '+p.exams.length+'</div><div class="profile-mini">واجبات: '+p.assignments.length+'</div><div class="profile-mini">نتائج: '+p.results.length+'</div><div class="profile-mini">متوسط الدرجات: '+p.avg+'</div></div></div>';
+  });
+  qs('content').innerHTML=html+'</div></section>';
+}
+function showGlobalSearch(){
+  qs('content').innerHTML=panel('البحث الشامل','بحث واحد في الطلاب والمدرسين وأولياء الأمور والمواد والاختبارات والواجبات والاشتراكات.')+'<div class="searchbar"><input id="globalSearchInput" placeholder="اكتب أي كلمة للبحث..." oninput="renderGlobalSearch()"></div><div id="globalSearchArea"></div></section>';
+  renderGlobalSearch();
+}
+function renderGlobalSearch(){
+  var q=(qs('globalSearchInput')&&qs('globalSearchInput').value)||'';
+  var data=globalSearch(q),html='';
+  if(!data.length)html='<div class="empty">لا توجد نتائج.</div>';
+  data.forEach(function(r){
+    var name=r.item.name||r.item.title||r.item.studentName||r.item.subject||'عنصر';
+    html+='<div class="search-result"><h3>'+r.label+' / '+name+'</h3><p class="muted">'+(r.item.stage||'')+' '+(r.item.subject||'')+' '+(r.item.code||r.item.teacherCode||'')+'</p></div>';
+  });
+  qs('globalSearchArea').innerHTML=html;
+}
+function showDashboardStats(){
+  var s=dashboardStats();
+  var rows=[['الطلاب الكلي',s.students,100],['الطلاب النشطون',s.activeStudents,s.students?Math.round(s.activeStudents/s.students*100):0],['الطلاب الموقوفون',s.stoppedStudents,s.students?Math.round(s.stoppedStudents/s.students*100):0],['المدرسون',s.teachers,100],['المواد',s.subjects,100],['الاشتراكات النشطة',s.activeSubs,s.subscriptions?Math.round(s.activeSubs/s.subscriptions*100):0],['الاختبارات',s.exams,100],['الواجبات',s.assignments,100]];
+  var html=panel('لوحة الإحصائيات والرسوم البيانية','إحصائيات إدارية مختصرة وواضحة.')+'<div class="stats"><div class="stat"><h3>الطلاب</h3><strong>'+s.students+'</strong></div><div class="stat"><h3>المدرسون</h3><strong>'+s.teachers+'</strong></div><div class="stat"><h3>المواد</h3><strong>'+s.subjects+'</strong></div><div class="stat"><h3>الاشتراكات</h3><strong>'+s.subscriptions+'</strong></div></div>';
+  rows.forEach(function(r){html+='<div class="search-result"><b>'+r[0]+' : '+r[1]+'</b><div class="chart-bar"><div class="chart-fill" style="width:'+Math.max(5,Math.min(100,r[2]))+'%"></div></div></div>'});
+  qs('content').innerHTML=html+'</section>';
+}
+
+var v7OpenSectionPatch=true;
+var __adminOpenSectionOld = typeof openSection==='function' ? openSection : null;
+openSection=function(section){
+  current=section;
+  if(typeof drawSide==='function')drawSide();
+  var special={studentProfiles:showStudentProfiles,teacherProfiles:showTeacherProfiles,globalSearch:showGlobalSearch,dashboardStats:showDashboardStats};
+  if(special[section]){special[section]();return;}
+  if(__adminOpenSectionOld)__adminOpenSectionOld(section);
+};

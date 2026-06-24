@@ -144,3 +144,76 @@ function monthlyStudentReport(student){
   var present=getData('attendanceRecords').filter(function(a){return a.studentId===student.id&&a.status==='حاضر'}).length;
   return {points:calcStudentPoints(student),level:levelFromPoints(calcStudentPoints(student)),finals:getData('finalGrades').filter(function(g){return g.studentName===student.name}).length,attempts:getData('examAttempts').filter(function(a){return a.studentId===student.id}).length,assignments:getData('assignmentSubmissions').filter(function(a){return a.studentId===student.id}).length,present:present,absent:Math.max(0,sessions.length-present)};
 }
+
+function logActivity(role, actor, action, target){
+  var arr=getData('activityLog');
+  arr.unshift({id:id(),role:role||'system',actor:actor||'—',action:action||'نشاط',target:target||'—',createdAt:new Date().toLocaleString('ar-IQ')});
+  setData('activityLog',arr.slice(0,700));
+}
+function getStudentFullProfile(student){
+  var subjects=getData('studentSubjects').filter(function(x){return x.studentId===student.id});
+  var accepted=subjects.filter(function(x){return x.status==='accepted'});
+  var attempts=getData('examAttempts').filter(function(x){return x.studentId===student.id});
+  var results=getData('results').filter(function(x){return x.studentName===student.name});
+  var assignments=getData('assignmentSubmissions').filter(function(x){return x.studentId===student.id});
+  var attendance=getData('attendanceRecords').filter(function(x){return x.studentId===student.id&&x.status==='حاضر'});
+  var sessions=getData('attendance').filter(function(a){return student.stage===a.stage && isStudentAcceptedInSubject(student,a.subjectCode)});
+  var points=calcStudentPoints(student);
+  return {subjects:subjects,accepted:accepted,attempts:attempts,results:results,assignments:assignments,attendance:attendance,sessions:sessions,points:points,level:levelFromPoints(points),absent:Math.max(0,sessions.length-attendance.length)};
+}
+function getTeacherFullProfile(teacher){
+  var subjectStudents=getData('studentSubjects').filter(function(x){return x.stage===teacher.stage&&x.subjectCode===teacher.subjectCode&&x.status==='accepted'}).length;
+  var lessons=getData('lessons').filter(function(x){return x.teacherId===teacher.id||x.teacherName===teacher.name});
+  var exams=getData('exams').filter(function(x){return x.teacherId===teacher.id||x.teacherName===teacher.name});
+  var assignments=getData('assignments').filter(function(x){return x.teacherId===teacher.id||x.teacherName===teacher.name});
+  var results=getData('results').filter(function(x){return x.teacherId===teacher.id||x.teacherName===teacher.name});
+  var avg=results.length?Math.round(results.reduce(function(t,r){return t+Number(r.score||0)},0)/results.length):0;
+  return {students:subjectStudents,lessons:lessons,exams:exams,assignments:assignments,results:results,avg:avg};
+}
+function globalSearch(q){
+  q=(q||'').toLowerCase();
+  var out=[];
+  function add(type,label,arr,fields){
+    arr.forEach(function(x){
+      var text=fields.map(function(f){return x[f]||''}).join(' ').toLowerCase();
+      if(!q || text.indexOf(q)!==-1)out.push({type:type,label:label,item:x});
+    });
+  }
+  add('student','طالب',getData('students'),['name','code','stage','phone','parentName']);
+  add('teacher','مدرس',getData('teachers'),['name','teacherCode','subjectCode','stage','subject','phone']);
+  add('parent','ولي أمر',getData('parents'),['name','code','studentName','studentCode']);
+  add('subject','مادة',getData('subjects'),['name','code','stage','teacher']);
+  add('exam','اختبار',getData('exams'),['title','subject','stage','teacherName']);
+  add('assignment','واجب',getData('assignments'),['title','subject','stage','teacherName']);
+  add('subscription','اشتراك',getData('subscriptions'),['studentName','stage','phone','status']);
+  return out.slice(0,100);
+}
+function dashboardStats(){
+  var students=getData('students'), teachers=getData('teachers'), subs=getData('subscriptions'), subjects=getData('subjects');
+  var activeStudents=students.filter(function(s){return s.status!=='موقوف'}).length;
+  var stoppedStudents=students.length-activeStudents;
+  var activeSubs=subs.filter(function(s){return s.status==='نشط'}).length;
+  var expiredSubs=subs.filter(function(s){return s.status==='منتهي'}).length;
+  return {students:students.length,activeStudents:activeStudents,stoppedStudents:stoppedStudents,teachers:teachers.length,subjects:subjects.length,subscriptions:subs.length,activeSubs:activeSubs,expiredSubs:expiredSubs,exams:getData('exams').length,assignments:getData('assignments').length};
+}
+function subjectJoinRequestsForTeacher(teacher){
+  return getData('studentSubjects').filter(function(r){return r.stage===teacher.stage&&r.subjectCode===teacher.subjectCode});
+}
+function approveSubjectJoin(requestId, teacher){
+  var req=null;
+  setData('studentSubjects',getData('studentSubjects').map(function(x){if(x.id===requestId){x.status='accepted';x.acceptedAt=new Date().toLocaleString('ar-IQ');req=x}return x}));
+  if(req){
+    notifyStudentsOfSubject({title:'تم قبولك في المادة',body:'تم قبول انضمامك إلى مادة '+req.subject,stage:req.stage,subject:req.subject,subjectCode:req.subjectCode,teacherId:teacher&&teacher.id,teacherName:teacher&&teacher.name,type:'join-approved'});
+    logActivity('teacher',teacher&&teacher.name,'قبول طلب مادة',req.studentName+' / '+req.subject);
+    touchSync('studentSubjects');
+  }
+}
+function rejectSubjectJoin(requestId, teacher, reason){
+  var req=null;
+  setData('studentSubjects',getData('studentSubjects').map(function(x){if(x.id===requestId){x.status='rejected';x.rejectReason=reason||'لم يتم ذكر السبب';x.rejectedAt=new Date().toLocaleString('ar-IQ');req=x}return x}));
+  if(req){
+    notifyStudentsOfSubject({title:'تم رفض طلب المادة',body:'تم رفض طلبك في مادة '+req.subject+' / السبب: '+(reason||'غير محدد'),stage:req.stage,subject:req.subject,subjectCode:req.subjectCode,teacherId:teacher&&teacher.id,teacherName:teacher&&teacher.name,type:'join-rejected'});
+    logActivity('teacher',teacher&&teacher.name,'رفض طلب مادة',req.studentName+' / '+req.subject);
+    touchSync('studentSubjects');
+  }
+}

@@ -125,3 +125,118 @@ export function onSync(fn){window.addEventListener("afaq-sync",fn)}
 export function currentUser(role){try{return JSON.parse(sessionStorage.getItem("afaq_current_"+role)||"null")}catch(e){return null}}
 export function logout(){sessionStorage.clear();location.href="../index.html"}
 init();
+
+
+// ===== v10.0 Complete education suite helpers =====
+export function scoreStudent(student){
+  let sid=student.id, sc=code(student.code), name=student.name;
+  let exams=getData("examAttempts").filter(x=>x.studentId===sid||code(x.studentCode)===sc||eq(x.studentName,name));
+  let assignments=getData("assignmentSubmissions").filter(x=>x.studentId===sid||code(x.studentCode)===sc||eq(x.studentName,name));
+  let attendance=getData("attendanceRecords").filter(x=>x.studentId===sid||code(x.studentCode)===sc);
+  let total=0;
+  total += exams.reduce((t,x)=>t+Number(x.score||0),0);
+  total += assignments.reduce((t,x)=>t+Number(x.grade||0),0);
+  total += attendance.filter(x=>x.status==="حاضر").length*5;
+  return total;
+}
+export function levelFromPoints(p){
+  p=Number(p||0);
+  if(p>=500)return "أسطورة";
+  if(p>=350)return "خبير";
+  if(p>=220)return "متفوق";
+  if(p>=100)return "مجتهد";
+  return "مبتدئ";
+}
+export function leaderboard(stage=""){
+  return getData("students").filter(s=>!stage||eq(s.stage,stage)).map(s=>{
+    let points=scoreStudent(s);
+    return {...s,points,level:levelFromPoints(points)};
+  }).sort((a,b)=>b.points-a.points);
+}
+export function studentProfile(student){
+  let sid=student.id, sc=code(student.code), name=student.name;
+  return {
+    student,
+    points:scoreStudent(student),
+    level:levelFromPoints(scoreStudent(student)),
+    subjects:acceptedSubjects(student),
+    exams:getData("examAttempts").filter(x=>x.studentId===sid||code(x.studentCode)===sc||eq(x.studentName,name)),
+    assignments:getData("assignmentSubmissions").filter(x=>x.studentId===sid||code(x.studentCode)===sc||eq(x.studentName,name)),
+    attendance:getData("attendanceRecords").filter(x=>x.studentId===sid||code(x.studentCode)===sc),
+    results:getData("finalResults").filter(x=>x.studentId===sid||code(x.studentCode)===sc||eq(x.studentName,name))
+  }
+}
+export function teacherProfile(teacher){
+  return {
+    teacher,
+    lessons:getData("lessons").filter(x=>x.teacherId===teacher.id||eq(x.teacherName,teacher.name)),
+    assignments:getData("assignments").filter(x=>x.teacherId===teacher.id||eq(x.teacherName,teacher.name)),
+    exams:getData("exams").filter(x=>x.teacherId===teacher.id||eq(x.teacherName,teacher.name)),
+    students:getData("subjectRequests").filter(x=>code(x.subjectCode)===code(teacher.subjectCode)&&x.status==="accepted")
+  }
+}
+export function globalSearch(q){
+  q=clean(q); if(!q)return [];
+  const sets=[
+    ["طالب","students",["name","code","stage","parentName","phone"]],
+    ["مدرس","teachers",["name","subject","stage","teacherCode","subjectCode"]],
+    ["ولي أمر","parents",["name","studentName","code","phone"]],
+    ["مادة","subjects",["name","stage","code","teacher"]],
+    ["اشتراك","subscriptions",["studentName","name","stage","code","phone"]],
+    ["درس","lessons",["title","subject","stage","teacherName"]],
+    ["واجب","assignments",["title","subject","stage","teacherName"]],
+    ["اختبار","exams",["title","subject","stage","teacherName"]]
+  ];
+  let out=[];
+  sets.forEach(([label,key,fields])=>{
+    getData(key).forEach(item=>{
+      let text=fields.map(f=>item[f]||"").join(" ");
+      if(clean(text).includes(q))out.push({label,key,item,title:item.name||item.studentName||item.title||item.subject||"عنصر"});
+    });
+  });
+  return out.slice(0,80);
+}
+export function exportCsv(filename, rows){
+  if(!rows.length){alert("لا توجد بيانات للتصدير");return}
+  const headers=Object.keys(rows[0]);
+  const csv=[headers.join(",")].concat(rows.map(r=>headers.map(h=>`"${String(r[h]??"").replace(/"/g,'""')}"`).join(","))).join("\n");
+  const blob=new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=filename;a.click();URL.revokeObjectURL(a.href);
+}
+export function printReport(title, html){
+  const w=window.open("","_blank");
+  w.document.write(`<html dir="rtl"><head><title>${title}</title><style>body{font-family:Tahoma;padding:24px}table{width:100%;border-collapse:collapse}td,th{border:1px solid #ccc;padding:8px}</style></head><body><h1>${title}</h1>${html}</body></html>`);
+  w.document.close();w.print();
+}
+export function createExamResult(exam, student, answers){
+  let score=0,total=0,details=[];
+  (exam.questions||[]).forEach((q,i)=>{
+    total+=Number(q.score||1);
+    let ok=false;
+    if(q.type==="essay") ok=false;
+    else ok=clean(answers[i])===clean(q.answer);
+    if(ok)score+=Number(q.score||1);
+    details.push({question:q.text,answer:answers[i],correct:q.answer,ok});
+  });
+  return {examId:exam.id,examTitle:exam.title,studentId:student.id,studentCode:student.code,studentName:student.name,subject:exam.subject,subjectCode:exam.subjectCode,score,total,details,status:"مصحح تلقائياً",createdAt:now()};
+}
+export function monthlyAlerts(student){
+  let p=studentProfile(student), alerts=[];
+  let absent=p.attendance.filter(x=>x.status==="غائب").length;
+  if(absent>=3)alerts.push("غياب متكرر");
+  if(p.exams.length && p.exams.reduce((t,x)=>t+Number(x.score||0),0)/p.exams.length<50)alerts.push("انخفاض في نتائج الاختبارات");
+  if(student.endDate && new Date(student.endDate)<new Date(Date.now()+7*86400000))alerts.push("الاشتراك ينتهي قريباً");
+  return alerts;
+}
+export async function backupNow(){
+  let data={date:now()};
+  DB_KEYS.forEach(k=>data[k]=getData(k));
+  localStorage.setItem("afaq_v10_backup",JSON.stringify(data));
+  return data;
+}
+export async function restoreBackup(){
+  let raw=localStorage.getItem("afaq_v10_backup"); if(!raw)return false;
+  let data=JSON.parse(raw);
+  for(const k of DB_KEYS){ if(data[k]){ if(k==="settings")await setObj(k,data[k]); else await setData(k,data[k]); } }
+  return true;
+}

@@ -1,4 +1,5 @@
 seedBase();
+ensureArrays();
 
 var teacher = JSON.parse(sessionStorage.getItem('afaq_current_teacher') || 'null');
 if(!teacher){ alert('يجب تسجيل دخول المدرس أولاً'); location.href = '../index.html'; }
@@ -9,7 +10,7 @@ var nav = [
   ['الرئيسية','home'], ['طلابي','students'], ['طلبات الانضمام','joinRequests'],
   ['الدروس والملفات','lessons'], ['الواجبات','assignments'], ['تصحيح الواجبات','assignmentReview'],
   ['الاختبارات','exams'], ['بنك الأسئلة','questionBank'], ['تصحيح المقالية','essayReview'],
-  ['الحضور والغياب','attendance'], ['تقرير الحضور','attendanceReport'], ['النتائج','results'],
+  ['الحضور والغياب','attendance'], ['تقرير الحضور','attendanceReport'], ['النتائج','results'], ['النتائج النهائية','finalGrades'],
   ['تقويم المادة','calendar'], ['إحصائيات المدرس','statistics'], ['الإشعارات','notifications'], ['الرسائل','messages'], ['الملف الشخصي','profile']
 ];
 
@@ -62,7 +63,7 @@ function openSection(section){
     exams: showExams, questionBank: showQuestionBank, essayReview: showEssayReview,
     attendance: () => showList('attendance','attendance','الحضور والغياب','إنشاء جلسة حضور وغياب بوقت نهائي.','✅','➕ جلسة حضور'),
     attendanceReport: showAttendanceReport,
-    results: () => showList('results','result','إضافة وتعديل درجات الطلاب.','📊','➕ إضافة نتيجة'),
+    results: () => showList('results','result','إضافة وتعديل درجات الطلاب.','📊','➕ إضافة نتيجة'), finalGrades:showFinalGrades,
     calendar: showCalendar,
     statistics: showStatistics,
     notifications: () => showList('notifications','notification','إرسال إشعار لطلاب المادة.','🔔','➕ إرسال إشعار'),
@@ -319,6 +320,12 @@ teacherForm.onsubmit = function(e){
   openSection(current);
 };
 
+
+function autoNotifyAfterSave(type,obj){
+ if(['lesson','assignment','exam'].indexOf(type)===-1)return;
+ var names={lesson:'درس جديد',assignment:'واجب جديد',exam:'اختبار جديد'};
+ pushNotification({title:names[type],target:'طلاب المادة',body:(obj.title||'عنصر جديد')+' في مادة '+teacher.subject,teacherId:teacher.id,teacherName:teacher.name,stage:teacher.stage,subject:teacher.subject,subjectCode:teacher.subjectCode,status:'منشور'});
+}
 function deleteTeacherItem(key,idv){ if(!confirm('حذف؟'))return; setData(key,getData(key).filter(x => x.id!==idv)); openSection(current); }
 function details(key,idv){
   var obj=getData(key).find(x => x.id===idv); if(!obj)return;
@@ -329,3 +336,49 @@ function details(key,idv){
 function openResultForStudent(idv){ var s=getData('students').find(x => x.id===idv); openSection('results'); setTimeout(function(){ editItem('result'); qs('f_studentName').value=s.name; },50); }
 
 initHeader(); drawSide(); openSection('home');
+
+function showFinalGrades(){
+ var data=byTeacher(getData('finalGrades'));
+ var html=panel('النتائج النهائية','إضافة الدرجة النهائية للمادة.')+'<button class="btn green" onclick="editFinalGrade()">➕ إضافة نتيجة نهائية</button><div class="card-grid">';
+ if(!data.length)html+='<div class="empty">لا توجد نتائج نهائية.</div>';
+ data.forEach(function(g){html+='<div class="data-card"><div class="icon-big">🎯</div><h3>'+g.studentName+'</h3><p><span class="chip">'+g.subject+'</span></p><p class="final-grade">'+g.grade+' / '+g.finalScore+'</p><button class="btn red" onclick="deleteTeacherItem(\'finalGrades\',\''+g.id+'\')">حذف</button></div>'});
+ teacherContent.innerHTML=html+'</div></section>';
+}
+function editFinalGrade(){
+ var students=getTeacherStudents(); if(!students.length){alert('لا يوجد طلاب');return}
+ var name=prompt('اسم الطالب:', students[0].name); if(!name)return;
+ var grade=prompt('الدرجة:','100'); if(!grade)return;
+ var finalScore=prompt('من:','100')||'100';
+ var arr=getData('finalGrades');
+ var obj=baseItem(); obj.studentName=name; obj.grade=grade; obj.finalScore=finalScore; obj.note='';
+ arr.unshift(obj); setData('finalGrades',arr);
+ pushNotification({title:'نتيجة نهائية',target:'طلاب المادة',body:'تمت إضافة نتيجة نهائية في مادة '+teacher.subject,teacherId:teacher.id,teacherName:teacher.name,stage:teacher.stage,subject:teacher.subject,subjectCode:teacher.subjectCode,status:'منشور'});
+ showFinalGrades();
+}
+
+// ===== v5.3.1 sync overrides =====
+function approveJoin(idv){
+ var req=null;
+ setData('studentSubjects',getData('studentSubjects').map(function(x){if(x.id===idv){x.status='accepted';req=x}return x}));
+ if(req){
+  notifyStudentsOfSubject({title:'تم قبولك في المادة',body:'تم قبول انضمامك إلى مادة '+req.subject,stage:req.stage,subject:req.subject,subjectCode:req.subjectCode,teacherId:teacher.id,teacherName:teacher.name,type:'join-approved'});
+  touchSync('studentSubjects');
+ }
+ showJoinRequests();
+}
+function rejectJoin(idv){
+ var req=null;
+ setData('studentSubjects',getData('studentSubjects').map(function(x){if(x.id===idv){x.status='rejected';req=x}return x}));
+ if(req){
+  notifyStudentsOfSubject({title:'تم رفض طلب الانضمام',body:'تم رفض طلب انضمامك إلى مادة '+req.subject,stage:req.stage,subject:req.subject,subjectCode:req.subjectCode,teacherId:teacher.id,teacherName:teacher.name,type:'join-rejected'});
+  touchSync('studentSubjects');
+ }
+ showJoinRequests();
+}
+function autoNotifyAfterSave(type,obj){
+ if(['lesson','assignment','exam','attendance','notification'].indexOf(type)===-1)return;
+ var names={lesson:'درس جديد',assignment:'واجب جديد',exam:'اختبار جديد',attendance:'تسجيل حضور جديد',notification:'تبليغ جديد'};
+ notifyStudentsOfSubject({title:names[type]||'تحديث جديد',body:(obj.title||obj.body||'تحديث جديد')+' في مادة '+teacher.subject,teacherId:teacher.id,teacherName:teacher.name,stage:teacher.stage,subject:teacher.subject,subjectCode:teacher.subjectCode,type:type});
+ touchSync(type);
+}
+window.addEventListener('storage',function(e){if(e.key&&e.key.indexOf(P)===0){try{openSection(current)}catch(err){}}});

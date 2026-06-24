@@ -27,3 +27,13 @@ a{color:#fff}.top,.head{width:min(1180px,94%);margin:22px auto;padding:18px;bord
 .option-row{display:block;padding:10px 12px;border-radius:14px;background:#ffffff12;margin:8px 0}
 .stat-note{padding:12px;border-radius:16px;background:#ffffff10;border:1px solid var(--line);margin:8px 0}
 .locked{opacity:.75;filter:grayscale(.25)}
+
+.badge-count{display:inline-flex;min-width:22px;height:22px;border-radius:999px;background:#ef4444;align-items:center;justify-content:center;font-size:12px;margin-inline-start:6px}
+.level-title{font-size:28px;color:#f0abfc}.points-big{font-size:36px;font-weight:900}.rank-medal{font-size:42px}.final-grade{font-size:34px;font-weight:900;color:#bbf7d0}
+
+.subject-locked{border:1px dashed #ffffff55;border-radius:20px;background:#ffffff0d;padding:16px}
+.subject-open{border:1px solid #22c55e66;border-radius:20px;background:#22c55e14;padding:16px}
+.request-state{display:inline-block;padding:6px 10px;border-radius:999px;background:#f9731626;margin-top:6px}
+.unread-card{border-color:#ef444488!important;background:#ef444420!important}
+.small-dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:#ef4444;margin-inline-end:6px}
+.badge-count{display:inline-flex;min-width:22px;height:22px;border-radius:999px;background:#ef4444;color:#fff;align-items:center;justify-content:center;font-size:12px;margin-inline-start:6px}

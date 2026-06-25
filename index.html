@@ -4,46 +4,65 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>آفاق التعليمية | منصة الأحياء</title>
-  <link rel="stylesheet" href="css/style.css" />
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/main.css" />
 </head>
 <body>
-  <div class="bg-orb orb-1"></div><div class="bg-orb orb-2"></div>
+  <div id="toast" class="toast"></div>
   <header class="topbar">
-    <div class="brand"><div class="logo3d">▰</div><div><h1 id="brandName">آفاق التعليمية</h1><p>منصة الأحياء الخاصة</p></div></div>
-    <nav><button data-scroll="home">الرئيسية</button><button data-scroll="features">المميزات</button><button data-scroll="prices">الأسعار</button><button data-scroll="contact">تواصل معنا</button></nav>
-    <button id="themeBtn" class="soft-btn">الوضع النهاري ☀️</button>
+    <div class="brand"><div class="logo">◆</div><div><h1 id="siteName">آفاق التعليمية</h1><p>منصة الأحياء الخاصة</p></div></div>
+    <nav><button data-scroll="home">الرئيسية</button><button data-scroll="features">المميزات</button><button data-scroll="pricing">الاشتراك</button></nav>
+    <button id="themeBtn" class="ghost">الوضع الداكن ☾</button>
   </header>
 
-  <main id="home" class="hero page active">
-    <section class="hero-art glass">
-      <div class="cap">🎓</div><div class="screen"><span>▶</span><span>📄</span><span>📊</span><span>📚</span><span>👥</span><span>🏆</span></div>
-      <div class="books">📘 📗 📙</div>
-    </section>
-    <section class="hero-copy">
-      <span class="pill" id="welcomeText">مرحباً بك في منصة الأحياء</span>
-      <h2>منصة <b>آفاق التعليمية</b></h2>
-      <p>دروس، اختبارات، واجبات، حضور، نتائج ونقاط متزامنة لحظياً حسب مرحلة الطالب.</p>
-      <div class="stats glass"><span><b id="statStudents">0</b> طالب</span><span><b id="statLessons">0</b> درس</span><span><b id="statTests">0</b> اختبار</span></div>
+  <main id="home" class="hero">
+    <section class="hero-art"><div class="scene"><div class="cap"></div><div class="tablet"><span>▶</span><span>▣</span><span>↗</span><span>☰</span><span>●</span><span>🏆</span></div><div class="books"></div></div></section>
+    <section class="hero-text">
+      <span class="pill" id="welcomeText">مرحباً بك في منصة آفاق</span>
+      <h2>منصة <b>آفاق</b> التعليمية</h2>
+      <p>منصة خاصة بمدرس الأحياء لإدارة الاشتراكات والدروس والطلاب حسب المرحلة الدراسية.</p>
+      <div class="stats"><div><b>أحياء</b><span>مادة واحدة</span></div><div><b>Firebase</b><span>تزامن فوري</span></div><div><b>كود فقط</b><span>دخول الطالب</span></div></div>
     </section>
   </main>
 
   <section class="login-grid">
-    <div class="login-card teacher-card glass tilt"><div class="avatar">👨‍🏫</div><div><h3>تسجيل دخول المدير</h3><p>إدارة المنصة والطلاب والمحتوى</p><input id="adminCode" placeholder="كود المدير" /><button id="adminLogin">دخول المدير</button></div></div>
-    <div class="login-card student-card glass tilt"><div class="avatar">👨‍🎓</div><div><h3>تسجيل دخول الطالب</h3><p>الدخول باستخدام كود الطالب فقط</p><input id="studentCode" placeholder="كود الطالب" /><button id="studentLogin">دخول الطالب</button><button class="outline" id="openRequest">طلب اشتراك جديد</button></div></div>
+    <article class="login-card teacher"><div class="avatar">👨‍🏫</div><h3>تسجيل دخول المدير</h3><p>إدارة الاشتراكات والطلاب والمراحل والإعدادات.</p><button onclick="openModal('adminLoginModal')">دخول المدير</button></article>
+    <article class="login-card student"><div class="avatar">🎒</div><h3>تسجيل دخول الطالب</h3><p>الدخول بالكود الخاص بعد الموافقة على الاشتراك.</p><button onclick="openModal('studentLoginModal')">دخول الطالب</button></article>
   </section>
 
-  <section id="features" class="mini-features glass"><div>🛡️ <b>آمن ومرتب</b><small>صلاحيات حسب المرحلة</small></div><div>⏱️ <b>متزامن فوراً</b><small>بدون تحديث الصفحة</small></div><div>📱 <b>متوافق</b><small>هاتف وكمبيوتر</small></div><div>🧬 <b>الأحياء فقط</b><small>منهج كل مرحلة</small></div></section>
-  <section id="prices" class="hidden-anchor"></section><section id="contact" class="hidden-anchor"></section>
+  <section id="pricing" class="panel public-subscribe">
+    <h2>طلب اشتراك طالب</h2>
+    <p>أرسل طلب الاشتراك، وبعد موافقة المدير تحصل على كود الدخول.</p>
+    <form id="subscriptionForm" class="form-grid">
+      <input name="fullName" placeholder="الاسم الثلاثي" required />
+      <input name="parentName" placeholder="اسم ولي الأمر" required />
+      <input name="phone" placeholder="رقم الهاتف" required />
+      <select name="stage" id="publicStages" required><option value="">اختر المرحلة</option></select>
+      <input name="paidAmount" type="number" placeholder="المبلغ المدفوع" required />
+      <input id="masterNumber" placeholder="رقم الماستر" readonly />
+      <button type="submit">إرسال طلب الاشتراك</button>
+    </form>
+  </section>
 
-  <div id="requestModal" class="modal"><div class="modal-box glass"><button class="x" data-close="requestModal">×</button><h2>طلب اشتراك طالب</h2><div class="form-grid"><input id="reqName" placeholder="الاسم الثلاثي"><input id="reqParent" placeholder="اسم ولي الأمر"><input id="reqPhone" placeholder="رقم الهاتف"><select id="reqStage"></select><input id="reqAmount" type="number" placeholder="المبلغ المدفوع"><input id="reqMaster" readonly placeholder="رقم الماستر"></div><button id="sendRequest">إرسال الطلب</button></div></div>
+  <section id="features" class="feature-row">
+    <div>🛡️ <b>آمن ومنظم</b><span>دخول بالكود فقط</span></div><div>📱 <b>متوافق</b><span>هاتف وكمبيوتر</span></div><div>🔔 <b>إشعارات</b><span>تصل فورياً</span></div><div>🧬 <b>الأحياء</b><span>لكل مرحلة</span></div>
+  </section>
 
-  <section id="adminPanel" class="dashboard hidden"><div class="dash-head glass"><div><h2>لوحة المدير</h2><p id="adminSub">إدارة منصة الأحياء</p></div><button id="adminLogout" class="danger">تسجيل الخروج</button></div><div class="tabs" id="adminTabs"></div><div id="adminContent" class="dash-content"></div></section>
-  <section id="studentPanel" class="dashboard hidden"><div class="dash-head glass"><div><h2 id="studentTitle">لوحة الطالب</h2><p id="studentSub"></p></div><button id="studentLogout" class="danger">تسجيل الخروج</button></div><div class="tabs" id="studentTabs"></div><div id="studentContent" class="dash-content"></div></section>
+  <section id="adminPanel" class="dashboard hidden">
+    <div class="dash-head"><h2>لوحة المدير</h2><button onclick="logout()">تسجيل الخروج</button></div>
+    <div class="tabs"><button data-tab="requests" class="active">طلبات الاشتراك</button><button data-tab="students">الطلاب</button><button data-tab="stages">المراحل</button><button data-tab="settings">الإعدادات</button></div>
+    <div id="tab-requests" class="tab active"><h3>طلبات الاشتراك</h3><div id="requestsList" class="cards-list"></div></div>
+    <div id="tab-students" class="tab"><h3>الطلاب المقبولون</h3><div id="studentsList" class="cards-list"></div></div>
+    <div id="tab-stages" class="tab"><h3>إدارة المراحل</h3><form id="stageForm" class="inline-form"><input name="stageName" placeholder="اسم المرحلة" required><button>إضافة مرحلة</button></form><div id="stagesList" class="cards-list"></div></div>
+    <div id="tab-settings" class="tab"><h3>إعدادات المنصة</h3><form id="settingsForm" class="form-grid"><input name="platformName" placeholder="اسم المنصة"><input name="masterNumber" placeholder="رقم الماستر"><input name="welcomeMessage" placeholder="رسالة الترحيب"><input name="footerMessage" placeholder="رسالة الفوتر"><input name="adminCode" placeholder="كود المدير الجديد"><button>حفظ الإعدادات</button></form></div>
+  </section>
 
-  <div id="toast"></div>
+  <section id="studentPanel" class="dashboard hidden"><div class="dash-head"><h2>لوحة الطالب</h2><button onclick="logout()">تسجيل الخروج</button></div><div id="studentInfo" class="profile-card"></div><div class="student-cards"><div>📚<b>الدروس</b><span>قريباً</span></div><div>📝<b>الاختبارات</b><span>قريباً</span></div><div>📌<b>الواجبات</b><span>قريباً</span></div><div>🔔<b>الإشعارات</b><span>قريباً</span></div></div></section>
+
+  <footer id="footerText">آفاق التعليمية</footer>
+
+  <dialog id="adminLoginModal"><form method="dialog" id="adminLoginForm"><h3>دخول المدير</h3><input name="code" placeholder="كود المدير" required><menu><button type="button" onclick="closeModal('adminLoginModal')">إلغاء</button><button>دخول</button></menu></form></dialog>
+  <dialog id="studentLoginModal"><form method="dialog" id="studentLoginForm"><h3>دخول الطالب</h3><input name="code" placeholder="كود الطالب" required><menu><button type="button" onclick="closeModal('studentLoginModal')">إلغاء</button><button>دخول</button></menu></form></dialog>
+
   <script type="module" src="js/app.js"></script>
 </body>
 </html>

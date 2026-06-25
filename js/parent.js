@@ -1,0 +1,12 @@
+
+import * as A from "./core.js";import {guard,shell,panel,card,showNotifications,updateBadge,statBox} from "./dashboard.js";
+const user=guard("parent");const nav=[{id:"home",title:"المتابعة",icon:"🏠"},{id:"profile",title:"ملف الطالب",icon:"📁"},{id:"results",title:"النتائج",icon:"🏆"},{id:"alerts",title:"التنبيهات",icon:"⚠️"},{id:"notifications",title:"الإشعارات",icon:"🔔"},{id:"messages",title:"الرسائل",icon:"✉️"}];let draw=shell("لوحة ولي الأمر v10","parent",user,nav);let current="home";
+function st(){return A.getData("students").find(s=>A.code(s.code)===A.code(user.studentCode)||A.eq(s.name,user.studentName))||{}}
+window.openSection=async id=>{current=id;draw(id);updateBadge("parent",user);if(id==="home")home();if(id==="profile")profile();if(id==="results")results();if(id==="alerts")alerts();if(id==="notifications"){await showNotifications("parent",user);updateBadge("parent",user)}if(id==="messages")messages()}
+function home(){let s=st(),p=A.studentProfile(s);content.innerHTML=panel("متابعة الطالب")+`<div class="stats">${statBox("النقاط",p.points||0)}${statBox("المستوى",p.level||"—")}${statBox("نتائج",p.results.length)}${statBox("غياب",p.attendance.filter(x=>x.status==="غائب").length)}</div>`}
+function profile(){let s=st(),p=A.studentProfile(s);content.innerHTML=panel("ملف الطالب الكامل")+`<div class="profile-grid"><div class="profile-box">الاسم: ${s.name}</div><div class="profile-box">المرحلة: ${s.stage}</div><div class="profile-box">الكود: ${s.code}</div><div class="profile-box">الاشتراك: ${s.subscriptionStatus}</div><div class="profile-box">المواد: ${p.subjects.length}</div><div class="profile-box">المستوى: ${p.level}</div></div>`}
+function results(){let p=A.studentProfile(st());content.innerHTML=panel("نتائج الطالب")+`<div class="card-grid">${p.results.map(r=>card(r.subject,`<strong>${r.score||r.grade}/${r.total||""}</strong>`)).join("")||'<div class="empty">لا توجد نتائج</div>'}</div>`}
+function alerts(){let s=st();let arr=A.monthlyAlerts(s);content.innerHTML=panel("تنبيهات ولي الأمر")+`<div class="card-grid">${arr.map(a=>card("تنبيه",`<p>${a}</p>`)).join("")||'<div class="empty">لا توجد تنبيهات</div>'}</div>`}
+function messages(){content.innerHTML=panel("الرسائل")+`<button class="green" onclick="send()">رسالة للإدارة</button>`}
+window.send=async()=>{let body=prompt("اكتب الرسالة"); if(body)await A.addItem("messages",{from:user.name,to:"admin",title:"رسالة ولي أمر",body,studentCode:user.studentCode,createdAt:A.now()})}
+A.onSync(()=>A.scheduleRender(()=>openSection(current),300));openSection("home");

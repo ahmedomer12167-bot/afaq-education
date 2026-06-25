@@ -11,4 +11,35 @@
 <div class="modal" id="loginModal"><form class="modal-box" id="loginForm"><button type="button" class="close" id="close">×</button><h2 id="modalTitle"></h2><div id="fields"></div><button class="primary" type="submit">دخول</button><button type="button" id="registerBtn" class="ghost hidden">تسجيل طلب اشتراك</button></form></div>
 <div class="modal" id="reqModal"><form class="modal-box" id="reqForm"><button type="button" class="close" id="closeReq">×</button><h2>طلب اشتراك طالب</h2><div class="data-card" id="masterInfoBox"><h3>رقم الماستر للدفع</h3><p class="muted">يحدده المدير من إعدادات المنصة</p><strong id="masterNumberView">—</strong><p id="masterOwnerView" class="muted"></p></div>
 <div class="field"><label>اسم الطالب الثلاثي</label><input id="r_name" required></div><div class="field"><label>اسم ولي الأمر</label><input id="r_parent" required></div><div class="field"><label>المرحلة</label><select id="r_stage"></select></div><div class="field"><label>الهاتف</label><input id="r_phone"></div><div class="field"><label>المبلغ</label><input id="r_amount"></div><button class="primary">إرسال الطلب</button></form></div>
-<div class="status-dot">Firebase</div><script type="module" src="js/index.js?v=14"></script></body></html>
+<div class="status-dot">Firebase</div><script type="module" src="js/index.js?v=14.2.2"></script>
+<script>
+/* AFAQ_INLINE_BUTTON_FALLBACK */
+setTimeout(function(){
+  document.querySelectorAll('[data-role]').forEach(function(card){
+    if(card.__afaqBoundFallback) return;
+    card.__afaqBoundFallback = true;
+    card.addEventListener('click', function(){
+      var modal=document.getElementById('loginModal');
+      var fields=document.getElementById('fields');
+      var role=card.getAttribute('data-role');
+      var labels={student:['الاسم الثلاثي','المرحلة الدراسية','كود الطالب'],teacher:['الاسم الثلاثي','المادة','المرحلة الدراسية','كود المدرس'],parent:['الاسم الثلاثي','كود ولي الأمر'],admin:['كود المدير']}[role]||[];
+      fields.innerHTML='';
+      labels.forEach(function(l){
+        var div=document.createElement('div');div.className='field';div.innerHTML='<label>'+l+'</label>';
+        var input=document.createElement((l.indexOf('المرحلة')>-1||l.indexOf('المادة')>-1)?'select':'input');
+        input.dataset.label=l;
+        if(input.tagName==='SELECT'){
+          var arr=l.indexOf('المادة')>-1?['الأحياء','الكيمياء','الفيزياء','الرياضيات','العربي','الإنكليزي','الإسلامية','الاجتماعيات']:['الأول متوسط','الثاني متوسط','الثالث متوسط','الرابع الإعدادي','الخامس الإعدادي','السادس الإعدادي'];
+          arr.forEach(function(x){input.innerHTML+='<option>'+x+'</option>';});
+        }
+        div.appendChild(input);fields.appendChild(div);
+      });
+      document.getElementById('modalTitle').textContent=(card.querySelector('b')&&card.querySelector('b').textContent)||'تسجيل الدخول';
+      document.getElementById('registerBtn').classList.toggle('hidden',role!=='student');
+      modal.classList.add('active');
+    });
+  });
+},800);
+</script>
+
+</body></html>

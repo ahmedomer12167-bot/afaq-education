@@ -52,7 +52,7 @@ export async function setData(k,arr){
 }
 export async function setObj(k,obj){
   putCache(k,obj||{});
-  if(ready) await setDoc(doc(collection(db,COL(k)),"main"),{...(obj||{}),id:"main",updatedAtServer:serverTimestamp()},{merge:true});
+  if(ready) await setDoc(doc(db,COL(k),"main"),{...(obj||{}),id:"main",updatedAtServer:serverTimestamp()},{merge:true});
 }
 export async function addItem(k,obj){let arr=getData(k); obj=normalize(k,obj); arr.unshift(obj); await setData(k,arr); return obj}
 export async function updateItem(k,idv,patch){let arr=getData(k).map(x=>x.id===idv?normalize(k,{...x,...patch}):x); await setData(k,arr)}
@@ -126,8 +126,8 @@ export async function init(){
       for(const k of DB_KEYS){listen(k)}
       // migrate only if remote is empty
       for(const k of DB_KEYS){
-        let local=getData(k); if(k==="settings") { if(Object.keys(local).length) await setDoc(doc(collection(db,COL(k)),"main"),{...local,id:"main",updatedAtServer:serverTimestamp()},{merge:true}).catch(()=>{})}
-        else if(Array.isArray(local)&&local.length){ let snap=await getDocs(collection(db,COL(k))); if(snap.empty) for(const x of local) await setDoc(doc(collection(db,COL(k)),x.id||id()),{...x,id:x.id||id(),updatedAtServer:serverTimestamp()},{merge:true}).catch(()=>{})}
+        let local=getData(k); if(k==="settings") { if(Object.keys(local).length) await setDoc(doc(db,COL(k),"main"),{...local,id:"main",updatedAtServer:serverTimestamp()},{merge:true}).catch(()=>{})}
+        else if(Array.isArray(local)&&local.length){ let snap=await getDocs(collection(db,COL(k))); if(snap.empty) for(const x of local) await setDoc(doc(db,COL(k),x.id||id()),{...x,id:x.id||id(),updatedAtServer:serverTimestamp()},{merge:true}).catch(()=>{})}
       }
       readyResolve(true);
     })

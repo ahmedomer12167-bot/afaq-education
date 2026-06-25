@@ -1,4 +1,4 @@
-// sw.js v12.2 safe network-first
+// sw.js v14 safe network first
 self.addEventListener('install', event => self.skipWaiting());
 self.addEventListener('activate', event => event.waitUntil(self.clients.claim()));
 self.addEventListener('fetch', event => {
@@ -6,8 +6,7 @@ self.addEventListener('fetch', event => {
   event.respondWith(
     fetch(event.request).catch(async () => {
       const cached = await caches.match(event.request);
-      if (cached) return cached;
-      return new Response('', {status: 504, statusText: 'Offline'});
+      return cached || new Response('', {status:504, statusText:'Offline'});
     })
   );
 });

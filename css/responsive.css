@@ -1,10 +1,1 @@
-@media(max-width:850px){
-  .topbar{padding:14px;gap:10px}.brand h1{font-size:17px}nav{display:none}
-  .hero,.login-grid{grid-template-columns:1fr;padding:25px 14px}.hero h2{font-size:38px}
-  .scene{height:290px}.tablet{right:8%;width:245px}.cap{right:14%;width:220px}
-  .form-grid,.feature-row,.student-cards{grid-template-columns:1fr}
-  .panel,.feature-row,.dashboard{margin:14px;padding:18px}
-  .dash-head{align-items:flex-start;gap:10px;flex-direction:column}
-  .login-card{min-height:auto}.avatar{float:none}.inline-form{flex-direction:column}
-  .cards-list{grid-template-columns:1fr}.stats{grid-template-columns:1fr}.card-actions button{width:100%}
-}
+@media(max-width:850px){.topbar{padding:14px;gap:10px}.brand h1{font-size:17px}nav{display:none}.hero,.login-grid{grid-template-columns:1fr;padding:25px 14px}.hero h2{font-size:38px}.scene{height:290px}.tablet{right:8%;width:245px}.cap{right:14%;width:220px}.form-grid,.feature-row,.student-cards{grid-template-columns:1fr}.panel,.feature-row,.dashboard{margin:14px;padding:18px}.dash-head{align-items:flex-start;gap:10px;flex-direction:column}.login-card{min-height:auto}.avatar{float:none}.inline-form{flex-direction:column}button{width:100%}.stats{grid-template-columns:1fr}.cards-list{grid-template-columns:1fr}}

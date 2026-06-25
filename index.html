@@ -1,45 +1,49 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>آفاق التعليمية | منصة الأحياء</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="bg-orb orb-1"></div><div class="bg-orb orb-2"></div>
+  <header class="topbar">
+    <div class="brand"><div class="logo3d">▰</div><div><h1 id="brandName">آفاق التعليمية</h1><p>منصة الأحياء الخاصة</p></div></div>
+    <nav><button data-scroll="home">الرئيسية</button><button data-scroll="features">المميزات</button><button data-scroll="prices">الأسعار</button><button data-scroll="contact">تواصل معنا</button></nav>
+    <button id="themeBtn" class="soft-btn">الوضع النهاري ☀️</button>
+  </header>
 
-<!doctype html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>آفاق التعليمية</title><link rel="stylesheet" href="css/style.css"></head>
-<body><div class="top"><div class="brand">آفاق التعليمية</div><button id="theme" class="ghost">🌙</button></div>
-<section class="hero"><h1>منصة آفاق التعليمية</h1><p>تعلم بذكاء • تواصل أسرع • نتائج متزامنة مع Firebase</p><div class="actions" style="justify-content:center;margin-top:16px"><button class="primary">واجهة احترافية v14</button><button class="ghost">متوافقة مع الهاتف</button></div></section>
-<div class="cards">
-  <div class="role-card" data-role="student"><div class="icon">🎓</div><b>تسجيل الطالب</b><small>الدروس والاختبارات والنتائج</small></div>
-  <div class="role-card" data-role="teacher"><div class="icon">👨‍🏫</div><b>تسجيل المدرس</b><small>إدارة المادة والطلاب</small></div>
-  <div class="role-card" data-role="parent"><div class="icon">👪</div><b>ولي الأمر</b><small>متابعة مستوى الطالب</small></div>
-  <div class="role-card" data-role="admin"><div class="icon">🛡️</div><b>المدير</b><small>التحكم الكامل</small></div>
-</div>
-<div class="modal" id="loginModal"><form class="modal-box" id="loginForm"><button type="button" class="close" id="close">×</button><h2 id="modalTitle"></h2><div id="fields"></div><button class="primary" type="submit">دخول</button><button type="button" id="registerBtn" class="ghost hidden">تسجيل طلب اشتراك</button></form></div>
-<div class="modal" id="reqModal"><form class="modal-box" id="reqForm"><button type="button" class="close" id="closeReq">×</button><h2>طلب اشتراك طالب</h2><div class="data-card" id="masterInfoBox"><h3>رقم الماستر للدفع</h3><p class="muted">يحدده المدير من إعدادات المنصة</p><strong id="masterNumberView">—</strong><p id="masterOwnerView" class="muted"></p></div>
-<div class="field"><label>اسم الطالب الثلاثي</label><input id="r_name" required></div><div class="field"><label>اسم ولي الأمر</label><input id="r_parent" required></div><div class="field"><label>المرحلة</label><select id="r_stage"></select></div><div class="field"><label>الهاتف</label><input id="r_phone"></div><div class="field"><label>المبلغ</label><input id="r_amount"></div><button class="primary">إرسال الطلب</button></form></div>
-<div class="status-dot">Firebase</div><script type="module" src="js/index.js?v=14.2.2"></script>
-<script>
-/* AFAQ_INLINE_BUTTON_FALLBACK */
-setTimeout(function(){
-  document.querySelectorAll('[data-role]').forEach(function(card){
-    if(card.__afaqBoundFallback) return;
-    card.__afaqBoundFallback = true;
-    card.addEventListener('click', function(){
-      var modal=document.getElementById('loginModal');
-      var fields=document.getElementById('fields');
-      var role=card.getAttribute('data-role');
-      var labels={student:['الاسم الثلاثي','المرحلة الدراسية','كود الطالب'],teacher:['الاسم الثلاثي','المادة','المرحلة الدراسية','كود المدرس'],parent:['الاسم الثلاثي','كود ولي الأمر'],admin:['كود المدير']}[role]||[];
-      fields.innerHTML='';
-      labels.forEach(function(l){
-        var div=document.createElement('div');div.className='field';div.innerHTML='<label>'+l+'</label>';
-        var input=document.createElement((l.indexOf('المرحلة')>-1||l.indexOf('المادة')>-1)?'select':'input');
-        input.dataset.label=l;
-        if(input.tagName==='SELECT'){
-          var arr=l.indexOf('المادة')>-1?['الأحياء','الكيمياء','الفيزياء','الرياضيات','العربي','الإنكليزي','الإسلامية','الاجتماعيات']:['الأول متوسط','الثاني متوسط','الثالث متوسط','الرابع الإعدادي','الخامس الإعدادي','السادس الإعدادي'];
-          arr.forEach(function(x){input.innerHTML+='<option>'+x+'</option>';});
-        }
-        div.appendChild(input);fields.appendChild(div);
-      });
-      document.getElementById('modalTitle').textContent=(card.querySelector('b')&&card.querySelector('b').textContent)||'تسجيل الدخول';
-      document.getElementById('registerBtn').classList.toggle('hidden',role!=='student');
-      modal.classList.add('active');
-    });
-  });
-},800);
-</script>
+  <main id="home" class="hero page active">
+    <section class="hero-art glass">
+      <div class="cap">🎓</div><div class="screen"><span>▶</span><span>📄</span><span>📊</span><span>📚</span><span>👥</span><span>🏆</span></div>
+      <div class="books">📘 📗 📙</div>
+    </section>
+    <section class="hero-copy">
+      <span class="pill" id="welcomeText">مرحباً بك في منصة الأحياء</span>
+      <h2>منصة <b>آفاق التعليمية</b></h2>
+      <p>دروس، اختبارات، واجبات، حضور، نتائج ونقاط متزامنة لحظياً حسب مرحلة الطالب.</p>
+      <div class="stats glass"><span><b id="statStudents">0</b> طالب</span><span><b id="statLessons">0</b> درس</span><span><b id="statTests">0</b> اختبار</span></div>
+    </section>
+  </main>
 
-</body></html>
+  <section class="login-grid">
+    <div class="login-card teacher-card glass tilt"><div class="avatar">👨‍🏫</div><div><h3>تسجيل دخول المدير</h3><p>إدارة المنصة والطلاب والمحتوى</p><input id="adminCode" placeholder="كود المدير" /><button id="adminLogin">دخول المدير</button></div></div>
+    <div class="login-card student-card glass tilt"><div class="avatar">👨‍🎓</div><div><h3>تسجيل دخول الطالب</h3><p>الدخول باستخدام كود الطالب فقط</p><input id="studentCode" placeholder="كود الطالب" /><button id="studentLogin">دخول الطالب</button><button class="outline" id="openRequest">طلب اشتراك جديد</button></div></div>
+  </section>
+
+  <section id="features" class="mini-features glass"><div>🛡️ <b>آمن ومرتب</b><small>صلاحيات حسب المرحلة</small></div><div>⏱️ <b>متزامن فوراً</b><small>بدون تحديث الصفحة</small></div><div>📱 <b>متوافق</b><small>هاتف وكمبيوتر</small></div><div>🧬 <b>الأحياء فقط</b><small>منهج كل مرحلة</small></div></section>
+  <section id="prices" class="hidden-anchor"></section><section id="contact" class="hidden-anchor"></section>
+
+  <div id="requestModal" class="modal"><div class="modal-box glass"><button class="x" data-close="requestModal">×</button><h2>طلب اشتراك طالب</h2><div class="form-grid"><input id="reqName" placeholder="الاسم الثلاثي"><input id="reqParent" placeholder="اسم ولي الأمر"><input id="reqPhone" placeholder="رقم الهاتف"><select id="reqStage"></select><input id="reqAmount" type="number" placeholder="المبلغ المدفوع"><input id="reqMaster" readonly placeholder="رقم الماستر"></div><button id="sendRequest">إرسال الطلب</button></div></div>
+
+  <section id="adminPanel" class="dashboard hidden"><div class="dash-head glass"><div><h2>لوحة المدير</h2><p id="adminSub">إدارة منصة الأحياء</p></div><button id="adminLogout" class="danger">تسجيل الخروج</button></div><div class="tabs" id="adminTabs"></div><div id="adminContent" class="dash-content"></div></section>
+  <section id="studentPanel" class="dashboard hidden"><div class="dash-head glass"><div><h2 id="studentTitle">لوحة الطالب</h2><p id="studentSub"></p></div><button id="studentLogout" class="danger">تسجيل الخروج</button></div><div class="tabs" id="studentTabs"></div><div id="studentContent" class="dash-content"></div></section>
+
+  <div id="toast"></div>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

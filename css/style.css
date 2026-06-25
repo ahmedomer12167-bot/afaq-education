@@ -49,3 +49,16 @@ input,select,textarea{width:100%;padding:13px 15px;border-radius:18px;border:1px
 *{scrollbar-width:thin}
 button{will-change:transform}
 .data-card,.panel,.stat{contain:layout paint}
+
+/* v12.3 light mode readability + subject pages + notification badge */
+.light-mode{--text:#17112b!important;--muted:#4b3f64!important;--panel:#ffffffee!important;--line:#bda7ff!important}
+.light-mode body,.light-mode .content,.light-mode .panel,.light-mode .data-card,.light-mode .stat,.light-mode .modal-box,.light-mode .side,.light-mode .profile-box,.light-mode .empty{color:#17112b!important}
+.light-mode .muted,.light-mode p,.light-mode label,.light-mode small{color:#4b3f64!important}
+.light-mode input,.light-mode select,.light-mode textarea{background:#ffffff!important;color:#17112b!important;border-color:#c9b8ff!important}
+.light-mode button.ghost,.light-mode .chip{color:#17112b!important;background:#f0eaff!important;border-color:#c9b8ff!important}
+.light-mode .nav{color:#17112b!important}
+.light-mode .nav.active{color:#fff!important}
+.subject-hero{border:1px solid var(--line);border-radius:30px;background:linear-gradient(135deg,#7c3aed55,#06b6d433);padding:22px;margin-bottom:16px;box-shadow:var(--shadow)}
+.subject-tabs{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:12px 0}
+.subject-tabs button.active{background:linear-gradient(135deg,#7c3aed,#d946ef)}
+.nav .badge-count{margin-inline-start:auto}

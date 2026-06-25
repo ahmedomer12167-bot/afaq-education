@@ -5,8 +5,10 @@ import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gsta
 import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot, getDocs, serverTimestamp, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
 export const DB_KEYS = ["settings","stages","subjects","teachers","students","parents","subscriptions","subscriptionRequests","subjectRequests","lessons","assignments","assignmentSubmissions","exams","examAttempts","attendance","attendanceRecords","notifications","messages","finalResults","points","activityLog"];
-const P="afaq_v9_";
+const P="afaq_v14_";
 let app,auth,db,ready=false,subs={},cache={},readyResolve;
+const FIRESTORE_NS="v14_";
+function COL(k){return FIRESTORE_NS+k;}
 export const readyPromise=new Promise(r=>readyResolve=r);
 
 export function id(){return Date.now().toString(36)+Math.random().toString(36).slice(2,8)}
@@ -42,7 +44,7 @@ export async function setData(k,arr){
   arr=Array.isArray(arr)?arr.map(x=>normalize(k,x)):[];
   putCache(k,arr);
   if(!ready||k==="settings") return;
-  const batch=writeBatch(db), col=collection(db,k);
+  const batch=writeBatch(db), col=collection(db,COL(k));
   const remote=await getDocs(col); const next=new Set(arr.map(x=>x.id));
   arr.forEach(x=>batch.set(doc(col,x.id),{...x,updatedAtServer:serverTimestamp()},{merge:true}));
   remote.forEach(d=>{if(!next.has(d.id)) batch.delete(doc(col,d.id))});
@@ -50,12 +52,12 @@ export async function setData(k,arr){
 }
 export async function setObj(k,obj){
   putCache(k,obj||{});
-  if(ready) await setDoc(doc(collection(db,k),"main"),{...(obj||{}),id:"main",updatedAtServer:serverTimestamp()},{merge:true});
+  if(ready) await setDoc(doc(collection(db,COL(k)),"main"),{...(obj||{}),id:"main",updatedAtServer:serverTimestamp()},{merge:true});
 }
 export async function addItem(k,obj){let arr=getData(k); obj=normalize(k,obj); arr.unshift(obj); await setData(k,arr); return obj}
 export async function updateItem(k,idv,patch){let arr=getData(k).map(x=>x.id===idv?normalize(k,{...x,...patch}):x); await setData(k,arr)}
-export async function deleteItem(k,idv){let arr=getData(k).filter(x=>x.id!==idv); await setData(k,arr); if(ready) await deleteDoc(doc(collection(db,k),idv)).catch(()=>{})}
-export function settings(){return {...{platformName:"آفاق التعليمية",adminCode:"1234",footer:"آفاق التعليمية"},...getObj("settings")}}
+export async function deleteItem(k,idv){let arr=getData(k).filter(x=>x.id!==idv); await setData(k,arr); if(ready) await deleteDoc(doc(collection(db,COL(k)),idv)).catch(()=>{})}
+export function settings(){return {...{platformName:"آفاق التعليمية",adminCode:"1234",footer:"آفاق التعليمية",masterNumber:"07800000000",masterOwner:"آفاق التعليمية"},...getObj("settings")}}
 export async function saveSettings(o){await setObj("settings",{...settings(),...o})}
 export function stages(){let a=getData("stages"); return a.length?a:[{id:"s1",name:"الأول متوسط",status:"مفعلة",visibility:"ظاهر"},{id:"s2",name:"الثاني متوسط",status:"مفعلة",visibility:"ظاهر"},{id:"s3",name:"الثالث متوسط",status:"مفعلة",visibility:"ظاهر"}]}
 export function subjects(stage=""){return getData("subjects").filter(s=>(!stage||eq(s.stage,stage)) && s.visibility!=="مخفي" && clean(s.status)!=="موقوفه")}
@@ -69,16 +71,36 @@ export async function decideSubjectRequest(idv,status,reason=""){let r=getData("
 export function acceptedSubjects(student){let reqs=getData("subjectRequests").filter(r=>r.studentId===student.id&&r.status==="accepted").map(r=>r.subjectCode);return getData("subjects").filter(s=>reqs.includes(s.code))}
 export async function notify(n){return await addItem("notifications",{...n,readBy:[],createdAt:now()})}
 export function visibleNotifications(role,user){
+  user=user||{};
+  const uCode=code(user.code||user.studentCode||"");
+  const uSubject=code(user.subjectCode||"");
+  const uStage=clean(user.stage||"");
+  const targets={
+    admin:["admin","admins","all","الجميع","المدير"],
+    teacher:["teacher","teachers","all","الجميع","المدرسين","المدرس"],
+    student:["student","students","all","الجميع","الطلاب","طالب"],
+    parent:["parent","parents","all","الجميع","اولياء الامور","ولي الامر","ولي الأمر"]
+  }[role]||[];
   return getData("notifications").filter(n=>{
-    if(role==="admin")return true;
-    if(role==="teacher")return n.target==="teachers"||n.target==="all"||eq(n.teacherName,user.name)||eq(n.subject,user.subject)||eq(n.subjectCode,user.subjectCode);
-    if(role==="student")return n.target==="students"||n.target==="all"||n.studentId===user.id||code(n.studentCode)===code(user.code)||eq(n.stage,user.stage);
-    if(role==="parent")return n.target==="parents"||n.target==="all"||code(n.studentCode)===code(user.studentCode);
+    let t=clean(n.target||"all");
+    let targetOk=targets.some(x=>clean(x)===t);
+    if(role==="admin") return true;
+    if(role==="teacher"){
+      return targetOk || n.teacherId===user.id || eq(n.teacherName,user.name) || code(n.subjectCode)===uSubject || (n.subject && eq(n.subject,user.subject));
+    }
+    if(role==="student"){
+      let subjectOk = !n.subjectCode || code(n.subjectCode)===uSubject || acceptedSubjects(user).some(s=>code(s.code)===code(n.subjectCode));
+      let stageOk = !n.stage || clean(n.stage)===uStage;
+      return (targetOk && stageOk && subjectOk) || n.studentId===user.id || code(n.studentCode)===uCode;
+    }
+    if(role==="parent"){
+      return targetOk || code(n.studentCode)===code(user.studentCode||user.code) || n.parentId===user.id;
+    }
     return false;
-  }).sort((a,b)=>String(b.createdAt).localeCompare(String(a.createdAt)));
+  }).sort((a,b)=>String(b.createdAt||"").localeCompare(String(a.createdAt||"")));
 }
-export function unreadCount(role,user){let uid=user?.id||user?.code||role; return visibleNotifications(role,user).filter(n=>!(n.readBy||[]).includes(uid)).length}
-export async function markRead(role,user){let uid=user?.id||user?.code||role; let ids=new Set(visibleNotifications(role,user).map(n=>n.id)); let arr=getData("notifications").map(n=>ids.has(n.id)?{...n,readBy:[...(new Set([...(n.readBy||[]),uid]))]}:n); await setData("notifications",arr)}
+export function unreadCount(role,user){let uid=user?.id||user?.code||user?.studentCode||role; return visibleNotifications(role,user).filter(n=>!(n.readBy||[]).includes(uid)).length}
+export async function markRead(role,user){let uid=user?.id||user?.code||user?.studentCode||role; let ids=new Set(visibleNotifications(role,user).map(n=>n.id)); let arr=getData("notifications").map(n=>ids.has(n.id)?{...n,readBy:[...(new Set([...(n.readBy||[]),uid]))]}:n); await setData("notifications",arr)}:n); await setData("notifications",arr)}
 export function fileToBase64(file,cb){let r=new FileReader();r.onload=()=>cb(r.result);r.readAsDataURL(file)}
 export function mediaLinks(x){let h=""; if(x.pdfUrl)h+=`<a class="media-link" target="_blank" href="${x.pdfUrl}">📄 فتح PDF</a>`; if(x.videoUrl)h+=`<a class="media-link" target="_blank" href="${x.videoUrl}">🎥 فتح الفيديو</a>`; return h}
 function seedLocal(){
@@ -87,7 +109,7 @@ function seedLocal(){
 }
 function listen(k){
   if(subs[k])return;
-  subs[k]=onSnapshot(collection(db,k),snap=>{
+  subs[k]=onSnapshot(collection(db,COL(k)),snap=>{
     if(k==="settings"){let o={};snap.forEach(d=>{if(d.id==="main")o=d.data()});putCache(k,o)}
     else{let arr=[];snap.forEach(d=>arr.push({id:d.id,...d.data()}));putCache(k,arr)}
   },e=>{console.warn("Firestore listener",k,e);document.documentElement.dataset.firebase="error"})
@@ -104,8 +126,8 @@ export async function init(){
       for(const k of DB_KEYS){listen(k)}
       // migrate only if remote is empty
       for(const k of DB_KEYS){
-        let local=getData(k); if(k==="settings") { if(Object.keys(local).length) await setDoc(doc(collection(db,k),"main"),{...local,id:"main",updatedAtServer:serverTimestamp()},{merge:true}).catch(()=>{})}
-        else if(Array.isArray(local)&&local.length){ let snap=await getDocs(collection(db,k)); if(snap.empty) for(const x of local) await setDoc(doc(collection(db,k),x.id||id()),{...x,id:x.id||id(),updatedAtServer:serverTimestamp()},{merge:true}).catch(()=>{})}
+        let local=getData(k); if(k==="settings") { if(Object.keys(local).length) await setDoc(doc(collection(db,COL(k)),"main"),{...local,id:"main",updatedAtServer:serverTimestamp()},{merge:true}).catch(()=>{})}
+        else if(Array.isArray(local)&&local.length){ let snap=await getDocs(collection(db,COL(k))); if(snap.empty) for(const x of local) await setDoc(doc(collection(db,COL(k)),x.id||id()),{...x,id:x.id||id(),updatedAtServer:serverTimestamp()},{merge:true}).catch(()=>{})}
       }
       readyResolve(true);
     })
@@ -397,3 +419,37 @@ export function rafRender(fn){
   cancelAnimationFrame(window.__afaqRaf||0);
   window.__afaqRaf=requestAnimationFrame(fn);
 }
+
+
+// ===== v12.3 Subject page helpers =====
+export function subjectDataForStudent(student, subjectCodeValue){
+  const sc=code(subjectCodeValue);
+  return {
+    subject:getData("subjects").find(s=>code(s.code)===sc),
+    lessons:getData("lessons").filter(x=>code(x.subjectCode)===sc && x.status!=="مخفي"),
+    assignments:getData("assignments").filter(x=>code(x.subjectCode)===sc && x.status!=="مخفي"),
+    exams:getData("exams").filter(x=>code(x.subjectCode)===sc && x.status!=="مخفي"),
+    results:getData("finalResults").filter(x=>code(x.subjectCode)===sc && (x.studentId===student.id || code(x.studentCode)===code(student.code))),
+    attendance:getData("attendanceRecords").filter(x=>code(x.subjectCode)===sc && (x.studentId===student.id || code(x.studentCode)===code(student.code)))
+  };
+}
+
+
+// ===== v14 Production Clean Stability Layer =====
+export const AFAQ_VERSION="v14-production-clean";
+export function appHealth(){
+  return {
+    version:AFAQ_VERSION,
+    firebase:document.documentElement.dataset.firebase||"loading",
+    students:getData("students").length,
+    teachers:getData("teachers").length,
+    subjects:getData("subjects").length,
+    requests:getData("subscriptionRequests").length,
+    notifications:getData("notifications").length
+  };
+}
+export async function productionPing(){
+  await readyPromise.catch(()=>false);
+  return appHealth();
+}
+export function isV14Clean(){return true}

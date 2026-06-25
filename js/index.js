@@ -56,7 +56,31 @@ document.getElementById("loginForm").onsubmit=async e=>{
   if(btn){btn.disabled=false;btn.textContent=old;}
  }
 };
-document.getElementById("registerBtn").onclick=()=>{modal.classList.remove("active");document.getElementById("r_stage").innerHTML=stages().map(s=>`<option>${s.name}</option>`).join("");document.getElementById("reqModal").classList.add("active")};
+document.getElementById("registerBtn").onclick=()=>{
+ modal.classList.remove("active");
+ document.getElementById("r_stage").innerHTML=stages().map(s=>`<option>${s.name}</option>`).join("");
+ const st=settings();
+ document.getElementById("masterNumberView").textContent=st.masterNumber||"لم يحدد بعد";
+ document.getElementById("masterOwnerView").textContent=st.masterOwner?("صاحب الحساب: "+st.masterOwner):"";
+ document.getElementById("reqModal").classList.add("active");
+};
 document.getElementById("closeReq").onclick=()=>document.getElementById("reqModal").classList.remove("active");
-document.getElementById("reqForm").onsubmit=async e=>{e.preventDefault(); await addItem("subscriptionRequests",{name:r_name.value,parentName:r_parent.value,stage:r_stage.value,phone:r_phone.value,amount:r_amount.value,status:"pending",createdAt:new Date().toLocaleString("ar-IQ")});alert("تم إرسال الطلب إلى المدير");reqForm.reset();reqModal.classList.remove("active")};
+document.getElementById("reqForm").onsubmit=async e=>{
+ e.preventDefault();
+ const st=settings();
+ await addItem("subscriptionRequests",{
+   name:r_name.value,
+   parentName:r_parent.value,
+   stage:r_stage.value,
+   phone:r_phone.value,
+   amount:r_amount.value,
+   masterNumber:st.masterNumber||"",
+   masterOwner:st.masterOwner||"",
+   status:"pending",
+   createdAt:new Date().toLocaleString("ar-IQ")
+ });
+ alert("تم إرسال الطلب إلى المدير");
+ reqForm.reset();
+ reqModal.classList.remove("active");
+};
 onSync(()=>{});

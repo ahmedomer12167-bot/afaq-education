@@ -1,136 +1,64 @@
 import { db, FB, DEFAULT_SETTINGS, ensureBaseData } from './firebase.js';
-
-const $ = (s, r=document) => r.querySelector(s);
-const $$ = (s, r=document) => [...r.querySelectorAll(s)];
-const toast = (msg, ok=true) => { const t=$('#toast') || document.createElement('div'); t.id='toast'; t.className='toast show '+(ok?'ok':'bad'); t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.classList.remove('show'),2600); };
-if('serviceWorker' in navigator){ navigator.serviceWorker.getRegistrations?.().then(rs=>rs.forEach(r=>r.unregister())).catch(()=>{}); }
-const fmtDate = (v) => v ? new Date(v).toLocaleDateString('ar-IQ') : '—';
-const randCode = () => String(Math.floor(100000 + Math.random()*900000));
-
-let settings = {...DEFAULT_SETTINGS};
-let stages = [];
-
-async function safe(call, fallback=null){ try { return await call(); } catch(e){ console.error(e); toast('تحقق من قواعد Firestore أو الاتصال بالإنترنت', false); return fallback; } }
-async function loadSettings(){
-  await safe(()=>ensureBaseData());
-  const snap = await safe(()=>FB.getDoc(FB.doc(db,'system','settings')));
-  settings = {...DEFAULT_SETTINGS, ...(snap?.exists()?snap.data():{})};
-  localStorage.setItem('afaq_settings', JSON.stringify(settings));
-  applySettings();
-  return settings;
-}
-function localSettings(){ try{return {...DEFAULT_SETTINGS, ...JSON.parse(localStorage.getItem('afaq_settings')||'{}')}}catch{return DEFAULT_SETTINGS} }
-function applySettings(){
-  $$('[data-platform-name]').forEach(e=>e.textContent=settings.platformName);
-  $$('[data-welcome]').forEach(e=>e.textContent=settings.welcomeMessage);
-  $$('[data-master-number]').forEach(e=>{ if('value' in e) e.value=settings.masterNumber; else e.textContent=settings.masterNumber; });
-  $$('[data-footer]').forEach(e=>e.textContent=settings.footerMessage);
-  const title = $('title'); if(title) title.textContent = settings.platformName;
-}
-async function loadStages(selectId){
-  const snap = await safe(()=>FB.getDocs(FB.query(FB.collection(db,'stages'), FB.orderBy('order','asc'))));
-  stages = snap?.docs?.map(d=>({id:d.id,...d.data()})) || [];
-  if(!stages.length) stages = ['الأول متوسط','الثاني متوسط','الثالث متوسط','الرابع الإعدادي','الخامس الإعدادي','السادس الإعدادي'].map((name,i)=>({id:'local'+i,name,order:i+1}));
-  const sel = selectId ? $(selectId) : null;
-  if(sel) sel.innerHTML = '<option value="">اختر المرحلة</option>' + stages.map(s=>`<option value="${s.id}" data-name="${s.name}">${s.name}</option>`).join('');
-  return stages;
-}
+const $=(s,p=document)=>p.querySelector(s); const $$=(s,p=document)=>[...p.querySelectorAll(s)];
+let settings={...DEFAULT_SETTINGS}; let stages=[];
+const FALLBACK_STAGES=['الأول متوسط','الثاني متوسط','الثالث متوسط','الرابع الإعدادي','الخامس الإعدادي','السادس الإعدادي'];
+function toast(msg, ok=true){ const t=$('#toast')||document.createElement('div'); t.id='toast'; t.className='toast '+(ok?'':'bad'); t.textContent=msg; if(!t.parentNode) document.body.appendChild(t); requestAnimationFrame(()=>t.classList.add('show')); setTimeout(()=>t.classList.remove('show'),3300); }
+async function safe(fn, fail='حدث خطأ في الاتصال بقاعدة البيانات'){ try{return await fn()}catch(e){console.error(e); toast(fail,false); return null;} }
+function randCode(){return Math.floor(100000+Math.random()*900000).toString();}
+function fmt(v){ if(!v) return '—'; if(typeof v==='string') return v; if(v.toDate) return v.toDate().toLocaleDateString('ar-IQ'); return String(v); }
 function setTheme(mode){ document.documentElement.dataset.theme=mode; localStorage.setItem('afaq_theme',mode); }
 function setupTheme(){ setTheme(localStorage.getItem('afaq_theme')||'dark'); $$('.theme-toggle').forEach(b=>b.onclick=()=>setTheme(document.documentElement.dataset.theme==='dark'?'light':'dark')); }
-
-async function initHome(){
-  setupTheme(); settings = localSettings(); applySettings(); await loadSettings(); await loadStages('#subStage');
-  FB.onSnapshot(FB.doc(db,'system','settings'), snap=>{ if(snap.exists()){ settings={...DEFAULT_SETTINGS,...snap.data()}; localStorage.setItem('afaq_settings', JSON.stringify(settings)); applySettings(); } });
-  $('#adminLoginBtn')?.addEventListener('click', async()=>{
-    const code = $('#adminCode').value.trim();
-    await loadSettings();
-    if(code === (settings.adminCode||'2026')){ localStorage.setItem('afaq_role','admin'); location.href='pages/admin.html'; }
-    else toast('كود المدير غير صحيح', false);
-  });
-  $('#studentLoginBtn')?.addEventListener('click', async()=>{
-    const code = $('#studentCode').value.trim();
-    if(!code) return toast('اكتب كود الطالب', false);
-    const q = FB.query(FB.collection(db,'students'), FB.where('code','==',code));
-    const snap = await safe(()=>FB.getDocs(q));
-    if(!snap || snap.empty) return toast('لم يتم العثور على الطالب أو لم تتم الموافقة بعد', false);
-    const d = snap.docs[0];
-    const st = {id:d.id,...d.data()};
-    if(st.status !== 'active') return toast('اشتراك الطالب غير نشط', false);
-    localStorage.setItem('afaq_role','student'); localStorage.setItem('afaq_student_id', st.id); location.href='pages/student.html';
-  });
-  $('#subscriptionForm')?.addEventListener('submit', async(e)=>{
-    e.preventDefault();
-    await loadSettings();
-    if(settings.acceptRequests === false) return toast('استقبال الطلبات متوقف حاليًا', false);
-    const sel = $('#subStage'); const stageId=sel.value; const stageName=sel.options[sel.selectedIndex]?.dataset.name || '';
-    if(!stageId) return toast('اختر المرحلة أولًا', false);
-    const data = {
-      studentName: $('#subName').value.trim(), parentName: $('#subParent').value.trim(), phone: $('#subPhone').value.trim(),
-      stageId, stageName, amount: Number($('#subAmount').value||0), masterNumber: settings.masterNumber,
-      status:'pending', createdAt: FB.serverTimestamp()
-    };
-    await safe(()=>FB.addDoc(FB.collection(db,'subscriptionRequests'), data));
-    e.target.reset(); await loadStages('#subStage'); applySettings(); toast('تم إرسال طلب الاشتراك بنجاح');
-  });
+function applySettings(){
+  $$('[data-platform-name]').forEach(el=>el.textContent=settings.platformName||DEFAULT_SETTINGS.platformName);
+  const w=$('[data-welcome]'); if(w) w.textContent=settings.welcomeMessage||DEFAULT_SETTINGS.welcomeMessage;
+  const f=$('[data-footer]'); if(f) f.textContent=settings.footerMessage||DEFAULT_SETTINGS.footerMessage;
+  $$('[data-master-number]').forEach(el=>el.textContent=settings.masterNumber||DEFAULT_SETTINGS.masterNumber);
+  const a=$('#acceptStatus'); if(a) a.textContent=settings.acceptRequests===false?'متوقف':'مفعل';
 }
-
-function guard(role){ if(localStorage.getItem('afaq_role')!==role){ location.href='../index.html'; return false; } return true; }
-function backHome(){ localStorage.removeItem('afaq_role'); localStorage.removeItem('afaq_student_id'); location.href='../index.html'; }
-
+function cacheSettings(){ localStorage.setItem('afaq_settings',JSON.stringify(settings)); }
+function readCache(){ try{return {...DEFAULT_SETTINGS,...JSON.parse(localStorage.getItem('afaq_settings')||'{}')}}catch{return {...DEFAULT_SETTINGS}} }
+async function loadSettings(){
+  settings=readCache(); applySettings();
+  const snap=await safe(()=>FB.getDoc(FB.doc(db,'system','settings')),'تعذر تحميل الإعدادات');
+  if(snap?.exists()){ settings={...DEFAULT_SETTINGS,...snap.data()}; cacheSettings(); applySettings(); fillSettingsForm(); }
+  else { await safe(()=>FB.setDoc(FB.doc(db,'system','settings'), settings, {merge:true}),'تعذر إنشاء الإعدادات الافتراضية'); }
+  return settings;
+}
+function listenSettings(){ try{return FB.onSnapshot(FB.doc(db,'system','settings'), s=>{ if(s.exists()){ settings={...DEFAULT_SETTINGS,...s.data()}; cacheSettings(); applySettings(); fillSettingsForm(); } });}catch(e){console.error(e)} }
+function fillSettingsForm(){ if(!$('#settingsForm')) return; $('#platformName').value=settings.platformName||''; $('#welcomeMessage').value=settings.welcomeMessage||''; $('#footerMessage').value=settings.footerMessage||''; $('#masterNumber').value=settings.masterNumber||''; $('#adminCodeNew').value=settings.adminCode||'2026'; $('#acceptRequests').checked=settings.acceptRequests!==false; }
+async function loadStages(selectId){
+  const snap=await safe(()=>FB.getDocs(FB.query(FB.collection(db,'stages'),FB.orderBy('order','asc'))),'تعذر تحميل المراحل');
+  stages=snap?.docs?.map(d=>({id:d.id,...d.data()}))||[];
+  if(!stages.length){ stages=FALLBACK_STAGES.map((name,i)=>({id:'fallback-'+i,name,order:i+1})); }
+  const sel=selectId?$(selectId):null;
+  if(sel){ sel.innerHTML='<option value="">اختر المرحلة الدراسية</option>'+stages.map(s=>`<option value="${s.id}" data-name="${s.name}">${s.name}</option>`).join(''); }
+  const sc=$('#stagesCount'); if(sc) sc.textContent=String(stages.length);
+  return stages;
+}
+function openPanel(id){ $$('.portal-panel').forEach(p=>p.classList.remove('show')); const p=$('#'+id); if(p){ p.classList.add('show'); p.scrollIntoView({behavior:'smooth',block:'center'}); } }
+function closePanels(){ $$('.portal-panel').forEach(p=>p.classList.remove('show')); }
+async function initHome(){
+  setupTheme(); settings=readCache(); applySettings(); await loadSettings(); listenSettings(); await loadStages('#subStage');
+  $$('[data-open]').forEach(el=>el.onclick=()=>openPanel(el.dataset.open)); $$('[data-close]').forEach(b=>b.onclick=closePanels);
+  $('#adminLoginBtn')?.addEventListener('click',async()=>{ await loadSettings(); const code=$('#adminCode').value.trim(); if(code===(settings.adminCode||'2026')){ localStorage.setItem('afaq_role','admin'); location.href='pages/admin.html'; } else toast('كود المدير غير صحيح',false); });
+  $('#studentLoginBtn')?.addEventListener('click',async()=>{ const code=$('#studentCode').value.trim(); if(!code) return toast('اكتب كود الطالب',false); const q=FB.query(FB.collection(db,'students'),FB.where('code','==',code)); const snap=await safe(()=>FB.getDocs(q),'فشل البحث عن الطالب'); if(!snap||snap.empty) return toast('الكود غير موجود أو الطلب لم تتم الموافقة عليه',false); const d=snap.docs[0]; const st={id:d.id,...d.data()}; if(st.status!=='active') return toast('اشتراك الطالب غير نشط',false); localStorage.setItem('afaq_role','student'); localStorage.setItem('afaq_student_id',st.id); location.href='pages/student.html'; });
+  $('#subscriptionForm')?.addEventListener('submit',async(e)=>{ e.preventDefault(); await loadSettings(); if(settings.acceptRequests===false) return toast('استقبال طلبات الاشتراك متوقف حاليًا',false); const sel=$('#subStage'); const stageId=sel.value; const stageName=sel.options[sel.selectedIndex]?.dataset.name||''; if(!stageId) return toast('اختر المرحلة الدراسية',false); const data={studentName:$('#subName').value.trim(),parentName:$('#subParent').value.trim(),phone:$('#subPhone').value.trim(),stageId,stageName,amount:Number($('#subAmount').value||0),masterNumber:settings.masterNumber,status:'pending',createdAt:FB.serverTimestamp()}; if(!data.studentName||!data.parentName||!data.phone||!data.amount) return toast('أكمل جميع بيانات الطلب',false); const saved=await safe(()=>FB.addDoc(FB.collection(db,'subscriptionRequests'),data),'فشل إرسال طلب الاشتراك'); if(saved){ e.target.reset(); await loadStages('#subStage'); applySettings(); toast('تم إرسال طلب الاشتراك بنجاح'); closePanels(); } });
+}
+function guard(role){ if(localStorage.getItem('afaq_role')!==role){ location.href='../index.html'; return false;} return true;}
+function logout(){localStorage.removeItem('afaq_role');localStorage.removeItem('afaq_student_id');location.href='../index.html';}
 async function initAdmin(){
-  if(!guard('admin')) return; setupTheme(); settings=localSettings(); applySettings(); await loadSettings(); await loadStages();
-  $('.logout')?.addEventListener('click', backHome); $('.back-home')?.addEventListener('click',()=>location.href='../index.html');
+  if(!guard('admin')) return; setupTheme(); settings=readCache(); applySettings(); await loadSettings(); listenSettings(); await loadStages();
+  $('.logout')?.addEventListener('click',logout); $('.back-home')?.addEventListener('click',()=>location.href='../index.html');
   $$('.tab-btn').forEach(btn=>btn.onclick=()=>{ $$('.tab-btn').forEach(b=>b.classList.remove('active')); $$('.tab').forEach(t=>t.classList.remove('active')); btn.classList.add('active'); $('#'+btn.dataset.tab).classList.add('active'); });
-  $('#platformName').value=settings.platformName; $('#welcomeMessage').value=settings.welcomeMessage; $('#footerMessage').value=settings.footerMessage; $('#masterNumber').value=settings.masterNumber; $('#adminCodeNew').value=settings.adminCode; $('#acceptRequests').checked=settings.acceptRequests!==false;
-  $('#settingsForm').onsubmit=async(e)=>{ e.preventDefault(); settings={...settings, platformName:$('#platformName').value.trim(), welcomeMessage:$('#welcomeMessage').value.trim(), footerMessage:$('#footerMessage').value.trim(), masterNumber:$('#masterNumber').value.trim(), adminCode:$('#adminCodeNew').value.trim()||'2026', acceptRequests:$('#acceptRequests').checked}; await safe(()=>FB.setDoc(FB.doc(db,'system','settings'), settings, {merge:true})); localStorage.setItem('afaq_settings', JSON.stringify(settings)); applySettings(); toast('تم حفظ الإعدادات'); };
-  $('#stageForm').onsubmit=async(e)=>{ e.preventDefault(); const name=$('#stageName').value.trim(); if(!name) return; await safe(()=>FB.addDoc(FB.collection(db,'stages'), {name, order:Date.now(), createdAt:FB.serverTimestamp()})); $('#stageName').value=''; toast('تمت إضافة المرحلة'); renderStages(); };
+  fillSettingsForm();
+  $('#settingsForm').onsubmit=async(e)=>{ e.preventDefault(); const newSettings={...settings,platformName:$('#platformName').value.trim()||DEFAULT_SETTINGS.platformName,welcomeMessage:$('#welcomeMessage').value.trim()||DEFAULT_SETTINGS.welcomeMessage,footerMessage:$('#footerMessage').value.trim()||DEFAULT_SETTINGS.footerMessage,masterNumber:$('#masterNumber').value.trim()||DEFAULT_SETTINGS.masterNumber,adminCode:$('#adminCodeNew').value.trim()||'2026',acceptRequests:$('#acceptRequests').checked}; const ok=await safe(()=>FB.setDoc(FB.doc(db,'system','settings'),newSettings,{merge:true}),'فشل حفظ الإعدادات. تحقق من قواعد Firestore'); if(ok!==null){settings=newSettings;cacheSettings();applySettings();fillSettingsForm();toast('تم حفظ الإعدادات وتطبيقها');}}
+  $('#stageForm').onsubmit=async(e)=>{ e.preventDefault(); const name=$('#stageName').value.trim(); if(!name) return toast('اكتب اسم المرحلة',false); const ok=await safe(()=>FB.addDoc(FB.collection(db,'stages'),{name,order:Date.now(),createdAt:FB.serverTimestamp()}),'فشل إضافة المرحلة'); if(ok){ $('#stageName').value=''; toast('تمت إضافة المرحلة'); renderStages(); } };
   renderStages(); listenRequests(); listenStudents();
 }
-async function renderStages(){
-  const list=$('#stagesList'); if(!list) return; await loadStages();
-  list.innerHTML = stages.map(s=>`<div class="mini-card"><b>${s.name}</b><div><button data-edit-stage="${s.id}" data-name="${s.name}">تعديل</button><button class="danger" data-del-stage="${s.id}">حذف</button></div></div>`).join('') || '<p>لا توجد مراحل.</p>';
-  $$('[data-del-stage]').forEach(b=>b.onclick=async()=>{ if(confirm('حذف المرحلة؟')){ await safe(()=>FB.deleteDoc(FB.doc(db,'stages',b.dataset.delStage))); renderStages(); }});
-  $$('[data-edit-stage]').forEach(b=>b.onclick=async()=>{ const name=prompt('اسم المرحلة الجديد', b.dataset.name); if(name){ await safe(()=>FB.updateDoc(FB.doc(db,'stages',b.dataset.editStage), {name})); renderStages(); }});
-}
-function listenRequests(){
-  const box=$('#requestsList'); if(!box) return;
-  FB.onSnapshot(FB.query(FB.collection(db,'subscriptionRequests'), FB.orderBy('createdAt','desc')), snap=>{
-    const rows=snap.docs.map(d=>({id:d.id,...d.data()}));
-    box.innerHTML = rows.map(r=>`<div class="request-card"><div><h3>${r.studentName}</h3><p>${r.stageName} • ${r.phone}</p><p>ولي الأمر: ${r.parentName}</p><p>المبلغ: ${r.amount} • الحالة: ${r.status}</p></div><div class="actions">${r.status==='pending'?`<button data-accept="${r.id}">قبول</button><button class="danger" data-reject="${r.id}">رفض</button>`:''}</div></div>`).join('') || '<p>لا توجد طلبات.</p>';
-    $$('[data-accept]').forEach(b=>b.onclick=()=>acceptRequest(b.dataset.accept));
-    $$('[data-reject]').forEach(b=>b.onclick=()=>rejectRequest(b.dataset.reject));
-  }, e=>{ console.error(e); box.innerHTML='<p>فشل تحميل الطلبات. تحقق من firestore.rules</p>'; });
-}
-async function acceptRequest(id){
-  const start = prompt('تاريخ بداية الاشتراك YYYY-MM-DD', new Date().toISOString().slice(0,10)); if(!start) return;
-  const end = prompt('تاريخ نهاية الاشتراك YYYY-MM-DD', new Date(Date.now()+30*864e5).toISOString().slice(0,10)); if(!end) return;
-  const code = prompt('كود الطالب', randCode()); if(!code) return;
-  const snap = await safe(()=>FB.getDoc(FB.doc(db,'subscriptionRequests',id))); if(!snap?.exists()) return;
-  const r = snap.data();
-  await safe(()=>FB.addDoc(FB.collection(db,'students'), {...r, code, startDate:start, endDate:end, status:'active', points:0, level:'🌱 مبتدئ', approvedAt:FB.serverTimestamp()}));
-  await safe(()=>FB.updateDoc(FB.doc(db,'subscriptionRequests',id), {status:'accepted', studentCode:code, startDate:start, endDate:end}));
-  toast('تم قبول الطالب. الكود: '+code);
-}
-async function rejectRequest(id){ await safe(()=>FB.updateDoc(FB.doc(db,'subscriptionRequests',id), {status:'rejected'})); toast('تم رفض الطلب'); }
-function listenStudents(){
-  const box=$('#studentsList'); if(!box) return;
-  FB.onSnapshot(FB.query(FB.collection(db,'students'), FB.orderBy('approvedAt','desc')), snap=>{
-    const rows=snap.docs.map(d=>({id:d.id,...d.data()}));
-    box.innerHTML= rows.map(s=>`<div class="mini-card"><div><b>${s.studentName}</b><p>${s.stageName} • كود: <b>${s.code}</b></p><p>${fmtDate(s.startDate)} - ${fmtDate(s.endDate)}</p></div><span class="pill">${s.status}</span></div>`).join('') || '<p>لا يوجد طلاب مقبولون.</p>';
-  });
-}
-
-async function initStudent(){
-  if(!guard('student')) return; setupTheme(); await loadSettings(); $('.logout')?.addEventListener('click', backHome); $('.back-home')?.addEventListener('click',()=>location.href='../index.html');
-  const id=localStorage.getItem('afaq_student_id');
-  FB.onSnapshot(FB.doc(db,'students',id), snap=>{
-    if(!snap.exists()) return;
-    const s={id:snap.id,...snap.data()};
-    $('#studentName').textContent=s.studentName; $('#studentStage').textContent=s.stageName; $('#studentCodeView').textContent=s.code; $('#studentEnd').textContent=fmtDate(s.endDate); $('#studentLevel').textContent=s.level||'🌱 مبتدئ'; $('#studentPoints').textContent=s.points||0;
-  });
-}
-
-const page = document.body.dataset.page;
-if(page==='home') initHome();
-if(page==='admin') initAdmin();
-if(page==='student') initStudent();
+async function renderStages(){ const box=$('#stagesList'); if(!box) return; await loadStages(); box.innerHTML=stages.map(s=>`<div class="item-card"><div><h3>${s.name}</h3><p>مرحلة دراسية لمادة الأحياء</p></div><div class="actions"><button data-edit-stage="${s.id}" data-name="${s.name}">تعديل</button><button class="danger" data-del-stage="${s.id}">حذف</button></div></div>`).join('')||'<p>لا توجد مراحل.</p>'; $$('[data-del-stage]').forEach(b=>b.onclick=async()=>{ if(b.dataset.delStage.startsWith('fallback')) return toast('أضف المراحل إلى Firebase أولاً ثم احذفها',false); if(confirm('هل تريد حذف المرحلة؟')){ await safe(()=>FB.deleteDoc(FB.doc(db,'stages',b.dataset.delStage)),'فشل حذف المرحلة'); renderStages(); }}); $$('[data-edit-stage]').forEach(b=>b.onclick=async()=>{ if(b.dataset.editStage.startsWith('fallback')) return toast('هذه مرحلة افتراضية، أضفها أولاً في Firebase',false); const name=prompt('اسم المرحلة الجديد',b.dataset.name); if(name){ await safe(()=>FB.updateDoc(FB.doc(db,'stages',b.dataset.editStage),{name}),'فشل تعديل المرحلة'); renderStages(); }}); }
+function listenRequests(){ const box=$('#requestsList'); if(!box) return; FB.onSnapshot(FB.query(FB.collection(db,'subscriptionRequests'),FB.orderBy('createdAt','desc')),snap=>{ const rows=snap.docs.map(d=>({id:d.id,...d.data()})); $('#requestsCount')&&( $('#requestsCount').textContent=String(rows.length)); box.innerHTML=rows.map(r=>`<div class="item-card"><div><h3>${r.studentName||'طالب'}</h3><p>${r.stageName||'—'} • ${r.phone||'—'} • ولي الأمر: ${r.parentName||'—'}</p><p>المبلغ: ${r.amount||0} • الحالة: <b>${r.status}</b></p>${r.studentCode?`<p>كود الطالب: <b>${r.studentCode}</b></p>`:''}</div><div class="actions">${r.status==='pending'?`<button data-accept="${r.id}">قبول جذاب</button><button class="danger" data-reject="${r.id}">رفض</button>`:'<span class="pill">تمت المعالجة</span>'}</div></div>`).join('')||'<p>لا توجد طلبات اشتراك.</p>'; $$('[data-accept]').forEach(b=>b.onclick=()=>acceptRequest(b.dataset.accept)); $$('[data-reject]').forEach(b=>b.onclick=()=>rejectRequest(b.dataset.reject)); },e=>{console.error(e);box.innerHTML='<p>فشل تحميل الطلبات. تأكد من نشر firestore.rules</p>';}); }
+async function acceptRequest(id){ const start=prompt('تاريخ بداية الاشتراك YYYY-MM-DD',new Date().toISOString().slice(0,10)); if(!start) return; const end=prompt('تاريخ نهاية الاشتراك YYYY-MM-DD',new Date(Date.now()+30*864e5).toISOString().slice(0,10)); if(!end) return; const code=prompt('كود الطالب',randCode()); if(!code) return; const snap=await safe(()=>FB.getDoc(FB.doc(db,'subscriptionRequests',id)),'فشل قراءة الطلب'); if(!snap?.exists()) return; const r=snap.data(); const ok=await safe(()=>FB.addDoc(FB.collection(db,'students'),{...r,code,startDate:start,endDate:end,status:'active',points:0,level:'🌱 مبتدئ',approvedAt:FB.serverTimestamp()}),'فشل إنشاء الطالب'); if(ok){ await safe(()=>FB.updateDoc(FB.doc(db,'subscriptionRequests',id),{status:'accepted',studentCode:code,startDate:start,endDate:end}),'فشل تحديث الطلب'); toast('تم قبول الطالب بنجاح، الكود: '+code); } }
+async function rejectRequest(id){ await safe(()=>FB.updateDoc(FB.doc(db,'subscriptionRequests',id),{status:'rejected'}),'فشل رفض الطلب'); toast('تم رفض الطلب'); }
+function listenStudents(){ const box=$('#studentsList'); if(!box) return; FB.onSnapshot(FB.query(FB.collection(db,'students'),FB.orderBy('approvedAt','desc')),snap=>{ const rows=snap.docs.map(d=>({id:d.id,...d.data()})); $('#studentsCount')&&( $('#studentsCount').textContent=String(rows.length)); box.innerHTML=rows.map(s=>`<div class="item-card"><div><h3>${s.studentName}</h3><p>${s.stageName} • كود الطالب: <b>${s.code}</b></p><p>الاشتراك: ${fmt(s.startDate)} إلى ${fmt(s.endDate)}</p></div><span class="pill">${s.status}</span></div>`).join('')||'<p>لا يوجد طلاب مقبولون.</p>'; }); }
+async function initStudent(){ if(!guard('student')) return; setupTheme(); await loadSettings(); $('.logout')?.addEventListener('click',logout); $('.back-home')?.addEventListener('click',()=>location.href='../index.html'); const id=localStorage.getItem('afaq_student_id'); FB.onSnapshot(FB.doc(db,'students',id),snap=>{ if(!snap.exists()) return; const s={id:snap.id,...snap.data()}; $('#studentName').textContent=s.studentName||'طالب'; $('#studentStage').textContent=s.stageName||'—'; $('#studentCodeView').textContent=s.code||'—'; $('#studentEnd').textContent=fmt(s.endDate); $('#studentLevel').textContent=s.level||'🌱 مبتدئ'; $('#studentPoints').textContent=s.points||0; }); }
+(async function(){ setupTheme(); try{await ensureBaseData()}catch(e){console.warn(e)} const page=document.body.dataset.page; if(page==='home') initHome(); if(page==='admin') initAdmin(); if(page==='student') initStudent(); })();

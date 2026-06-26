@@ -2,82 +2,105 @@
 <html lang="ar" dir="rtl" data-theme="dark">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#09051f">
   <title>آفاق التعليمية</title>
-  <link rel="stylesheet" href="css/main.css?v=102">
+  <link rel="stylesheet" href="css/main.css?v=100-exact-pro">
   <link rel="manifest" href="manifest.json">
 </head>
 <body data-page="home">
-<header class="container nav">
-  <div class="brand">
-    <div class="logo">✦</div>
-    <div><h2 data-platform-name>آفاق التعليمية</h2><p>منصة أحياء خاصة بطلابك</p></div>
-  </div>
-  <nav class="nav-links">
-    <a href="#home">الرئيسية</a>
-    <a href="#sub">الاشتراك</a>
-    <button class="theme-toggle btn-ghost">🌙 الوضع</button>
-  </nav>
-</header>
-
-<main class="container" id="home">
-  <section class="hero old-layout">
-    <div class="hero-art human-art" aria-label="مجسم جسم الإنسان ثلاثي الأبعاد">
-      <div class="orbit o1"><span>📘</span></div>
-      <div class="orbit o2"><span>🧪</span></div>
-      <div class="orbit o3"><span>📝</span></div>
-      <div class="orbit o4"><span>🏆</span></div>
-      <div class="human-3d">
-        <div class="head"></div><div class="neck"></div><div class="torso"><i></i></div>
-        <div class="arm left"></div><div class="arm right"></div>
-        <div class="leg left"></div><div class="leg right"></div>
-      </div>
-      <div class="base-ring"></div>
-    </div>
-
-    <div class="hero-text">
-      <p>مرحبًا بك في</p>
-      <h1>منصة <span>أحياء خاصة</span><br>بطلابك</h1>
-      <p data-welcome>تعلّم الأحياء بطريقة منظمة مع الدروس والاختبارات والاشتراك الذكي في مكان واحد.</p>
-      <div class="cards">
-        <div class="login-card glass">
-          <h3>دخول المدير</h3>
-          <p>إدارة الطلاب والاشتراكات والمراحل.</p>
-          <input id="adminCode" class="input" placeholder="أدخل كود المدير">
-          <button id="adminLoginBtn" class="btn-wide">دخول المدير</button>
-        </div>
-        <div class="login-card glass">
-          <h3>دخول الطالب</h3>
-          <p>الدخول بالكود الخاص بعد الموافقة على الاشتراك.</p>
-          <input id="studentCode" class="input" placeholder="أدخل كود الطالب">
-          <button id="studentLoginBtn" class="btn-wide">دخول الطالب</button>
-        </div>
+  <header class="topbar container">
+    <div class="brand">
+      <div class="brand-mark">✤</div>
+      <div>
+        <h2 data-platform-name>آفاق التعليمية</h2>
+        <p>منصة تعليمية متكاملة</p>
       </div>
     </div>
+    <nav class="nav-links">
+      <a class="active" href="#home">الرئيسية</a>
+      <a href="#about">عن المنصة</a>
+      <a href="#features">المميزات</a>
+      <a href="#contact">تواصل معنا</a>
+    </nav>
+    <button class="theme-switch theme-toggle" title="تبديل الوضع"><span>🌙</span><span>☀️</span></button>
+  </header>
+
+  <main id="home" class="container hero-shell">
+    <section class="hero-art-card">
+      <img src="assets/images/human3d.png" alt="مجسم جسم الإنسان" class="human-img">
+    </section>
+
+    <section class="hero-copy">
+      <span class="welcome-chip">مرحباً بك في</span>
+      <h1><span data-platform-name>آفاق التعليمية</span></h1>
+      <p class="lead" data-welcome>منصة تعليمية متكاملة للدروس والاختبارات الإلكترونية تحت إشراف الأستاذ أحمد عمر</p>
+      <div class="checks">
+        <span>✅ دروس تفاعلية</span>
+        <span>✅ اختبارات ذكية</span>
+        <span>✅ متابعة الأداء</span>
+        <span>✅ تقارير مفضلة</span>
+      </div>
+      <div class="login-grid two-only">
+        <article class="role-card student-role" data-open="studentPanel">
+          <div class="role-icon">🧑‍🎓</div>
+          <h3>تسجيل الطالب</h3>
+          <p>الدخول إلى حسابك أو إرسال طلب اشتراك</p>
+          <button>دخول</button>
+        </article>
+        <article class="role-card admin-role" data-open="adminPanel">
+          <div class="role-icon">🛡️</div>
+          <h3>تسجيل المدير</h3>
+          <p>لوحة إدارة المنصة والاشتراكات</p>
+          <button>دخول</button>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <section class="container forms-zone">
+    <div id="studentPanel" class="portal-panel glass hidden-panel">
+      <button class="close-panel" data-close>×</button>
+      <h2>دخول الطالب</h2>
+      <p>يدخل الطالب بالكود الخاص بعد الموافقة على الاشتراك.</p>
+      <input id="studentCode" class="input" placeholder="أدخل كود الطالب">
+      <button id="studentLoginBtn" class="btn-wide">دخول الطالب</button>
+      <hr>
+      <h2>طلب اشتراك طالب</h2>
+      <p>رقم الماستر يظهر تلقائيًا ولا يمكن تعديله من الطالب.</p>
+      <form id="subscriptionForm" class="form-grid">
+        <input id="subName" class="input" required placeholder="الاسم الثلاثي">
+        <input id="subParent" class="input" required placeholder="اسم ولي الأمر">
+        <input id="subPhone" class="input" required placeholder="رقم الهاتف">
+        <select id="subStage" class="input" required><option value="">جاري تحميل المراحل...</option></select>
+        <input id="subAmount" class="input" type="number" required placeholder="المبلغ المدفوع بالدينار">
+        <div class="master-box">
+          <small>رقم الماستر</small>
+          <b data-master-number>—</b>
+          <span>هذا الرقم للعرض فقط ولا يمكن تعديله</span>
+        </div>
+        <button type="submit" class="btn-wide">إرسال طلب الاشتراك</button>
+      </form>
+    </div>
+
+    <div id="adminPanel" class="portal-panel glass hidden-panel">
+      <button class="close-panel" data-close>×</button>
+      <h2>دخول المدير</h2>
+      <p>اكتب كود المدير للدخول إلى لوحة التحكم.</p>
+      <input id="adminCode" class="input" placeholder="أدخل كود المدير">
+      <button id="adminLoginBtn" class="btn-wide pink-btn">دخول المدير</button>
+    </div>
   </section>
 
-  <section id="sub" class="glass form-card">
-    <h3>طلب اشتراك طالب</h3>
-    <p>املأ الطلب، وبعد موافقة المدير تحصل على كود الدخول.</p>
-    <form id="subscriptionForm" class="grid">
-      <input id="subName" class="input" required placeholder="الاسم الثلاثي">
-      <input id="subParent" class="input" required placeholder="اسم ولي الأمر">
-      <input id="subPhone" class="input" required placeholder="رقم الهاتف">
-      <select id="subStage" required></select>
-      <input id="subAmount" class="input" type="number" required placeholder="المبلغ المدفوع">
-      <div class="master-display"><small>رقم الماستر للدفع</small><strong data-master-number>07800000000</strong><span>يظهر تلقائيًا ولا يمكن للطالب تعديله</span></div>
-      <button class="btn-wide" type="submit">إرسال طلب الاشتراك</button>
-    </form>
+  <section id="features" class="stats-strip">
+    <div><b>+1000</b><span>طالب نشط</span></div>
+    <div><b>+500</b><span>درس تفاعلي</span></div>
+    <div><b>24/7</b><span>دعم فني</span></div>
+    <div><b>أحياء</b><span>منهج منظم</span></div>
   </section>
 
-  <section class="features">
-    <div class="feature"><b>آمن وموثوق</b><span>بيانات محفوظة في Firebase</span></div>
-    <div class="feature"><b>مزامنة فورية</b><span>تحديث تلقائي بين المدير والطالب</span></div>
-    <div class="feature"><b>مناسب للهاتف</b><span>كل الجداول كبطاقات منظمة</span></div>
-    <div class="feature"><b>خاص بالأحياء</b><span>كل مرحلة تظهر محتواها فقط</span></div>
-  </section>
-</main>
-<footer class="container" style="padding:25px;text-align:center;color:var(--muted)" data-footer>آفاق التعليمية</footer>
-<script type="module" src="js/app.js?v=102"></script>
+  <footer id="contact" data-footer>© 2026 آفاق التعليمية - جميع الحقوق محفوظة</footer>
+  <div id="toast" class="toast"></div>
+  <script type="module" src="js/app.js?v=100-exact-pro"></script>
 </body>
 </html>

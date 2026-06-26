@@ -1,131 +1,134 @@
-import { db, fb } from './firebase.js';
+import { db, FB, DEFAULT_SETTINGS, ensureBaseData } from './firebase.js';
 
 const $ = (s, r=document) => r.querySelector(s);
 const $$ = (s, r=document) => [...r.querySelectorAll(s)];
-const ADMIN_SESSION = 'afaq_admin_ok';
-const STUDENT_SESSION = 'afaq_student_id';
-const defaultSettings = {
-  platformName: 'آفاق التعليمية',
-  welcomeMessage: 'تعلم، اختبر، تابع نتائجك واشتراكك من مكان واحد بتصميم حديث ومزامنة مباشرة.',
-  footerMessage: 'آفاق التعليمية © جميع الحقوق محفوظة',
-  masterNumber: 'ضع رقم الماستر من لوحة المدير',
-  adminCode: '2026',
-  requestsOpen: true
-};
-let settings = {...defaultSettings};
-let stagesCache = [];
+const toast = (msg, ok=true) => { const t=$('#toast') || document.createElement('div'); t.id='toast'; t.className='toast show '+(ok?'ok':'bad'); t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.classList.remove('show'),2600); };
+const fmtDate = (v) => v ? new Date(v).toLocaleDateString('ar-IQ') : '—';
+const randCode = () => String(Math.floor(100000 + Math.random()*900000));
 
-function msg(el, text, ok=true){ if(el){ el.textContent=text; el.style.color = ok ? '#7cf6a5' : '#ff9a9a'; } }
-function fmtDate(v){ if(!v) return '-'; try{ if(v.toDate) return v.toDate().toLocaleDateString('ar-IQ'); return new Date(v).toLocaleDateString('ar-IQ'); }catch{return '-'} }
-function randomCode(){ return Math.floor(100000 + Math.random()*900000).toString(); }
-async function ensureSettings(){
-  const ref = fb.doc(db,'settings','platform');
-  const snap = await fb.getDoc(ref);
-  if(!snap.exists()) await fb.setDoc(ref, defaultSettings);
+let settings = {...DEFAULT_SETTINGS};
+let stages = [];
+
+async function safe(call, fallback=null){ try { return await call(); } catch(e){ console.error(e); toast('تحقق من قواعد Firestore أو الاتصال بالإنترنت', false); return fallback; } }
+async function loadSettings(){
+  await safe(()=>ensureBaseData());
+  const snap = await safe(()=>FB.getDoc(FB.doc(db,'system','settings')));
+  settings = {...DEFAULT_SETTINGS, ...(snap?.exists()?snap.data():{})};
+  localStorage.setItem('afaq_settings', JSON.stringify(settings));
+  applySettings();
+  return settings;
 }
-function listenSettings(){
-  fb.onSnapshot(fb.doc(db,'settings','platform'), snap=>{
-    settings = {...defaultSettings, ...(snap.data()||{})};
-    $('#homeBrand') && ($('#homeBrand').textContent=settings.platformName);
-    $('#heroTitle') && ($('#heroTitle').textContent=settings.platformName);
-    $('#welcomeText') && ($('#welcomeText').textContent=settings.welcomeMessage);
-    $('#footerText') && ($('#footerText').textContent=settings.footerMessage);
-    $('#masterView') && ($('#masterView').value=settings.masterNumber || 'غير محدد');
-    const f = $('#settingsForm');
-    if(f){ f.platformName.value=settings.platformName; f.welcomeMessage.value=settings.welcomeMessage; f.footerMessage.value=settings.footerMessage; f.masterNumber.value=settings.masterNumber; f.adminCode.value=settings.adminCode; }
-  }, e=>console.error(e));
+function localSettings(){ try{return {...DEFAULT_SETTINGS, ...JSON.parse(localStorage.getItem('afaq_settings')||'{}')}}catch{return DEFAULT_SETTINGS} }
+function applySettings(){
+  $$('[data-platform-name]').forEach(e=>e.textContent=settings.platformName);
+  $$('[data-welcome]').forEach(e=>e.textContent=settings.welcomeMessage);
+  $$('[data-master-number]').forEach(e=>e.textContent=settings.masterNumber);
+  $$('[data-footer]').forEach(e=>e.textContent=settings.footerMessage);
+  const title = $('title'); if(title) title.textContent = settings.platformName;
 }
-function setupTheme(){
-  const saved = localStorage.getItem('afaq_theme') || 'dark';
-  document.documentElement.dataset.theme = saved;
-  const btn = $('#themeBtn');
-  if(btn){ btn.textContent = saved === 'light' ? '🌙 الوضع الليلي' : '☀️ الوضع النهاري'; btn.onclick=()=>{ const next=document.documentElement.dataset.theme==='light'?'dark':'light'; document.documentElement.dataset.theme=next; localStorage.setItem('afaq_theme',next); btn.textContent=next==='light'?'🌙 الوضع الليلي':'☀️ الوضع النهاري'; }; }
+async function loadStages(selectId){
+  const snap = await safe(()=>FB.getDocs(FB.query(FB.collection(db,'stages'), FB.orderBy('order','asc'))));
+  stages = snap?.docs?.map(d=>({id:d.id,...d.data()})) || [];
+  if(!stages.length) stages = ['الأول متوسط','الثاني متوسط','الثالث متوسط','الرابع الإعدادي','الخامس الإعدادي','السادس الإعدادي'].map((name,i)=>({id:'local'+i,name,order:i+1}));
+  const sel = selectId ? $(selectId) : null;
+  if(sel) sel.innerHTML = '<option value="">اختر المرحلة</option>' + stages.map(s=>`<option value="${s.id}" data-name="${s.name}">${s.name}</option>`).join('');
+  return stages;
 }
-function setupMenus(){
-  $$('[data-open]').forEach(b=> b.onclick=()=>{ $$('.section').forEach(s=>s.classList.remove('active')); const sec = $('#'+b.dataset.open); sec && sec.classList.add('active'); window.scrollTo({top:0,behavior:'smooth'}); });
-}
-function listenStages(renderHome=false){
-  const q = fb.query(fb.collection(db,'stages'), fb.orderBy('order','asc'));
-  fb.onSnapshot(q, snap=>{
-    stagesCache = snap.docs.map(d=>({id:d.id,...d.data()}));
-    const sel = $('#stageSelect');
-    if(sel){ sel.innerHTML='<option value="">اختر المرحلة الدراسية</option>'+stagesCache.map(s=>`<option value="${s.id}">${s.name}</option>`).join(''); }
-    const list = $('#stagesList');
-    if(list){ list.innerHTML = stagesCache.length? stagesCache.map(s=>`<div class="pack"><b>${s.name}</b><span class="small">ترتيب الظهور: ${s.order||0}</span><div class="row"><button class="btn secondary" data-edit-stage="${s.id}">تعديل</button><button class="btn danger" data-del-stage="${s.id}">حذف</button></div></div>`).join(''):'<div class="empty">لا توجد مراحل بعد</div>'; }
-    $('#statStages') && ($('#statStages').textContent=stagesCache.length);
-  });
-}
-function stageName(id){ return (stagesCache.find(s=>s.id===id)||{}).name || 'مرحلة محذوفة'; }
+function setTheme(mode){ document.documentElement.dataset.theme=mode; localStorage.setItem('afaq_theme',mode); }
+function setupTheme(){ setTheme(localStorage.getItem('afaq_theme')||'dark'); $$('.theme-toggle').forEach(b=>b.onclick=()=>setTheme(document.documentElement.dataset.theme==='dark'?'light':'dark')); }
+
 async function initHome(){
-  await ensureSettings(); listenSettings(); listenStages(true);
-  $('#subForm')?.addEventListener('submit', async e=>{
-    e.preventDefault(); const f=e.target;
-    if(!settings.requestsOpen) return msg($('#subMsg'),'استقبال الطلبات متوقف حالياً',false);
-    if(!f.stageId.value) return msg($('#subMsg'),'اختر المرحلة أولاً',false);
-    try{
-      await fb.addDoc(fb.collection(db,'subscriptionRequests'),{
-        studentName:f.studentName.value.trim(), parentName:f.parentName.value.trim(), phone:f.phone.value.trim(),
-        stageId:f.stageId.value, stageName:stageName(f.stageId.value), amount:Number(f.amount.value||0), masterNumber:settings.masterNumber,
-        status:'pending', createdAt:fb.serverTimestamp()
-      });
-      f.reset(); $('#masterView').value=settings.masterNumber || 'غير محدد'; msg($('#subMsg'),'تم إرسال الطلب بنجاح، انتظر موافقة المدير.');
-    }catch(err){ console.error(err); msg($('#subMsg'),'فشل إرسال الطلب. تأكد من قواعد Firebase.',false); }
+  setupTheme(); settings = localSettings(); applySettings(); await loadSettings(); await loadStages('#subStage');
+  $('#adminLoginBtn')?.addEventListener('click', async()=>{
+    const code = $('#adminCode').value.trim();
+    await loadSettings();
+    if(code === (settings.adminCode||'2026')){ localStorage.setItem('afaq_role','admin'); location.href='pages/admin.html'; }
+    else toast('كود المدير غير صحيح', false);
   });
-  $('#studentLogin')?.addEventListener('submit', async e=>{
-    e.preventDefault(); const code=e.target.code.value.trim();
-    try{
-      const q = fb.query(fb.collection(db,'students'));
-      fb.onSnapshot(q, snap=>{
-        const st = snap.docs.map(d=>({id:d.id,...d.data()})).find(s=>s.code===code);
-        if(st && st.status==='active'){ localStorage.setItem(STUDENT_SESSION, st.id); location.href='pages/student.html'; }
-        else msg($('#studentLoginMsg'),'الكود غير صحيح أو الاشتراك غير مفعل.',false);
-      },()=> msg($('#studentLoginMsg'),'تعذر الاتصال بقاعدة البيانات.',false));
-    }catch{ msg($('#studentLoginMsg'),'حدث خطأ في الدخول.',false); }
+  $('#studentLoginBtn')?.addEventListener('click', async()=>{
+    const code = $('#studentCode').value.trim();
+    if(!code) return toast('اكتب كود الطالب', false);
+    const q = FB.query(FB.collection(db,'students'), FB.where('code','==',code));
+    const snap = await safe(()=>FB.getDocs(q));
+    if(!snap || snap.empty) return toast('لم يتم العثور على الطالب أو لم تتم الموافقة بعد', false);
+    const d = snap.docs[0];
+    const st = {id:d.id,...d.data()};
+    if(st.status !== 'active') return toast('اشتراك الطالب غير نشط', false);
+    localStorage.setItem('afaq_role','student'); localStorage.setItem('afaq_student_id', st.id); location.href='pages/student.html';
   });
-}
-async function initAdmin(){
-  await ensureSettings(); listenSettings(); setupMenus(); listenStages();
-  if(localStorage.getItem(ADMIN_SESSION)==='1') showAdmin();
-  $('#adminLogin')?.addEventListener('submit', e=>{ e.preventDefault(); const code=e.target.code.value.trim(); if(code===(settings.adminCode||'2026')){localStorage.setItem(ADMIN_SESSION,'1'); showAdmin();} else msg($('#adminLoginMsg'),'كود المدير غير صحيح',false); });
-  $('#adminLogout')?.addEventListener('click',()=>{localStorage.removeItem(ADMIN_SESSION); location.reload();});
-  $('#settingsForm')?.addEventListener('submit', async e=>{ e.preventDefault(); const f=e.target; try{ await fb.setDoc(fb.doc(db,'settings','platform'), { platformName:f.platformName.value.trim()||defaultSettings.platformName, welcomeMessage:f.welcomeMessage.value.trim(), footerMessage:f.footerMessage.value.trim(), masterNumber:f.masterNumber.value.trim(), adminCode:f.adminCode.value.trim()||'2026', requestsOpen:true }, {merge:true}); msg($('#settingsMsg'),'تم حفظ الإعدادات بنجاح'); }catch(err){ console.error(err); msg($('#settingsMsg'),'فشل الحفظ. تأكد من firestore.rules',false); } });
-  $('#stageForm')?.addEventListener('submit', async e=>{ e.preventDefault(); const f=e.target; try{ await fb.addDoc(fb.collection(db,'stages'), {name:f.stageName.value.trim(), order:Date.now(), createdAt:fb.serverTimestamp()}); f.reset(); msg($('#stageMsg'),'تمت إضافة المرحلة'); }catch(err){ console.error(err); msg($('#stageMsg'),'فشل إضافة المرحلة. تأكد من قواعد Firebase',false); } });
-  $('#stagesList')?.addEventListener('click', async e=>{ const del=e.target.dataset.delStage, edit=e.target.dataset.editStage; if(del && confirm('حذف المرحلة؟')) await fb.deleteDoc(fb.doc(db,'stages',del)); if(edit){ const old=stagesCache.find(s=>s.id===edit); const name=prompt('اسم المرحلة الجديد', old?.name||''); if(name) await fb.updateDoc(fb.doc(db,'stages',edit),{name}); } });
-  listenRequests(); listenStudents();
-}
-function showAdmin(){ $('#loginScreen').style.display='none'; $('#adminPanel').style.display='grid'; }
-function listenRequests(){
-  fb.onSnapshot(fb.query(fb.collection(db,'subscriptionRequests'), fb.orderBy('createdAt','desc')), snap=>{
-    const reqs=snap.docs.map(d=>({id:d.id,...d.data()}));
-    $('#statPending') && ($('#statPending').textContent=reqs.filter(r=>r.status==='pending').length);
-    const list=$('#requestsList'); if(!list) return;
-    list.innerHTML=reqs.length? reqs.map(r=>`<div class="pack"><b>${r.studentName}</b><span>المرحلة: ${r.stageName||stageName(r.stageId)}</span><span>ولي الأمر: ${r.parentName}</span><span>الهاتف: ${r.phone}</span><span>المبلغ: ${r.amount}</span><span>الحالة: <b class="badge ${r.status==='rejected'?'bad':r.status==='approved'?'':'warn'}">${r.status}</b></span><div class="row">${r.status==='pending'?`<button class="btn" data-approve="${r.id}">قبول</button><button class="btn danger" data-reject="${r.id}">رفض</button>`:''}</div></div>`).join(''):'<div class="empty">لا توجد طلبات</div>';
-  });
-  $('#requestsList')?.addEventListener('click', async e=>{
-    const approve=e.target.dataset.approve, reject=e.target.dataset.reject;
-    if(reject){ await fb.updateDoc(fb.doc(db,'subscriptionRequests',reject),{status:'rejected'}); return; }
-    if(approve){
-      const reqSnap=await fb.getDoc(fb.doc(db,'subscriptionRequests',approve)); const r={id:approve,...reqSnap.data()};
-      const code=prompt('اكتب كود الطالب أو اتركه فارغاً لإنشاء كود تلقائي', randomCode()) || randomCode();
-      const start=prompt('تاريخ بداية الاشتراك YYYY-MM-DD', new Date().toISOString().slice(0,10));
-      const end=prompt('تاريخ نهاية الاشتراك YYYY-MM-DD', new Date(Date.now()+30*86400000).toISOString().slice(0,10));
-      const studentRef=await fb.addDoc(fb.collection(db,'students'),{ studentName:r.studentName,parentName:r.parentName,phone:r.phone,stageId:r.stageId,stageName:r.stageName,amount:r.amount,code,startDate:start,endDate:end,status:'active',points:0,level:'🌱 مبتدئ',createdAt:fb.serverTimestamp() });
-      await fb.updateDoc(fb.doc(db,'subscriptionRequests',approve),{status:'approved',studentId:studentRef.id,code,startDate:start,endDate:end});
-      alert('تم قبول الطالب. كود الدخول: '+code);
-    }
+  $('#subscriptionForm')?.addEventListener('submit', async(e)=>{
+    e.preventDefault();
+    await loadSettings();
+    if(settings.acceptRequests === false) return toast('استقبال الطلبات متوقف حاليًا', false);
+    const sel = $('#subStage'); const stageId=sel.value; const stageName=sel.options[sel.selectedIndex]?.dataset.name || '';
+    if(!stageId) return toast('اختر المرحلة أولًا', false);
+    const data = {
+      studentName: $('#subName').value.trim(), parentName: $('#subParent').value.trim(), phone: $('#subPhone').value.trim(),
+      stageId, stageName, amount: Number($('#subAmount').value||0), masterNumber: settings.masterNumber,
+      status:'pending', createdAt: FB.serverTimestamp()
+    };
+    await safe(()=>FB.addDoc(FB.collection(db,'subscriptionRequests'), data));
+    e.target.reset(); await loadStages('#subStage'); applySettings(); toast('تم إرسال طلب الاشتراك بنجاح');
   });
 }
-function listenStudents(){
-  fb.onSnapshot(fb.query(fb.collection(db,'students'), fb.orderBy('createdAt','desc')), snap=>{
-    const arr=snap.docs.map(d=>({id:d.id,...d.data()})); $('#statStudents') && ($('#statStudents').textContent=arr.length);
-    const list=$('#studentsList'); if(!list) return;
-    list.innerHTML=arr.length? arr.map(s=>`<div class="pack"><b>${s.studentName}</b><span>الكود: ${s.code}</span><span>المرحلة: ${s.stageName}</span><span>الهاتف: ${s.phone}</span><span>الاشتراك: ${s.startDate} → ${s.endDate}</span><span class="badge">${s.status}</span></div>`).join(''):'<div class="empty">لا يوجد طلاب مقبولون</div>';
-  });
-}
-async function initStudent(){ setupMenus(); const id=localStorage.getItem(STUDENT_SESSION); if(!id){ location.href='../index.html'; return; } $('#studentLogout')?.addEventListener('click',()=>{localStorage.removeItem(STUDENT_SESSION); location.href='../index.html';}); fb.onSnapshot(fb.doc(db,'students',id), snap=>{ if(!snap.exists()){localStorage.removeItem(STUDENT_SESSION); location.href='../index.html'; return;} const s={id,...snap.data()}; renderStudent(s); }); }
-function renderStudent(s){ const profile=$('#studentProfile'); if(profile) profile.innerHTML=`<div class="pack"><b>${s.studentName}</b><span>كود الطالب: ${s.code}</span><span>المرحلة: ${s.stageName}</span><span>ولي الأمر: ${s.parentName}</span><span>الهاتف: ${s.phone}</span><span>النقاط: ${s.points||0}</span><span>المستوى: ${s.level||'🌱 مبتدئ'}</span></div>`; const sub=$('#studentSubscription'); if(sub) sub.innerHTML=`<div class="pack"><b>حالة الاشتراك</b><span class="badge">${s.status}</span><span>البداية: ${s.startDate||'-'}</span><span>النهاية: ${s.endDate||'-'}</span><span>المبلغ: ${s.amount||0}</span></div>`; }
 
-setupTheme();
-const page=document.body.dataset.page;
-if(page==='admin') initAdmin(); else if(page==='student') initStudent(); else initHome();
-if('serviceWorker' in navigator){ navigator.serviceWorker.register('./sw.js').catch(()=>{}); }
+function guard(role){ if(localStorage.getItem('afaq_role')!==role){ location.href='../index.html'; return false; } return true; }
+function backHome(){ localStorage.removeItem('afaq_role'); localStorage.removeItem('afaq_student_id'); location.href='../index.html'; }
+
+async function initAdmin(){
+  if(!guard('admin')) return; setupTheme(); settings=localSettings(); applySettings(); await loadSettings(); await loadStages();
+  $('.logout')?.addEventListener('click', backHome); $('.back-home')?.addEventListener('click',()=>location.href='../index.html');
+  $$('.tab-btn').forEach(btn=>btn.onclick=()=>{ $$('.tab-btn').forEach(b=>b.classList.remove('active')); $$('.tab').forEach(t=>t.classList.remove('active')); btn.classList.add('active'); $('#'+btn.dataset.tab).classList.add('active'); });
+  $('#platformName').value=settings.platformName; $('#welcomeMessage').value=settings.welcomeMessage; $('#footerMessage').value=settings.footerMessage; $('#masterNumber').value=settings.masterNumber; $('#adminCodeNew').value=settings.adminCode; $('#acceptRequests').checked=settings.acceptRequests!==false;
+  $('#settingsForm').onsubmit=async(e)=>{ e.preventDefault(); settings={...settings, platformName:$('#platformName').value.trim(), welcomeMessage:$('#welcomeMessage').value.trim(), footerMessage:$('#footerMessage').value.trim(), masterNumber:$('#masterNumber').value.trim(), adminCode:$('#adminCodeNew').value.trim()||'2026', acceptRequests:$('#acceptRequests').checked}; await safe(()=>FB.setDoc(FB.doc(db,'system','settings'), settings, {merge:true})); localStorage.setItem('afaq_settings', JSON.stringify(settings)); applySettings(); toast('تم حفظ الإعدادات'); };
+  $('#stageForm').onsubmit=async(e)=>{ e.preventDefault(); const name=$('#stageName').value.trim(); if(!name) return; await safe(()=>FB.addDoc(FB.collection(db,'stages'), {name, order:Date.now(), createdAt:FB.serverTimestamp()})); $('#stageName').value=''; toast('تمت إضافة المرحلة'); renderStages(); };
+  renderStages(); listenRequests(); listenStudents();
+}
+async function renderStages(){
+  const list=$('#stagesList'); if(!list) return; await loadStages();
+  list.innerHTML = stages.map(s=>`<div class="mini-card"><b>${s.name}</b><div><button data-edit-stage="${s.id}" data-name="${s.name}">تعديل</button><button class="danger" data-del-stage="${s.id}">حذف</button></div></div>`).join('') || '<p>لا توجد مراحل.</p>';
+  $$('[data-del-stage]').forEach(b=>b.onclick=async()=>{ if(confirm('حذف المرحلة؟')){ await safe(()=>FB.deleteDoc(FB.doc(db,'stages',b.dataset.delStage))); renderStages(); }});
+  $$('[data-edit-stage]').forEach(b=>b.onclick=async()=>{ const name=prompt('اسم المرحلة الجديد', b.dataset.name); if(name){ await safe(()=>FB.updateDoc(FB.doc(db,'stages',b.dataset.editStage), {name})); renderStages(); }});
+}
+function listenRequests(){
+  const box=$('#requestsList'); if(!box) return;
+  FB.onSnapshot(FB.query(FB.collection(db,'subscriptionRequests'), FB.orderBy('createdAt','desc')), snap=>{
+    const rows=snap.docs.map(d=>({id:d.id,...d.data()}));
+    box.innerHTML = rows.map(r=>`<div class="request-card"><div><h3>${r.studentName}</h3><p>${r.stageName} • ${r.phone}</p><p>ولي الأمر: ${r.parentName}</p><p>المبلغ: ${r.amount} • الحالة: ${r.status}</p></div><div class="actions">${r.status==='pending'?`<button data-accept="${r.id}">قبول</button><button class="danger" data-reject="${r.id}">رفض</button>`:''}</div></div>`).join('') || '<p>لا توجد طلبات.</p>';
+    $$('[data-accept]').forEach(b=>b.onclick=()=>acceptRequest(b.dataset.accept));
+    $$('[data-reject]').forEach(b=>b.onclick=()=>rejectRequest(b.dataset.reject));
+  }, e=>{ console.error(e); box.innerHTML='<p>فشل تحميل الطلبات. تحقق من firestore.rules</p>'; });
+}
+async function acceptRequest(id){
+  const start = prompt('تاريخ بداية الاشتراك YYYY-MM-DD', new Date().toISOString().slice(0,10)); if(!start) return;
+  const end = prompt('تاريخ نهاية الاشتراك YYYY-MM-DD', new Date(Date.now()+30*864e5).toISOString().slice(0,10)); if(!end) return;
+  const code = prompt('كود الطالب', randCode()); if(!code) return;
+  const snap = await safe(()=>FB.getDoc(FB.doc(db,'subscriptionRequests',id))); if(!snap?.exists()) return;
+  const r = snap.data();
+  await safe(()=>FB.addDoc(FB.collection(db,'students'), {...r, code, startDate:start, endDate:end, status:'active', points:0, level:'🌱 مبتدئ', approvedAt:FB.serverTimestamp()}));
+  await safe(()=>FB.updateDoc(FB.doc(db,'subscriptionRequests',id), {status:'accepted', studentCode:code, startDate:start, endDate:end}));
+  toast('تم قبول الطالب. الكود: '+code);
+}
+async function rejectRequest(id){ await safe(()=>FB.updateDoc(FB.doc(db,'subscriptionRequests',id), {status:'rejected'})); toast('تم رفض الطلب'); }
+function listenStudents(){
+  const box=$('#studentsList'); if(!box) return;
+  FB.onSnapshot(FB.query(FB.collection(db,'students'), FB.orderBy('approvedAt','desc')), snap=>{
+    const rows=snap.docs.map(d=>({id:d.id,...d.data()}));
+    box.innerHTML= rows.map(s=>`<div class="mini-card"><div><b>${s.studentName}</b><p>${s.stageName} • كود: <b>${s.code}</b></p><p>${fmtDate(s.startDate)} - ${fmtDate(s.endDate)}</p></div><span class="pill">${s.status}</span></div>`).join('') || '<p>لا يوجد طلاب مقبولون.</p>';
+  });
+}
+
+async function initStudent(){
+  if(!guard('student')) return; setupTheme(); await loadSettings(); $('.logout')?.addEventListener('click', backHome); $('.back-home')?.addEventListener('click',()=>location.href='../index.html');
+  const id=localStorage.getItem('afaq_student_id');
+  FB.onSnapshot(FB.doc(db,'students',id), snap=>{
+    if(!snap.exists()) return;
+    const s={id:snap.id,...snap.data()};
+    $('#studentName').textContent=s.studentName; $('#studentStage').textContent=s.stageName; $('#studentCodeView').textContent=s.code; $('#studentEnd').textContent=fmtDate(s.endDate); $('#studentLevel').textContent=s.level||'🌱 مبتدئ'; $('#studentPoints').textContent=s.points||0;
+  });
+}
+
+const page = document.body.dataset.page;
+if(page==='home') initHome();
+if(page==='admin') initAdmin();
+if(page==='student') initStudent();
